@@ -1,0 +1,148 @@
+2025/7/21
+- Creation of the project folder "kdrama_system_summer_2025"
+- Creation of backend project with https://start.spring.io/ and frontend project with the "npm create vue@latest" command
+- Planning the appearance of some of the webpages via Figma
+- Re-installation of MySQL Server 
+- Installation MySQL Workbench and creation of the main database schema "kdrama_system_summer_2025"
+- Modification of application.properties to configure MySQL database and JDBC settings
+- Compiling BackendApplication.java and making sure that my backend API can indeed connect to the MySQL database schema
+- Refer to GAI Prompts/20250721 subfolder for GAI prompt inputs
+
+2025/7/23
+- Creation of the table "Drama" with the Java framework "Hibernate"
+  * Including creation of the JPA Entity "Drama", DramaRepository (for MySQL database actions), DramaService (fetching from TMDB API, etc.), and DramaController (handling HTTP requests, not in use yet since frontend is not developed yet)
+  * Including installation of Maven to use lombok.Data used in Drama.java
+  * Including creation of other necessary files
+- Generation of TMDB API Key for fetching necessary information (appropriate personal use only)
+- Creation of TMDB Client (part of package util, later moved to service) that can fetch data from TMDB and save it into a .json file
+- The data is passed like client (frontend)->controller (HTTP request)->service->TMDB client and repository->MySQL database, now testing starts from "service"
+- Today's result: Successfully created tables, including the "drama" table with fetchable information of the drama 善意的競爭 as an example
+- Refer to GAI Prompts/20250723 subfolder for GAI prompt inputs
+
+2025/7/25
+- Creation of README.md and application.properties.example about how users should configure their own MySQL database and TMDB API Key settings
+- Editing code (mainly TmdbDramaClient.java) to fill in more information of a drama
+  * Including creation of util/KRReleaseScheduleChecker.java to check if a drama is a Monday-Tuesday drama, Saturday-Sunday drama, etc.
+- The fill-in process design is not completed yet
+- Refer to GAI Prompts/20250725 subfolder for GAI prompt inputs
+
+2025/7/28
+- Creation of a document in "Additional References" folder that contains some names of K-dramas available on Netflix Taiwan
+- Continuation of 2025/7/25: editing code (mainly TmdbDramaClient.java) to fill in more information of a drama
+  * Including importing OpenCC to convert Simplified Chinese characters to Traditional Chinese characters (refer to util/ChineseCharacterConverter.java)
+- All the information fetchable via TMDB API now can be written into the .json file!
+- Since a problem related to Chinese encoding during terminal inputs exists, inputs cannot be tested until frontend basic input forms are completed
+- Creation of MovieController.java, Movie.java, MovieRepository.java, MovieService.java and TmdbMovieClient.java that do things similar to the drama counterparts
+- Refer to GAI Prompts/20250728 subfolder for GAI prompt inputs
+
+2025/7/30
+- Creation of ActorController.java, Actor.java, ActorRepository.java, ActorService.java and TmdbActorClient.java that do things similar to the drama and movie counterparts
+  * Including creation of ActorGender.java to define an enum for an actor's gender
+  * Including creation of relationships with Drama and Movie entities
+  * Including fetching his or her dramas and movies while fetching an actor, which involves calling DramaService or MovieService
+  * Including modification of JsonNodeRequest.java to limit API fetch request rate
+  * Including creation of DramaFilterUtil.java to filter web dramas according to broadcast network and/or platforms
+- Updating the current code so that K-dramas with multiple seasons can also be fetched
+- Refer to GAI Prompts/20250730 subfolder for GAI prompt inputs
+
+2025/8/1
+- Testing what is done so far and handling all the exceptions (including LazyInitializationException)
+- Handling Taiwanese OTT Platforms with TWOTTPlatformScraper.java
+  * Involving Selenium, a web scraping library to fetch platform urls with ChromeDriver (imported by github.bonigarcia.wdm.WebDriverManager)
+  * Including creation of TWOTTPlatformConfig.java and TWOTTPlatformRegistry.java
+- Only the first page of friDay Video dramas can be fetched as of now
+- Adjusting the structure of the project such as moving some util .java files to service
+- Refer to GAI Prompts/20250801 subfolder for GAI prompt inputs
+
+2025/8/4
+- Continuation of 2025/8/1: Scraping Taiwanese OTT platforms (friDay Video, Hami Video, MyVideo, LINE TV)
+  * Including creation of CacheFileUtil.java and CacheManager.java to save scraped cache to .json files
+- Filling in information of Netflix, Disney Plus, Amazon Prime Video, Apple TV and Catchplay with TMDBPlatformClient.java
+- Refer to GAI Prompts/20250804 subfolder for GAI prompt inputs
+
+2025/8/6
+- Revision of some code of existing .java files to rewrite some output messages and most comments in English
+- Running the backend project for the last time in a while and making sure that no exceptions occur
+- Moving on to frontend with Vue.js!
+  * Including creation of autumn_theme.scss and modals.scss for custom css
+  * Including creation of Navbar.vue that shows the navigation bar
+  * Including creation of 7 modals based on 2024 Spring Semester Web Programming Project
+  * Including creation of ModalController.vue that handles the status of 7 modals located in "modals" subfolder (not tested yet)
+- Refer to GAI Prompts/20250806 subfolder for GAI prompt inputs
+
+2025/8/8
+- Continuation of 2025/8/6: login, register, and other modals
+  * Including creation of 2 additional modals missed on 2025/8/6
+- Modification of modal styles and behavior not completed yet
+- Refer to GAI Prompts/20250808 subfolder for GAI prompt inputs
+
+2025/8/11
+- Continuation of 2025/8/8: login, register, and other modals
+  * Successfully finishing the appearance and frontend events of the 9 modals
+- Starting to make frontend and backend projects interact with each other
+  * Including creation of WebConfig.java to config Cross-Origin Resource Sharing (CORS) settings
+  * Including creation of actorService.js, ActorList.vue and ActorPage.vue to display content of the backend "Actor" table
+  * Including creation of router.js for vue-router configurations
+- As of now, fetching from MySQL Database-> "Actor" table and displaying data as html elements are both successful 
+- Refer to GAI Prompts/20250811 subfolder for GAI prompt inputs
+
+2025/8/13
+- Modification of ChatGPT's code in ActorList.vue so that each actor's profile picture, Chinese name, Korean name, gender and link to a more detailed page can be displayed
+- Creation of Home.vue (views/Home.vue)
+- Creation of a loading animation with Bootstrap spinner (components/Spinner.vue)
+- Creation of ActorDetails.vue that displays detailed information of an actor, including profile picture, Chinese name, Korean name, gender, birthday, and tables of his/her dramas and movies
+- Refer to GAI Prompts/20250813 subfolder for GAI prompt inputs
+
+2025/8/15
+- Creation of DramaPage.vue, DramaList.vue, DramaDetails.vue, dramaService.js, MoviePage.vue, MovieList.vue, MovieDetails.vue and movieService.js
+- Successfully displaying drama and movie information with the mentioned files
+- Successfully enabling the function to import actors and their works to database via lead actors' name links on a drama or movie page, loading behavior to be fixed
+- Refer to GAI Prompts/20250815 subfolder for GAI prompt inputs
+
+2025/8/16
+- Testing all R (out of CRUD) functions of ActorPage, DramaPage and MoviePage and making sure that most of them are fine, including the last few problems discovered on 2025/8/15
+- Fixing problems involving "null air_dates" and "same poster for different seasons of the same drama" in TmdbDramaClient.java
+- Fixing a problem involving "fetching non-Korean works" in TmdbDramaClient.java and TmdbMovieClient.java
+- Enabling the addition of "lastUpdatedByApi" field for dramas and movies
+- Creation of ImportActorPage.vue to import actors based on user's input (chineseName)
+- Refer to GAI Prompts/20250816 subfolder for GAI prompt inputs
+
+2025/8/18
+- Creation of UpdateActorPage.vue to update an actor's information
+  * Including creation of DisplayNameEnumSerializer.java and HasDisplayName.java to handle Json enum displaying issues (sometimes name, sometimes displayName)
+  * Including creation of JacksonConfig.java to config my own ObjectMapper (which creates new issues yet to be fixed)
+- Enabling deletion of a selected actor via clicking on specific links on ActorList.vue
+- Unfortunately there are many issues that are not fully resolved yet
+- Refer to GAI Prompts/20250818 subfolder for GAI prompt inputs
+
+2025/8/19
+- Fixing the issue where for K-dramas, English posters are fetched instead of Traditional Chinese ones
+- Fixing my own ObjectMapper config
+- Fixing issues involving establishing relationships between an actor and a drama
+  * Including skipping duplicate relationships; this is due to an actor playing multiple roles of a single drama that causes TMDB to fetch the drama more than once
+  * Including skipping relationships of a newly-registered actor and a drama season (e.g. that actor is only present in season 1 but not in season 2)
+- Refer to GAI Prompts/20250819 subfolder for GAI prompt inputs
+
+2025/8/20
+- Creation of ImportDramaPage.vue, UpdateDramaPage.vue, ImportMoviePage.vue and UpdateMoviePage.vue
+- Testing CRUD for actors, dramas, movies with no problems (mostly, testing is not that detailed yet)
+- Fixing other minor issues
+- Refer to GAI Prompts/20250820 subfolder for GAI prompt inputs
+
+2025/8/22
+- Addition of a new DramaStatus: NOT_AIRED, as well as revising code involving this addition
+- Revising TmdbDramaClient.java to handle a drama's estRuntimePerEp and currentEpNo correctly
+- Updating and optimizing code related to scraping Taiwanese OTT platforms
+- Creation of PlatformInfoPage.vue, ContactUsPage.vue, ExternalLinksPage.vue and NewReleasesPage.vue
+- Refer to GAI Prompts/20250822 subfolder for GAI prompt inputs
+
+2025/8/24
+- Enabling the function to edit an actor's "biography" and adjusting its length limit
+- Addition of "namuWikiPageUrl" column for all three (Actor, Drama, and Movie) entities
+- Checking all the available functions and code, with minor revisions
+- Changing the backup files' location to a subfolder named "backup"
+- Creation of footer in App.vue to show the TMDB Logo and notice required by TMDB
+- Completing README.md
+- Building both the frontend and the backend projects
+- Uploading the whole system (frontend + backend) to GitHub
+- Refer to GAI Prompts/20250824 subfolder for GAI prompt inputs

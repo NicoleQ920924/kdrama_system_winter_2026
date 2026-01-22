@@ -1,0 +1,117 @@
+@import './autumn_theme.scss';
+
+.normal-dark-text {
+    color:$autumn-text-dark;
+    font-weight:normal;
+}
+h4
+{
+    gap:8px;
+}
+h5
+{
+    margin:5px 0px 15px 0px;
+}
+.modal a
+{
+    text-decoration:none;
+    color:$autumn-dark-brown;
+}
+.modal-title
+{
+    font-size:x-large;
+    font-weight:bolder;
+    margin-left:45%;
+    text-align:center;
+    color:$autumn-dark-brown;
+}
+.stay-login
+{
+    margin-left:40%;
+    margin-bottom:8px;
+    padding-top:10px;
+}
+#stayLoginUser, #stayLoginAdmin
+{
+    outline:1px $autumn-dark-yellow solid;
+}
+.modal-text-p
+{
+    height:28px;
+    margin-top:20px;
+}
+.modal-text-field
+{
+    margin:2px 0px 2px 0px;
+    border:1px $autumn-light solid;
+}
+.vl 
+{
+    border-left:1px solid $autumn-dark-brown;
+    height:24px;
+    margin:0px 8px 0px 8px;
+}
+.modal-btn
+{
+    background-color:$autumn-light-orange;
+    border-color:$autumn-light;
+    width:30%;
+    font-size:large;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+.modal-btn:hover, .modal-btn:active, .modal-btn:focus
+{
+    background-color:$autumn-light-orange;
+    text-decoration:none;
+    outline:none;
+    color:$autumn-dark-brown;
+}
+#email1, #email2, #showLoggedInId, #idToResetPwd
+{
+    color:$autumn-dark-yellow;
+}
+.text-field-eye-icon /* This is the style for fontawesome icons. Please override this code if you want a different color. */
+{
+    position:relative;
+    bottom:32px;
+    left:93%;
+    color:$autumn-light;
+    cursor:pointer;
+}
+#loginSuccessModalLabel, #registerEmailModalLabel, #finishRegisterModalLabel, #forgotPwdModalLabel, #confirmPwdModalLabel, #resetPwdModalLabel, #finishResetPwdModalLabel
+{
+    position:relative;
+    right:20px;
+}
+#normalLogin, #adminLogin
+{
+    display:inline-block;
+    margin:0px 60px;
+}
+.error-msg
+{
+    color:$autumn-red;
+    font-size:12px;
+    margin-left:5px;
+}
+.nav-link.active
+{
+    font-weight:bold;
+    color:$autumn-text-dark !important;
+}
+.nav-link:not(.active)
+{
+    font-weight:normal;
+    color:$autumn-text-light;
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
