@@ -1,3 +1,6 @@
+Below is for kdrama_system_summer_2025
+============================================================================================================
+
 2025/7/21
 - Creation of the project folder "kdrama_system_summer_2025"
 - Creation of backend project with https://start.spring.io/ and frontend project with the "npm create vue@latest" command
@@ -146,3 +149,15 @@
 - Building both the frontend and the backend projects
 - Uploading the whole system (frontend + backend) to GitHub
 - Refer to GAI Prompts/20250824 subfolder for GAI prompt inputs
+
+============================================================================================================
+
+
+Below is for kdrama_system_winter_2026
+============================================================================================================
+
+2026/1/22
+- Creation of the project folder "kdrama_system_winter_2026" locally via GitHub clone repository
+
+
+============================================================================================================

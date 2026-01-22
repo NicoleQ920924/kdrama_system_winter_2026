@@ -13,7 +13,7 @@
 9. 本專案是學習專案，為設計者的備審資料之一，僅利用一個暑假完成，若有設計不足之處，如未如期完成的登入、註冊、追蹤清單等功能，敬請見諒。
 
 # 專案結構 / System Structure
-kdrama_system_summer_2025/   <-- 專案根目錄
+kdrama_system_winter_2026/   <-- 專案根目錄
 ├── backend/                 <-- Spring Boot 原始碼
 │   ├── src/main/java/...    <-- Java 程式碼
 │   ├── src/main/resources/... <-- application.properties.example、其他資源檔
@@ -31,7 +31,7 @@ kdrama_system_summer_2025/   <-- 專案根目錄
 └── LICENSE (optional)       <-- 如果你想附加開源授權
 
 # 軟體要求 / Software Requirements
-後端：Java JDK (17或21)、MySQL Server、Maven
+後端：Java JDK (17+)、MySQL Server、Maven
 前端：Node.js、支援JavaScript的瀏覽器
 爬取資料：TMDB API Key
 
@@ -68,7 +68,7 @@ For a detailed list of resources used or referenced in this project, please see 
 
 ## 著作權 / Copyright
 
-© 2025 Nicole Q. All rights reserved.
+© 2025-2026 Nicole Q. All rights reserved.
 
 本專案程式碼與設計為作者 Nicole Q. 原創，僅供學習與展示用途，未經允許不得用於商業用途。
 作者的GitHub專頁為 https://github.com/NicoleQ920924
