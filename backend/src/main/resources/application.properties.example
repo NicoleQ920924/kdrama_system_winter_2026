@@ -26,3 +26,17 @@ spring.jpa.properties.hibernate.format_sql=true
 # 1. 直接編輯下方 REPLACE_ME_WITH_YOUR_KEY
 # 2. 或設定系統環境變數 TMDB_API_KEY
 tmdb.api.key=${TMDB_API_KEY:REPLACE_ME_WITH_YOUR_KEY}
+
+# === Google Gemini API Key 設定 ===
+# 請至 https://aistudio.google.com/api-keys 取得你的 API Key 和 Project ID
+spring.ai.google.ai.gemini.api-key=${GOOGLE_API_KEY}
+spring.ai.google.ai.gemini.project-id=${GOOGLE_PROJECT_ID}
+spring.ai.google.ai.gemini.model=gemini-2.5-flash-lite
+
+# === PostgreSQL for Vector Store (pgvector) 設定 ===
+spring.ai.vectorstore.pgvector.db-name=kdrama_embeddings
+spring.ai.vectorstore.pgvector.host=localhost
+spring.ai.vectorstore.pgvector.port=5432
+spring.ai.vectorstore.pgvector.user=postgres
+spring.ai.vectorstore.pgvector.password=postgres
+spring.ai.vectorstore.pgvector.init-mode=always
