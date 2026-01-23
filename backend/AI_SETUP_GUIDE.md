@@ -49,6 +49,7 @@ spring.ai.vectorstore.pgvector.port=5432
 spring.ai.vectorstore.pgvector.user=postgres
 spring.ai.vectorstore.pgvector.password=postgres
 spring.ai.vectorstore.pgvector.init-mode=always
+spring.ai.vectorstore.pgvector.enabled=true
 ```
 
 ### 3. New Classes

@@ -161,6 +161,7 @@ Below is for kdrama_system_winter_2026
 
 2026/1/23
 - Test the current system and update some packages
+- Ask GitHub Copilot to install Spring AI, Gemini and PgVectorDB packages (w/ auto-generated AiController, AiService and AiConfiguration)
 
 
 ============================================================================================================

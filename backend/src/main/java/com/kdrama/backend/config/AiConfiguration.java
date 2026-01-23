@@ -8,15 +8,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @Configuration
+@ConditionalOnProperty(name = "spring.ai.vectorstore.pgvector.enabled", havingValue = "true", matchIfMissing = true)
 public class AiConfiguration {
 
     /**
      * Configure PgVectorStore for semantic search using PostgreSQL pgvector extension
      */
-    @Bean
+    /* @Bean
     @ConditionalOnProperty(name = "spring.ai.vectorstore.pgvector.enabled", havingValue = "true", matchIfMissing = true)
     public PgVectorStore vectorStore(JdbcTemplate jdbcTemplate, EmbeddingModel embeddingModel) {
         return PgVectorStore.builder(jdbcTemplate, embeddingModel).build();
-    }
+    } */
 
 }
