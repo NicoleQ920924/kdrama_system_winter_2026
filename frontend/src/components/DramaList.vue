@@ -99,6 +99,9 @@
         <div v-if="!loading" class="text-center bottom-text">
               <router-link class="input-router-link" :to="{ name: 'ImportDramaPage', query: {} }" replace>點我新增韓劇資料</router-link>
         </div>
+        <div v-if="!loading" class="text-center bottom-text">
+              <router-link class="input-router-link" :to="{ name: 'AiImportDramaPage', query: {} }" replace>點我用 AI 依條件搜尋韓劇</router-link>
+        </div>
       </div>
     </transition>
   </div>

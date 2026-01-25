@@ -12,6 +12,8 @@ import UpdateMoviePage from '@/views/UpdateMoviePage.vue';
 import ImportActorPage from '@/views/ImportActorPage.vue';
 import UpdateActorPage from '@/views/UpdateActorPage.vue';
 import AiImportActorPage from '@/views/AiImportActorPage.vue';
+import AiImportDramaPage from '@/views/AiImportDramaPage.vue';
+import AiImportMoviePage from '@/views/AiImportMoviePage.vue';
 import PlatformInfoPage from '@/views/PlatformInfoPage.vue';
 import ContactUsPage from '@/views/ContactUsPage.vue';
 import ExternalLinksPage from '@/views/ExternalLinksPage.vue';
@@ -53,6 +55,11 @@ const routes = [
     component: ImportDramaPage
   },
   {
+    path: '/ai-import-k-drama',
+    name: 'AiImportDramaPage',
+    component: AiImportDramaPage
+  },
+  {
     path: '/update-k-drama',
     name: 'UpdateDramaPage',
     component: UpdateDramaPage
@@ -61,6 +68,11 @@ const routes = [
     path: '/import-k-movie',
     name: 'ImportMoviePage',
     component: ImportMoviePage
+  },
+  {
+    path: '/ai-import-k-movie',
+    name: 'AiImportMoviePage',
+    component: AiImportMoviePage
   },
   {
     path: '/update-k-movie',

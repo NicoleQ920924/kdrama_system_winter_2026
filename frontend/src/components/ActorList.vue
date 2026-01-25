@@ -94,6 +94,8 @@
 
         <div v-if="!loading" class="text-center bottom-text">
             <router-link class="input-router-link" :to="{ name: 'ImportActorPage', query: {} }" replace>點我新增演員資料</router-link>
+        </div>
+        <div v-if="!loading" class="text-center bottom-text">
             <router-link class="input-router-link" :to="{ name: 'AiImportActorPage', query: {} }" replace>點我用 AI 依角色搜尋演員</router-link>
         </div>
 

@@ -111,6 +111,9 @@
         <div v-if="!loading" class="text-center bottom-text">
               <router-link class="input-router-link" :to="{ name: 'ImportMoviePage', query: {} }" replace>點我新增韓影資料</router-link>
         </div>
+        <div v-if="!loading" class="text-center bottom-text">
+              <router-link class="input-router-link" :to="{ name: 'AiImportMoviePage', query: {} }" replace>點我用 AI 依條件搜尋韓影</router-link>
+        </div>
       </div>
     </transition>
   </div>
