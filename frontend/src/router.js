@@ -11,6 +11,7 @@ import ImportMoviePage from '@/views/ImportMoviePage.vue';
 import UpdateMoviePage from '@/views/UpdateMoviePage.vue';
 import ImportActorPage from '@/views/ImportActorPage.vue';
 import UpdateActorPage from '@/views/UpdateActorPage.vue';
+import AiImportActorPage from '@/views/AiImportActorPage.vue';
 import PlatformInfoPage from '@/views/PlatformInfoPage.vue';
 import ContactUsPage from '@/views/ContactUsPage.vue';
 import ExternalLinksPage from '@/views/ExternalLinksPage.vue';
@@ -70,6 +71,11 @@ const routes = [
     path: '/import-k-actor',
     name: 'ImportActorPage',
     component: ImportActorPage
+  },
+  {
+    path: '/ai-import-k-actor',
+    name: 'AiImportActorPage',
+    component: AiImportActorPage
   },
   {
     path: '/update-k-actor',
