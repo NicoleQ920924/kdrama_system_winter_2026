@@ -1,7 +1,7 @@
 List of References
 
 1. Online Third-Party Resources
-- Official Documentation of Spring Boot (backend): https://spring.io/projects/spring-boot
+- Official Documentation of Spring (backend): https://spring.io/
 - Official Documentation of Vue.js (frontend): https://vuejs.org/
 - MyDramaList: https://mydramalist.com/
 - The Movie Database (TMDB), including TMDB APIs for personal use
@@ -20,7 +20,8 @@ List of References
 - Axios: https://axios-http.com/docs/intro
 - W3Schools: https://www.w3schools.com/
 - Jackson & Java LocalDateTime Issue: https://www.javacodegeeks.com/jackson-java-8-date-time-localdate-support-issues.html
-- Generative AI (such as ChatGPT): Refer to the subfolder "GAI Prompts" for screenshots of prompts; other prompts include simple Google searches and Google Gemini prompts (much fewer)
+- Cursor (Let AI agent help write code): https://cursor.com/?from=home
+- Generative AI (such as ChatGPT): Refer to the subfolder "GAI Prompts" in kdrama_system_summer_2025 project folder for screenshots of prompts; other prompts include simple Google searches and Google Gemini prompts (much fewer)
 
 2. Original Content Created by the Designer: Commercial use is prohibited
 - Figma Prototype Link: https://www.figma.com/design/2QaUITWlMZ5K7iSIpjDvBw/Kdrama-System?node-id=0-1&p=f&t=8fH5c6Fol75TyrFe-0
