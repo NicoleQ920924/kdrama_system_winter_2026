@@ -181,7 +181,7 @@
                         <div class="form-control platform-box">
                             <label v-for="p in platforms" :key="p.name" class="platform-item">
                                 <input v-model="selectedPlatforms" type="checkbox" :value="p.name">
-                                Available on {{ p.name }}
+                                {{ p.name }}
                             </label>
                         </div>
                     </div>
