@@ -165,7 +165,7 @@ Below is for kdrama_system_winter_2026
 
 2026/1/25
 - Add frontend files for AI import actors, dramas and movies
-- Modify PlatformInfoPage.vue to satisfy the following (from my document for kdrama_system_summer_2025):
+- Modify PlatformInfoPage.vue to satisfy the following (from my document "2025暑假 (大三暑假) 韓國影視管理系統_文件"):
 "本專案目前僅有台灣人可使用的影音平台一覽表，後續可以新增多個列表，顯示每個影音平台分別有上架且有存在資料庫的作品"
 * Most work done by Cursor
 
