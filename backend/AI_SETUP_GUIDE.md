@@ -46,8 +46,8 @@ spring.ai.google.ai.gemini.model=gemini-2.5-flash-lite
 spring.ai.vectorstore.pgvector.db-name=kdrama_embeddings
 spring.ai.vectorstore.pgvector.host=localhost
 spring.ai.vectorstore.pgvector.port=5432
-spring.ai.vectorstore.pgvector.user=postgres
-spring.ai.vectorstore.pgvector.password=postgres
+spring.ai.vectorstore.pgvector.user={username}
+spring.ai.vectorstore.pgvector.password={password}
 spring.ai.vectorstore.pgvector.init-mode=always
 spring.ai.vectorstore.pgvector.enabled=true
 ```
