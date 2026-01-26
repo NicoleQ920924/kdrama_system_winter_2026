@@ -1,6 +1,0 @@
-Help me fix:
-Read all the frontend files and backend files to change all the "中華電信Hami Video" to "Hami Video"
-except for the display of PlatformInfoPage.vue
-(You can refer to the matter of 遠傳friDay影音 and friDay影音)
-
-Then, run a test on all the dramas and movies available on Hami Video to update the information on DB.
