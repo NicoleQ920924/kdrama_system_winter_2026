@@ -170,6 +170,8 @@ Below is for kdrama_system_winter_2026
 * Most work done by Cursor
 
 2026/1/26
-- Fix most "中華電信Hami Video" in code to "Hami Video" 
+- Fix most "中華電信Hami Video" in code to "Hami Video"
+- Complete the first version of AI Import drama backend
+* Most work done by GitHub Copilot
 
 ============================================================================================================

@@ -239,6 +239,14 @@
         resize: vertical;
         min-height: 90px;
     }
+    .form-text-field::placeholder {
+        color: #ccc;
+        opacity: 0.9;
+    }
+    .form-textarea::placeholder {
+        color: #ccc;
+        opacity: 0.9;
+    }
     h6 {
         font-weight:normal;
         margin:2px 0px;

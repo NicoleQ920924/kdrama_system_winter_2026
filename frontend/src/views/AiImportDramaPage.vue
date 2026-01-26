@@ -1,7 +1,8 @@
 <script setup>
     import { computed, ref } from 'vue'
     import Spinner from '@/components/Spinner.vue'
-    import { generateAiResponse } from '@/services/aiService'
+    import AiDramaSearchResultModal from '@/components/modals/AiDramaSearchResultModal.vue'
+    import { searchDramasByPrompt } from '@/services/aiService'
     import { useRouter } from 'vue-router'
 
     const router = useRouter()
@@ -9,7 +10,8 @@
     const loading = ref(false)
     const msg = ref('')
     const msgClass = ref('')
-    const aiResponse = ref('')
+    const searchResults = ref([])
+    const showSearchModal = ref(false)
 
     const actorName1 = ref('')
     const actorName2 = ref('')
@@ -58,7 +60,7 @@
 
     const promptToSend = computed(() => {
         const lines = []
-        lines.push('請搜尋一個韓劇，並根據以下條件挑選最符合的一部（若不確定請列出 3 個候選並簡述理由）。')
+        lines.push('請搜尋一個韓劇，並根據以下條件挑選最符合的一部（若不確定請列出 3 個候選）。')
 
         if (pickedActors.value.length) lines.push(`- 演員：${pickedActors.value.join('、')}`)
         if (pickedCharacters.value.length) lines.push(`- 角色名稱：${pickedCharacters.value.join('、')}`)
@@ -67,7 +69,7 @@
         if (pickedGenres.value.length) lines.push(`- 類型：${pickedGenres.value.join('、')}`)
         if (pickedPlatforms.value.length) lines.push(`- 台灣可觀看平台（越符合越好）：${pickedPlatforms.value.join('、')}`)
 
-        lines.push('請用繁體中文回覆，並包含：作品名稱（中/英/韓如可）、簡短介紹、主要演員、以及為何符合上述條件。')
+        lines.push('請用繁體中文回覆，並以 JSON 格式提供劇名和簡介。')
         return lines.join('\n')
     })
 
@@ -76,7 +78,8 @@
 
         msg.value = ''
         msgClass.value = ''
-        aiResponse.value = ''
+        searchResults.value = []
+        showSearchModal.value = false
 
         if (!hasAnyCoreCriteria.value) {
             msg.value = '送出前請至少填寫：任一位演員 / 任一個角色 / 角色描述 / 劇情片段'
@@ -86,11 +89,18 @@
 
         loading.value = true
         try {
-            const res = await generateAiResponse(promptToSend.value)
+            const res = await searchDramasByPrompt(promptToSend.value)
             if (res.status === 200) {
-                aiResponse.value = res.data?.response ?? ''
-                msg.value = 'AI 搜尋完成！'
-                msgClass.value = 'success-msg text-center'
+                const results = res.data?.results ?? []
+                if (results.length > 0) {
+                    searchResults.value = results
+                    showSearchModal.value = true
+                    msg.value = 'AI 搜尋完成！請點擊下方劇名加入資料庫'
+                    msgClass.value = 'success-msg text-center'
+                } else {
+                    msg.value = 'AI 未能找到符合條件的韓劇，請重新搜尋'
+                    msgClass.value = 'error-msg text-center'
+                }
             }
         } catch (err) {
             console.error(err)
@@ -104,10 +114,29 @@
     function backToDramaList() {
         router.push({ name: 'DramaPage', query: {} })
     }
+
+    function closeSearchModal() {
+        showSearchModal.value = false
+    }
+
+    function handleDramaAdded(drama) {
+        // Called when user successfully adds a drama
+        closeSearchModal()
+        // Navigate to the newly added drama's details page
+        router.push({ name: 'DramaPage', query: { id: drama.dramaId } })
+    }
 </script>
 
 <template>
     <div>
+        <!-- AI Search Result Modal -->
+        <AiDramaSearchResultModal 
+            v-if="showSearchModal"
+            :searchResults="searchResults"
+            @close="closeSearchModal"
+            @drama-added="handleDramaAdded"
+        />
+
         <h2>AI 搜尋韓劇（依條件）</h2>
 
         <transition name="fade" mode="out-in">
@@ -204,12 +233,7 @@
 
                 <div :class="msgClass">{{ msg }}</div>
 
-                <div v-if="aiResponse" class="response-wrap">
-                    <h5 class="text-center response-title">AI 回覆</h5>
-                    <pre class="form-control response-pre">{{ aiResponse }}</pre>
-                </div>
-
-                <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">
+                <div v-if="msgClass == 'success-msg text-center'" class="text-center">
                     <button class="btn back-btn text-center" @click="backToDramaList">返回韓劇列表</button>
                 </div>
             </div>
@@ -238,6 +262,14 @@
     .form-textarea {
         resize: vertical;
         min-height: 90px;
+    }
+    .form-text-field::placeholder {
+        color: #ccc;
+        opacity: 0.9;
+    }
+    .form-textarea::placeholder {
+        color: #ccc;
+        opacity: 0.9;
     }
     h6 {
         font-weight:normal;
@@ -296,24 +328,6 @@
         color:$autumn-dark-orange;
         font-size:large;
         margin:25px 0px;
-    }
-    .response-wrap {
-        margin: 10px 0px 20px 0px;
-    }
-    .response-title {
-        margin: 10px 0px;
-        font-weight: normal;
-        color: $autumn-dark-brown;
-    }
-    .response-pre {
-        margin: 0px auto;
-        width: 90%;
-        max-width: 1100px;
-        border: 1px $autumn-light solid;
-        padding: 12px 14px;
-        white-space: pre-wrap;
-        word-break: break-word;
-        background: rgba(255, 255, 255, 0.6);
     }
     .back-btn
     {

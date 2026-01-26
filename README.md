@@ -35,7 +35,7 @@ kdrama_system_winter_2026/   <-- 專案根目錄
 前端：Node.js、支援JavaScript的瀏覽器
 爬取資料：TMDB API Key
 
-# 後端、MySQL 資料庫、TMDB API Key 設定方式 / Backend, MySQL and API Key Configuration
+# 後端、MySQL 資料庫、TMDB API Key 等資料的設定方式 / Backend, MySQL, API Key, etc. Configuration
 1. 在Terminal執行 cp application.properties.example application.properties 以複製.example範例檔並建立 application.properties
 2. 開啟 application.properties 並根據註解的提示編輯各欄位，設定自己的MySQL資料庫和帳密等私密資訊
 3. 在Terminal執行cd backend，再執行./mvnw spring-boot:run 或者透過IDE執行BackendApplication.java檔案，以執行專案和確定有設定成功

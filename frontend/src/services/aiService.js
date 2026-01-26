@@ -6,3 +6,10 @@ export const generateAiResponse = (prompt) => {
   return axios.post(`${API_BASE}/generate`, { prompt });
 };
 
+/**
+ * Search for dramas based on user criteria
+ * Returns top 3 results with titles and summaries
+ */
+export const searchDramasByPrompt = (prompt) => {
+  return axios.post(`${API_BASE}/drama/search`, { prompt });
+};

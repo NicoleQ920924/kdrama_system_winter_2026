@@ -136,7 +136,6 @@
 		<dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-google-genai</artifactId>
-			<version>1.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
@@ -160,27 +159,24 @@
 			<version>0.1.1</version>
 		</dependency>
 
-		<!-- Vector Store Support -->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
-			<version>1.1.2</version>
-		</dependency>
-
-		<!-- Document Processing -->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-pdf-document-reader</artifactId>
-			<version>1.1.2</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.12.1</version>
+				<configuration>
+					<release>25</release>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.42</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
