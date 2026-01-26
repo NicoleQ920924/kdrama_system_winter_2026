@@ -14,7 +14,7 @@
     { key: "Amazon Prime Video", name: "Amazon Prime Video", country: "美國", url: "https://www.primevideo.com", class: "prime-video"},
     { key: "Apple TV", name: "Apple TV", country: "美國", url: "https://tv.apple.com", class: "apple-tv"},
     { key: "HBO Max", name: "HBO Max", country: "美國", url: "https://www.hbomax.com/tw", class: "hbo-max"},
-    { key: "中華電信Hami Video", name: "中華電信Hami Video", country: "台灣", url: "https://hamivideo.hinet.net", class: "hami-video"},
+    { key: "Hami Video", name: "中華電信Hami Video", country: "台灣", url: "https://hamivideo.hinet.net", class: "hami-video"},
     // Display name can be "遠傳friDay影音", but the DB key is "friDay影音"
     { key: "friDay影音", name: "遠傳friDay影音", country: "台灣", url: "https://video.friday.tw", class: "friday-video"},
     { key: "MyVideo", name: "MyVideo", country: "台灣", url: "https://www.myvideo.net.tw", class: "myvideo"},

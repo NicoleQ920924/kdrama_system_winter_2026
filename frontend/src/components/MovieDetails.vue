@@ -90,7 +90,7 @@ function getPlatformClass(platform) {
     else if (platform == "Amazon Prime Video") {
         return "prime-video"
     }
-    else if (platform == "中華電信Hami Video") {
+    else if (platform == "Hami Video") {
         return "hami-video"
     }
     else if (platform == "friDay影音") {

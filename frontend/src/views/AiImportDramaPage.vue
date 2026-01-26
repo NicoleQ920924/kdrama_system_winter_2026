@@ -32,7 +32,7 @@
         { name: "Amazon Prime Video" },
         { name: "Apple TV" },
         { name: "HBO Max" },
-        { name: "中華電信Hami Video" },
+        { name: "Hami Video" },
         { name: "遠傳friDay影音" },
         { name: "MyVideo" },
         { name: "LINE TV" },
