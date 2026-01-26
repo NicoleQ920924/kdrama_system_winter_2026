@@ -2,6 +2,7 @@ package com.kdrama.backend.util;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Scanner;
@@ -63,7 +64,7 @@ public class JsonNodeRequest {
     // Separate logic for fetching Json
     private static JsonNode fetchJson(String requestUrl) {
         try {
-            URL url = new URL(requestUrl);
+            URL url = URI.create(requestUrl).toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
         
