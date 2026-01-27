@@ -174,4 +174,7 @@ Below is for kdrama_system_winter_2026
 - Complete the first version of AI Import drama backend
 * Most work done by GitHub Copilot
 
+2026/1/27
+- Improve AI Import Drama Backend (New Search Field + Improved Redirect)
+
 ============================================================================================================
