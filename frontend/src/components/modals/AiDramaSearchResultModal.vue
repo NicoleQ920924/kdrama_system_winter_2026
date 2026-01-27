@@ -1,8 +1,12 @@
 <!-- AI Drama Search Result Modal -->
+<!-- Used in AiImportDramaPage.vue -->
 <!-- Similar to FinishRegistrationModal.vue design -->
 <script setup>
     import { defineProps, defineEmits, ref } from 'vue'
-    import { importDrama } from '@/services/dramaService'
+    import { useRouter } from 'vue-router'
+    import { importDrama, findSelectedDramaByChineseName } from '@/services/dramaService'
+
+    const router = useRouter()
 
     const props = defineProps({
         searchResults: {
@@ -11,13 +15,35 @@
         }
     })
 
-    const emit = defineEmits(['close', 'drama-added'])
+    const emit = defineEmits(['close'])
 
     const loadingDramas = ref([]) // for handleDramaClick()
+    const addedDramas = ref({}) // maps dramaTitle to dramaId
+
+    const loadedDrama = ref({})
+    const loading = ref(false)
+
+    function loadDrama(name) {
+        loading.value = true;
+        findSelectedDramaByChineseName(name)
+            .then(res => {
+            loadedDrama.value = res.data;
+            })
+            .catch(err => console.error(err))
+            .finally(() => 
+                loading.value = false
+            )
+    }
 
     async function handleDramaClick(dramaTitle) {
+        // If already added, navigate to the drama page
+        if (addedDramas.value[dramaTitle]) {
+            router.push({ name: 'DramaPage', query: { id: addedDramas.value[dramaTitle] } })
+            return
+        }
+
         // Return while loading
-        if (loadingDramas.value.includes(dramaTitle)) return;
+        if (loadingDramas.value.includes(dramaTitle) || loading.value) return;
 
         // Add loading status
         loadingDramas.value.push(dramaTitle)
@@ -30,15 +56,24 @@
                 const dramas = response.data
                 if (dramas.length > 0) {
                     const firstDrama = dramas[0]
-                    emit('drama-added', firstDrama)
+                    // Store the drama ID so the link becomes clickable
+                    addedDramas.value[dramaTitle] = firstDrama.dramaId
                     alert(`成功將 ${dramaTitle} 加入資料庫！`)
-                    emit('close')
+                    // Don't emit 'close' - let user click the transformed link or close with X button
                 }
             }
         } catch (error) {
             console.error('Error importing drama:', error)
             if (error.response && error.response.status === 409) {
+                // Drama already exists - treat it as added
                 alert(`${dramaTitle} 已存在資料庫中`)
+                // We need to fetch the drama ID from the DB
+                loadDrama(dramaTitle)
+                // Wait until loadedDrama is set
+                while (loading.value) {
+                    await new Promise(resolve => setTimeout(resolve, 100))
+                }
+                addedDramas.value[dramaTitle] = loadedDrama.value.dramaId
             } else {
                 alert(`加入 ${dramaTitle} 時發生錯誤，請稍後重試`)
             }
@@ -66,18 +101,32 @@
                             
                             <ol class="result-list">
                                 <li v-for="(drama, index) in searchResults" :key="index" class="result-item">
+                                    <!-- Button before drama is added -->
                                     <button 
+                                        v-if="!addedDramas[drama.title]"
                                         class="drama-title-btn border-0"
                                         @click="handleDramaClick(drama.title)"
                                         :disabled="loadingDramas.includes(drama.title)"
                                     >
                                         {{ drama.title }}
                                     </button>
+
+                                    <!-- Link after drama is added -->
+                                    <router-link 
+                                        v-else
+                                        :to="{ name: 'DramaPage', query: { id: addedDramas[drama.title] } }"
+                                        class="drama-title-link"
+                                    >
+                                        {{ drama.title }}
+                                    </router-link>
+
                                     <span class="drama-summary">({{ drama.summary }})</span>
                                 </li>
                             </ol>
 
                             <div class="result-footer">
+                                <p v-if="addedDramas === null || Object.keys(addedDramas).length === 0">可以點擊連結將此韓劇加入資料庫</p>
+                                <p v-else>新增成功或者是資料庫已經有此韓劇時，可以點擊連結前往該韓劇頁面</p>
                                 <p>若想重新搜尋，請關閉此視窗，並再填入一次搜尋表單</p>
                             </div>
                         </div>
@@ -136,6 +185,25 @@
             &:disabled {
                 opacity: 0.6;
                 cursor: not-allowed;
+            }
+        }
+
+        .drama-title-link {
+            background: none;
+            padding: 0;
+            margin: 0;
+            color: $autumn-dark-orange;
+            text-decoration: underline;
+            font-size: 1em;
+            font-weight: 500;
+
+            &:hover {
+                color: $autumn-dark-brown;
+                text-decoration-color: $autumn-dark-brown;
+            }
+
+            &:active {
+                color: $autumn-light-orange;
             }
         }
 

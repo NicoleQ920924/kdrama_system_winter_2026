@@ -13,6 +13,8 @@
     const searchResults = ref([])
     const showSearchModal = ref(false)
 
+    const dramaIncludeString = ref('')
+
     const actorName1 = ref('')
     const actorName2 = ref('')
     const actorName3 = ref('')
@@ -50,7 +52,8 @@
     const pickedPlatforms = computed(() => (selectedPlatforms.value ?? []).map(trimmed).filter(Boolean))
 
     const hasAnyCoreCriteria = computed(() => {
-        return pickedActors.value.length > 0 ||
+        return dramaIncludeString.value !== '' ||
+            pickedActors.value.length > 0 ||
             pickedCharacters.value.length > 0 ||
             trimmed(characterDescription.value) !== '' ||
             trimmed(partOfPlot.value) !== ''
@@ -62,6 +65,7 @@
         const lines = []
         lines.push('請搜尋一個韓劇，並根據以下條件挑選最符合的一部（若不確定請列出 3 個候選）。')
 
+        if (dramaIncludeString.value !== '') lines.push(`- 劇名包含的字串：${dramaIncludeString.value}`)
         if (pickedActors.value.length) lines.push(`- 演員：${pickedActors.value.join('、')}`)
         if (pickedCharacters.value.length) lines.push(`- 角色名稱：${pickedCharacters.value.join('、')}`)
         if (trimmed(characterDescription.value) !== '') lines.push(`- 角色描述：${trimmed(characterDescription.value)}`)
@@ -82,7 +86,7 @@
         showSearchModal.value = false
 
         if (!hasAnyCoreCriteria.value) {
-            msg.value = '送出前請至少填寫：任一位演員 / 任一個角色 / 角色描述 / 劇情片段'
+            msg.value = '送出前請至少填寫：劇名包含的字串 / 任一位演員 / 任一個角色 / 角色描述 / 劇情片段'
             msgClass.value = 'error-msg text-center'
             return
         }
@@ -95,7 +99,7 @@
                 if (results.length > 0) {
                     searchResults.value = results
                     showSearchModal.value = true
-                    msg.value = 'AI 搜尋完成！請點擊下方劇名加入資料庫'
+                    msg.value = 'AI 搜尋完成！請點擊彈出視窗裡的劇名加入資料庫'
                     msgClass.value = 'success-msg text-center'
                 } else {
                     msg.value = 'AI 未能找到符合條件的韓劇，請重新搜尋'
@@ -118,13 +122,6 @@
     function closeSearchModal() {
         showSearchModal.value = false
     }
-
-    function handleDramaAdded(drama) {
-        // Called when user successfully adds a drama
-        closeSearchModal()
-        // Navigate to the newly added drama's details page
-        router.push({ name: 'DramaPage', query: { id: drama.dramaId } })
-    }
 </script>
 
 <template>
@@ -134,7 +131,6 @@
             v-if="showSearchModal"
             :searchResults="searchResults"
             @close="closeSearchModal"
-            @drama-added="handleDramaAdded"
         />
 
         <h2>AI 搜尋韓劇（依條件）</h2>
@@ -146,6 +142,10 @@
 
             <div v-else key="form">
                 <form class="form" method="post">
+                    <p class="form-group form-text-p">
+                        <label for="dramaIncludeString" class="form-label">劇名包含的字串</label>
+                        <input v-model="dramaIncludeString" id="dramaIncludeString" class="form-control form-text-field" name="dramaIncludeString" placeholder="例如：太陽, 月亮, 沒關係">
+                    </p>
                     <p class="form-group form-text-p">
                         <label for="actorName1" class="form-label">演員姓名 1</label>
                         <input v-model="actorName1" id="actorName1" class="form-control form-text-field" name="actorName1" placeholder="例如：朴寶劍">
@@ -216,7 +216,7 @@
                     </div>
 
                     <div class="input-msg text-center">
-                        送出前請至少填寫：任一位演員 / 任一個角色 / 角色描述 / 劇情片段（其他欄位可選填）。
+                        送出前請至少填寫：劇名包含的字串 / 任一位演員 / 任一個角色 / 角色描述 / 劇情片段（其他欄位可選填）。
                     </div>
 
                     <div class="text-center">

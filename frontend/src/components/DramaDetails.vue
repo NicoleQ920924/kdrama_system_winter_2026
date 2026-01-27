@@ -1,7 +1,7 @@
 <!-- Imported in DramaPage.vue -->
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { findSelectedDrama } from '@/services/dramaService'
+import { findSelectedDramaById } from '@/services/dramaService'
 import { importActor } from '@/services/actorService'
 import Spinner from './Spinner.vue'
 
@@ -18,7 +18,7 @@ const loadingActors = ref([]) // for handleActorClick()
 
 function loadDrama() {
   loading.value = true;
-  findSelectedDrama(props.selectedDramaId)
+  findSelectedDramaById(props.selectedDramaId)
     .then(res => {
       drama.value = res.data;
     })

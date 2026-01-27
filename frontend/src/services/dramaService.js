@@ -13,9 +13,15 @@ export const findDramas = (displayNameMode) => {
   });
 };
 
-export const findSelectedDrama = (id, displayNameMode) => {
+export const findSelectedDramaById = (id, displayNameMode) => {
   return axios.get(`${API_BASE}/${id}`, {
     params: { displayNameMode }
+  });
+};
+
+export const findSelectedDramaByChineseName = (chineseName, displayNameMode) => {
+  return axios.get(`${API_BASE}/chineseName`, {
+    params: { chineseName, displayNameMode }
   });
 };
 

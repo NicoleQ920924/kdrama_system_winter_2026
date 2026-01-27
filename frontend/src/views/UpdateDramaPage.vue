@@ -1,6 +1,6 @@
 <script setup>
     import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-    import { findSelectedDrama, updateSelectedDramaViaApi, updateSelectedDramaAllInfo } from '@/services/dramaService'
+    import { findSelectedDramaById, updateSelectedDramaViaApi, updateSelectedDramaAllInfo } from '@/services/dramaService'
     import Spinner from '@/components/Spinner.vue'
     import { useRoute, useRouter } from 'vue-router'
 
@@ -151,7 +151,7 @@
 
     function loadDrama() {
         loading.value = true;
-        findSelectedDrama(selectedDramaId.value, false) // displayNameMode = false -> value = MALE / FEMALE
+        findSelectedDramaById(selectedDramaId.value, false) // displayNameMode = false -> value = MALE / FEMALE
         .then(res => {
             const data = res.data
             Object.assign(updatedDrama, data)

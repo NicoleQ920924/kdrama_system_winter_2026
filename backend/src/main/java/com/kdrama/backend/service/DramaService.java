@@ -224,6 +224,11 @@ public class DramaService {
 
     // R4: Get information of dramas identified by Chinese title
     public Optional<List<Drama>> getDramasByChineseName(@PathVariable String chineseName) {
+        return dramaRepository.findAllByChineseName(chineseName);
+    }
+
+    // R5: Get information of a drama identified by Chinese title
+    public Optional<Drama> getDramaByChineseName(@PathVariable String chineseName) {
         return dramaRepository.findByChineseName(chineseName);
     }
 

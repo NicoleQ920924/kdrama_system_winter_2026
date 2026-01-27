@@ -72,11 +72,39 @@ public class DramaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<JsonNode> findSelectedDrama(
+    public ResponseEntity<JsonNode> findSelectedDramaById(
         @PathVariable Integer id,
         @RequestParam(required = false, defaultValue = "true") boolean displayNameMode) {
         
         Optional<Drama> optionalDrama = dramaService.getDramaById(id);
+        if (optionalDrama.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204
+        }
+        
+        Drama drama = optionalDrama.get();
+
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Enum.class, new DisplayNameEnumSerializer(displayNameMode));
+
+        ObjectMapper mapper = objectMapper.copy();
+        mapper.registerModule(module);
+
+        try {
+            // Return JsonNode to frontend
+            JsonNode jsonNode = mapper.valueToTree(drama);
+            return ResponseEntity.ok(jsonNode);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/chineseName")
+    public ResponseEntity<JsonNode> findSelectedDramaByChineseName(
+        @RequestParam String chineseName,
+        @RequestParam(required = false, defaultValue = "true") boolean displayNameMode) {
+        
+        Optional<Drama> optionalDrama = dramaService.getDramaByChineseName(chineseName);
         if (optionalDrama.isEmpty()) {
             return ResponseEntity.noContent().build(); // 204
         }
