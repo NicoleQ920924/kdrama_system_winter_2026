@@ -15,11 +15,6 @@
     "description": "A description for 'spring.ai.google.genai.api-key'"
   },
   {
-    "name": "spring.ai.google.genai.model",
-    "type": "java.lang.String",
-    "description": "A description for 'spring.ai.google.genai.model'"
-  },
-  {
     "name": "spring.ai.vectorstore.pgvector.db-name",
     "type": "java.lang.String",
     "description": "A description for 'spring.ai.vectorstore.pgvector.db-name'"
