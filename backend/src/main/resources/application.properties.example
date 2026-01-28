@@ -33,7 +33,7 @@ tmdb.api.key=${TMDB_API_KEY:REPLACE_ME_WITH_YOUR_KEY}
 spring.ai.google.genai.api-key=${GOOGLE_GEMINI_API_KEY}
 spring.ai.google.genai.project-id=${GOOGLE_GEMINI_PROJECT_ID}
 spring.ai.google.genai.chat.options.model=gemini-3-flash-preview
-spring.ai.google.genai.chat.options.thinking-level=THINKING_LEVEL_UNSPECIFIED
+spring.ai.google.genai.chat.options.thinking-level=LOW
 
 # === PostgreSQL for Vector Store (pgvector) 設定 ===
 # 請將 {} 裡的資料替換為自己的向量資料庫帳號和密碼

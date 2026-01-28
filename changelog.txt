@@ -177,4 +177,7 @@ Below is for kdrama_system_winter_2026
 2026/1/27
 - Improve AI Import Drama Backend (New Search Field + Improved Redirect)
 
+2026/1/28
+- Upgrade Gemini Model to Gemini 3 Flash (for better AI Search results)
+
 ============================================================================================================
