@@ -179,5 +179,7 @@ Below is for kdrama_system_winter_2026
 
 2026/1/28
 - Upgrade Gemini Model to Gemini 3 Flash (for better AI Search results)
+- Refine AI Import Drama Prompt
+- Enable AI Update Drama
 
 ============================================================================================================
