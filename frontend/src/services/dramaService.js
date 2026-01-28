@@ -29,8 +29,12 @@ export const updateSelectedDramaViaApi = (id) => {
   return axios.put(`${API_BASE}/apiupdate/${id}`, {});
 };
 
-export const updateSelectedDramaAllInfo = (id, updatedDrama) => {
-  return axios.put(`${API_BASE}/allupdate/${id}`, updatedDrama);
+export const updateSelectedDramaViaAiAndForm = (id, dramaToUpdate) => {
+  return axios.put(`${API_BASE}/aiupdate/${id}`, dramaToUpdate);
+};
+
+export const updateSelectedDramaViaForm = (id, dramaToUpdate) => {
+  return axios.put(`${API_BASE}/allupdate/${id}`, dramaToUpdate);
 };
 
 export const deleteSelectedDrama = (id) => {

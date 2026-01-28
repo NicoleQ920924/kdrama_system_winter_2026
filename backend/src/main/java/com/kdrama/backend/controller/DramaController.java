@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kdrama.backend.model.Drama;
+import com.kdrama.backend.service.AiService;
 import com.kdrama.backend.service.DramaService;
 import com.kdrama.backend.util.DisplayNameEnumSerializer;
 
@@ -24,9 +25,12 @@ public class DramaController {
     private DramaService dramaService;
 
     private final ObjectMapper objectMapper;
+    
+    private AiService aiService;
 
-    public DramaController(ObjectMapper objectMapper) {
+    public DramaController(ObjectMapper objectMapper, AiService aiService) {
         this.objectMapper = objectMapper;
+        this.aiService = aiService;
     }
 
     @PostMapping("/import")
@@ -147,9 +151,16 @@ public class DramaController {
         }
     }
 
+    @PutMapping("/aiupdate/{id}")
+    public ResponseEntity<?> updateSelectedDramaViaAiAndForm(@PathVariable Integer id, @RequestBody Drama dramaToUpdate) {
+       Drama aiUpdated = aiService.aiUpdateDramaInfo(dramaToUpdate);
+       Drama drama = dramaService.updateDrama(id, aiUpdated, false);
+       return ResponseEntity.ok(drama);
+    }
+
     @PutMapping("/allupdate/{id}")
-    public ResponseEntity<Drama> updateSelectedDramaAllInfo(@PathVariable Integer id, @RequestBody Drama updatedDrama) {
-        Drama drama = dramaService.updateDrama(id, updatedDrama, false);
+    public ResponseEntity<Drama> updateSelectedDramaViaForm(@PathVariable Integer id, @RequestBody Drama dramaToUpdate) {
+        Drama drama = dramaService.updateDrama(id, dramaToUpdate, false);
         return ResponseEntity.ok(drama);
     }
 

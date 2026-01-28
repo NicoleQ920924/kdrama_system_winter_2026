@@ -233,50 +233,53 @@ public class DramaService {
     }
 
     // U1: Update a drama
-    public Drama updateDrama(@PathVariable Integer id, @RequestBody Drama updatedDrama, boolean apiMode) {
+    public Drama updateDrama(@PathVariable Integer id, @RequestBody Drama dramaToUpdate, boolean apiMode) {
         return dramaRepository.findById(id)
                 .map(drama -> {
-                    drama.setTmdbId(updatedDrama.getTmdbId());
-                    drama.setSeasonNumber(updatedDrama.getSeasonNumber());
+                    drama.setTmdbId(dramaToUpdate.getTmdbId());
+                    drama.setSeasonNumber(dramaToUpdate.getSeasonNumber());
                     if ((drama.getChineseName().isEmpty() && apiMode) || !apiMode) {
-                        drama.setChineseName(updatedDrama.getChineseName());
+                        drama.setChineseName(dramaToUpdate.getChineseName());
                     }
                     if ((drama.getEnglishName().isEmpty() && apiMode) || !apiMode) {
-                        drama.setEnglishName(updatedDrama.getEnglishName());
+                        drama.setEnglishName(dramaToUpdate.getEnglishName());
                     }
                     if ((drama.getKoreanName().isEmpty() && apiMode) || !apiMode) {
-                        drama.setKoreanName(updatedDrama.getKoreanName());
+                        drama.setKoreanName(dramaToUpdate.getKoreanName());
                     }
-                    drama.setTotalNumOfEps(updatedDrama.getTotalNumOfEps());
-                    drama.setCurrentEpNo(updatedDrama.getCurrentEpNo());
-                    drama.setEstRuntimePerEp(updatedDrama.getEstRuntimePerEp());
-                    drama.setKrAgeRestriction(updatedDrama.getKrAgeRestriction());
-                    drama.setReleaseYear(updatedDrama.getReleaseYear());
-                    drama.setStatus(updatedDrama.getStatus());
-                    drama.setKrReleaseSchedule(updatedDrama.getKrReleaseSchedule());
-                    drama.setGenres(updatedDrama.getGenres());
-                    drama.setNetworks(updatedDrama.getNetworks());
-                    drama.setDramaTwPlatformMap(updatedDrama.getDramaTwPlatformMap());
-                    drama.setLeadActors(updatedDrama.getLeadActors());
-                    drama.setDirectorNames(updatedDrama.getDirectorNames());
-                    drama.setScriptwriterNames(updatedDrama.getScriptwriterNames());
-                    drama.setMainPosterUrl(updatedDrama.getMainPosterUrl());
+                    drama.setTotalNumOfEps(dramaToUpdate.getTotalNumOfEps());
+                    drama.setCurrentEpNo(dramaToUpdate.getCurrentEpNo());
+                    drama.setEstRuntimePerEp(dramaToUpdate.getEstRuntimePerEp());
+                    drama.setKrAgeRestriction(dramaToUpdate.getKrAgeRestriction());
+                    drama.setReleaseYear(dramaToUpdate.getReleaseYear());
+                    drama.setStatus(dramaToUpdate.getStatus());
+                    drama.setKrReleaseSchedule(dramaToUpdate.getKrReleaseSchedule());
+                    drama.setGenres(dramaToUpdate.getGenres());
+                    drama.setNetworks(dramaToUpdate.getNetworks());
+                    drama.setDramaTwPlatformMap(dramaToUpdate.getDramaTwPlatformMap());
+                    drama.setLeadActors(dramaToUpdate.getLeadActors());
+                    drama.setDirectorNames(dramaToUpdate.getDirectorNames());
+                    drama.setScriptwriterNames(dramaToUpdate.getScriptwriterNames());
+                    drama.setMainPosterUrl(dramaToUpdate.getMainPosterUrl());
                     if (!apiMode) {
-                        drama.setTrailerUrl(updatedDrama.getTrailerUrl());
+                        drama.setTrailerUrl(dramaToUpdate.getTrailerUrl());
                     }
-                    drama.setIntroPageUrl(updatedDrama.getIntroPageUrl());
+                    drama.setIntroPageUrl(dramaToUpdate.getIntroPageUrl());
                     if (!apiMode) {
-                        drama.setNamuWikiPageUrl(updatedDrama.getNamuWikiPageUrl());
+                        drama.setChineseWikipediaPageUrl(dramaToUpdate.getChineseWikipediaPageUrl());
                     }
-                    if (drama.isManuallyEdited() == false) {
-                        drama.setManuallyEdited(updatedDrama.isManuallyEdited());
+                    if (!apiMode) {
+                        drama.setNamuWikiPageUrl(dramaToUpdate.getNamuWikiPageUrl());
                     }
-                    drama.setLastUpdatedByApi(updatedDrama.getLastUpdatedByApi());
+                    if (drama.isAiOrManuallyEdited() == false) {
+                        drama.setAiOrManuallyEdited(dramaToUpdate.isAiOrManuallyEdited());
+                    }
+                    drama.setLastUpdatedByApi(dramaToUpdate.getLastUpdatedByApi());
                     return dramaRepository.save(drama);
                 })
                 .orElseGet(() -> {
-                    updatedDrama.setDramaId(id);
-                    return dramaRepository.save(updatedDrama);
+                    dramaToUpdate.setDramaId(id);
+                    return dramaRepository.save(dramaToUpdate);
                 });
     }
 
@@ -286,27 +289,27 @@ public class DramaService {
     public List<Drama> updateDramaAllSeasons(List<Drama> originalDramaSeasons, List<Drama> newDramaSeasons) {
         int originalSeasonCount = originalDramaSeasons.size();
         int newSeasonCount = newDramaSeasons.size();
-        ArrayList<Drama> updatedDramas = new ArrayList<Drama>();
+        ArrayList<Drama> dramaToUpdates = new ArrayList<Drama>();
 
         if (newSeasonCount > originalSeasonCount) {
             for (int i = 0; i < originalSeasonCount; i++) {
                 if (originalDramaSeasons.get(i).getSeasonNumber() == newDramaSeasons.get(i).getSeasonNumber()) {
-                    updatedDramas.add(updateDrama(originalDramaSeasons.get(i).getDramaId(), newDramaSeasons.get(i), true));
+                    dramaToUpdates.add(updateDrama(originalDramaSeasons.get(i).getDramaId(), newDramaSeasons.get(i), true));
                 }
             }
             for (int i = originalSeasonCount; i < newSeasonCount; i++) {
-                updatedDramas.add(saveDrama(newDramaSeasons.get(i)));
+                dramaToUpdates.add(saveDrama(newDramaSeasons.get(i)));
             }
         }
         else {
             for (int i = 0; i < newSeasonCount; i++) {
                 if (originalDramaSeasons.get(i).getSeasonNumber() == newDramaSeasons.get(i).getSeasonNumber()) {
-                    updatedDramas.add(updateDrama(originalDramaSeasons.get(i).getDramaId(), newDramaSeasons.get(i), true));
+                    dramaToUpdates.add(updateDrama(originalDramaSeasons.get(i).getDramaId(), newDramaSeasons.get(i), true));
                 }
             }
         }
 
-        return updatedDramas;
+        return dramaToUpdates;
     }
 
     // D: Delete a drama

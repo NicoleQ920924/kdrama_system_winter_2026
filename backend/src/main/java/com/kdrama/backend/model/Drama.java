@@ -79,9 +79,11 @@ public class Drama {
 
     private String introPageUrl; // The information page on TMDB
 
-    private String namuWikiPageUrl; // Manually added
+    private String chineseWikipediaPageUrl; // Manually added or added via AI
 
-    private boolean manuallyEdited = false; // e.g. Manual Addition of Information
+    private String namuWikiPageUrl; // Manually added or added via AI
+
+    private boolean aiOrManuallyEdited = false; // e.g. Manual Addition of Information
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdatedByApi; // Sync with TMDB API

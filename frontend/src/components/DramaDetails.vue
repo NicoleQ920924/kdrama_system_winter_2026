@@ -184,8 +184,8 @@ onMounted(() => loadDrama())
                         </td>
                         <td>
                             <h4 :class="getStatusClass(drama.status)">{{ drama.status }}</h4>
-                            <h3 class="drama-info">{{ drama.chineseName }}</h3> 
-                            <h4 class="drama-info"><a :href="drama.namuWikiPageUrl" class="namu-wiki-link">{{ drama.koreanName }}</a></h4>
+                            <h3 class="drama-info"><a :href="drama.chineseWikipediaPageUrl" class="wiki-link">{{ drama.chineseName }}</a></h3> 
+                            <h4 class="drama-info"><a :href="drama.namuWikiPageUrl" class="wiki-link">{{ drama.koreanName }}</a></h4>
                             <h4 class="drama-info">{{ drama.englishName }}</h4>
                             <div>
                                 <ul>
@@ -425,7 +425,7 @@ ul li {
   color:$autumn-dark-orange;
   padding-top:5px;
 }
-.namu-wiki-link {
+.wiki-link {
     text-align:start;
     color:$autumn-text-dark;
     padding:5px 0px;

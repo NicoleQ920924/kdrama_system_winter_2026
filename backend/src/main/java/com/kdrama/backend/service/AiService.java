@@ -9,8 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.kdrama.backend.model.*;
 
 @Service
 public class AiService {
@@ -132,6 +135,75 @@ public class AiService {
         }
         
         return results;
+    }
+
+    public Drama aiUpdateDramaInfo(Drama dramaToUpdate) {
+        Drama dramaBefore = dramaToUpdate;
+        try {
+            // Build a prompt to ask LLM to update drama info
+            String searchPrompt = "請搜尋並針對" + dramaToUpdate.getChineseName() + "這部韓劇更新內容：\n\n" +
+                    "包含：chineseName（台灣官方劇名）、englishName（英文官方劇名，以播放平台為準）、koreanName（韓文官方劇名）、trailerUrl (預告片連結，有台灣中文版更好)、chineseWikipediaPageUrl (中文維基百科連結) 以及 namuWikiPageUrl (韓國Namu Wiki針對此韓劇的介紹網頁)。" + "\n\n 以 JSON 陣列格式回覆，包含上述欄位。" +
+                    "\n\n回覆格式：{\"chineseName\": \"劇名\", \"englishName\": \"劇名\", \"koreanName\": \"劇名\", \"trailerUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
+                    "\n\n只回覆 JSON 物件，不需要其他文字。" +
+                    "\n\n如果無法找到相關資訊，請將對應欄位設為空字串。";
+
+            String response = generateResponse(searchPrompt);
+            
+            // Try to parse the response as JSON           
+            JsonNode parsed = objectMapper.readTree(response).path(0);
+
+            // Save the information of the parsed JsonNode to a .json file
+            String backupFilePath = "backup/ai_update_backup.json";
+            File backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, parsed);
+
+            String checkPrompt = "請以正確性衡量更新前還是更新後的資訊比較好：\n\n" +
+                    "台灣官方劇名: " + "更新前 - \"" + dramaBefore.getChineseName() + "\" / 更新後 - \"" + parsed.path("chineseName").asText() + "\"\n" +
+                    "英文官方劇名: " + "更新前 - \"" + dramaBefore.getEnglishName() + "\" / 更新後 - \"" + parsed.path("englishName").asText() + "\"\n" +
+                    "韓文官方劇名: " + "更新前 - \"" + dramaBefore.getKoreanName() + "\" / 更新後 - \"" + parsed.path("koreanName").asText() + "\"\n\n" +
+                    "預告片連結，有台灣中文版更好: " + "更新前 - \"" + dramaBefore.getTrailerUrl() + "\" / 更新後 - \"" + parsed.path("trailerUrl").asText() + "\"\n" +
+                    "中文維基百科連結: " + "更新前 - \"" + dramaBefore.getChineseWikipediaPageUrl() + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText() + "\"\n" +
+                    "韓國Namu Wiki連結: " + "更新前 - \"" + dramaBefore.getNamuWikiPageUrl() + "\" / 更新後 - \"" + parsed.path("namuWikiPageUrl").asText() + "\"\n\n" +
+                    "請回傳出比較好的名稱。" +
+                    "\n\n回覆格式：{\"chineseName\": \"劇名\", \"englishName\": \"劇名\", \"koreanName\": \"劇名\", \"trailerUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
+                    "\n\n只回覆 JSON 物件，不需要其他文字。";
+            
+            String checkResponse = generateResponse(checkPrompt);
+
+            // Try to parse the check response as JSON
+            JsonNode finalParsed = objectMapper.readTree(checkResponse);
+
+            // Save the information of the parsed JsonNode to a .json file
+            backupFilePath = "backup/ai_update_backup_2.json";
+            backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, finalParsed);
+
+            // Update dramaToUpdate with finalParsed values if not empty
+            if (finalParsed.has("chineseName") && !finalParsed.path("chineseName").asText().isEmpty()) {
+                dramaToUpdate.setChineseName(finalParsed.path("chineseName").asText());
+            }
+            if (finalParsed.has("englishName") && !finalParsed.path("englishName").asText().isEmpty()) {
+                dramaToUpdate.setEnglishName(finalParsed.path("englishName").asText());
+            }
+            if (finalParsed.has("koreanName") && !finalParsed.path("koreanName").asText().isEmpty()) {
+                dramaToUpdate.setKoreanName(finalParsed.path("koreanName").asText());
+            }
+            if (finalParsed.has("trailerUrl") && !finalParsed.path("trailerUrl").asText().isEmpty()) {
+                dramaToUpdate.setTrailerUrl(finalParsed.path("trailerUrl").asText());
+            }
+            if (finalParsed.has("chineseWikipediaPageUrl") && !finalParsed.path("chineseWikipediaPageUrl").asText().isEmpty()) {
+                dramaToUpdate.setChineseWikipediaPageUrl(finalParsed.path("chineseWikipediaPageUrl").asText());
+            }
+            if (finalParsed.has("namuWikiPageUrl") && !finalParsed.path("namuWikiPageUrl").asText().isEmpty()) {
+                dramaToUpdate.setNamuWikiPageUrl(finalParsed.path("namuWikiPageUrl").asText());
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dramaToUpdate;
     }
 }
 
