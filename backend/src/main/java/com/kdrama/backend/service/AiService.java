@@ -137,6 +137,43 @@ public class AiService {
         return results;
     }
 
+    public JsonNode aiGetDramaBasicInfo(String dramaChineseName) {
+        try {
+            // Build a prompt to ask LLM for TMDB ID, season number, English and Korean names
+            String searchPrompt = "請搜尋韓劇「" + dramaChineseName + "」的 TMDB ID、季數 (season number)、chineseName（台灣官方劇名）、英文官方劇名 (以播放平台為準)，以及韓文官方劇名。" +
+                    "以 JSON 物件格式回覆，包含：tmdbId（數字）、seasonNumber（數字）、englishName（英文官方劇名）、koreanName（韓文官方劇名）。" +
+                    "回覆格式：{\"tmdbId\": 123456, \"seasonNumber\": 1, \"chineseName\": \"台灣官方劇名\", \"englishName\": \"English Name\", \"koreanName\": \"Korean Name\"}" +
+                    "只回覆 JSON 物件，不需要其他文字。";
+
+            String response = generateResponse(searchPrompt);
+
+            // Try to parse the response as JSON
+            JsonNode parsed = objectMapper.readTree(response);
+
+            String checkPrompt = "\n\n針對韓劇「" + dramaChineseName + "」，請務必透過https://www.themoviedb.org/tv/" + parsed.path("tmdbId").asText() + " 這個官方頁面來確認TMDB ID是否正確，否則必須重新查詢。" +
+                    "如果 LLM 回覆的 TMDB ID 有誤，請回傳正確的 TMDB ID。" +
+                    "回覆格式：{\"tmdbId\": 123456, \"seasonNumber\": 1, \"chineseName\": \"台灣官方劇名\", \"englishName\": \"English Name\", \"koreanName\": \"Korean Name\"}" +
+                    "\n\n只回覆 JSON 物件，不需要其他文字。";
+
+            String checkResponse = generateResponse(checkPrompt);
+
+            // Try to parse the check response as JSON
+            JsonNode finalParsed = objectMapper.readTree(checkResponse);
+
+            String backupFilePath = "backup/ai_update_backup.json";
+            File backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, finalParsed);
+
+            return finalParsed;
+
+        } catch (Exception e) {
+            System.err.println("Exception occurred during TMDB ID and season number retrieval: " + e.getMessage());
+            e.printStackTrace();
+            return objectMapper.createObjectNode();
+        }
+    }
+
     public Drama aiUpdateDramaInfo(Drama dramaToUpdate) {
         Drama dramaBefore = dramaToUpdate;
         try {
@@ -173,12 +210,6 @@ public class AiService {
 
             // Try to parse the check response as JSON
             JsonNode finalParsed = objectMapper.readTree(checkResponse);
-
-            // Save the information of the parsed JsonNode to a .json file
-            backupFilePath = "backup/ai_update_backup_2.json";
-            backupFile = new File(backupFilePath);
-            backupFile.getParentFile().mkdirs();
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, finalParsed);
 
             // Update dramaToUpdate with finalParsed values if not empty
             if (finalParsed.has("chineseName") && !finalParsed.path("chineseName").asText().isEmpty()) {

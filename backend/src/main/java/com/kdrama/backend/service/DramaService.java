@@ -2,7 +2,6 @@ package com.kdrama.backend.service;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kdrama.backend.model.Actor;
 import com.kdrama.backend.model.Drama;
@@ -37,41 +37,57 @@ public class DramaService {
     @Autowired
     private TmdbPlatformClient tmdbPlatformClient;
 
+    private AiService aiService;
+
     private final ObjectMapper objectMapper;
 
-    public DramaService(ObjectMapper objectMapper) {
+    public DramaService(ObjectMapper objectMapper, AiService aiService) {
+        this.aiService = aiService;
         this.objectMapper = objectMapper;
     }
 
     // Refer to DramaRepository.java for the CRUD repository methods
 
-    // C1-1: Call TMDB API to fetch drama information based on chineseName
-    // Multiple dramas if there are multiple seasons
-    public ArrayList<Drama> getDramasFromTmdbByChineseName(String title) {
-        try {
-            Integer tmdbId = tmdbDramaClient.getDramaTmdbIdByChineseName(title);
-            ArrayList<Drama> fetchedDramas = getDramasFromTmdbByTmdbId(tmdbId, null);
-            return fetchedDramas;
-		} catch (Exception e) {
-			System.err.println("Exception Occurred!" + e.getMessage());
+    // C1-1: Fill in all drama info (via AI and TMDB API)
+    public Drama fillDramaAiInfo(String title) {
+        JsonNode basicInfoJsonNode = aiService.aiGetDramaBasicInfo(title);
+        if (basicInfoJsonNode == null) {
             return null;
-		}
+        }
+        Drama drama = new Drama();
+        
+        // Put info to drama object
+        drama.setTmdbId(basicInfoJsonNode.path("tmdbId").asInt());
+        drama.setSeasonNumber(basicInfoJsonNode.path("seasonNumber").asInt());
+        drama.setChineseName(basicInfoJsonNode.path("chineseName").asText());
+        drama.setEnglishName(basicInfoJsonNode.path("englishName").asText());
+        drama.setKoreanName(basicInfoJsonNode.path("koreanName").asText());
+
+        // Save the information of the drama to a .json file
+        try {
+            String backupFilePath = "backup/drama_backup.json";
+            File backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, drama);
+
+            return drama; 
+        } catch (Exception e) {
+            System.err.println("Exception Occurred!" + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    // C1-2: Call TMDB API to fetch drama information based on tmdbId
-    // Multiple dramas if there are multiple seasons
+    // C1-2: Call TMDB API to fetch drama information
     // searchedActorName is passed by TmdbActorClient.java
-    public ArrayList<Drama> getDramasFromTmdbByTmdbId(Integer tmdbId, String searchedActorName) {
+    public Drama fillDramaInfoViaTmdb(Drama drama, String searchedActorName) {
         try {
-            ArrayList<Drama> fetchedDramas = tmdbDramaClient.fillDramaInfoByTmdbId(tmdbId);
-            if (fetchedDramas != null) {
-                tmdbDramaClient.fillEngName(fetchedDramas);
-                tmdbDramaClient.fillKrAgeRestriction(fetchedDramas);
-                tmdbDramaClient.fillEpInfo(fetchedDramas);
-                tmdbDramaClient.fillDramaStaff(fetchedDramas, searchedActorName);
-                fillTWPlatformInformation(fetchedDramas);
-            }
-            return fetchedDramas;
+            drama = tmdbDramaClient.fillDramaOtherInfo(drama);
+            drama = tmdbDramaClient.fillDramaSeasonalInfo(drama);
+            drama = tmdbDramaClient.fillKrAgeRestriction(drama);
+            drama = tmdbDramaClient.fillDramaStaff(drama, searchedActorName);
+            drama = fillTWPlatformInformation(drama);
+            return drama;     
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());
             e.printStackTrace();
@@ -80,67 +96,10 @@ public class DramaService {
     }
     
     // C1-3: Fill TW OTT Platform Information (parameter: ArrayList<Drama>)
-    public ArrayList<Drama> fillTWPlatformInformation(ArrayList<Drama> fetchedDramas) {
-        try {
-            if (fetchedDramas.equals(null) || fetchedDramas.isEmpty()) {
-                System.err.println("fetchedDramas is null or empty, so platform information cannot be filled!");
-                return fetchedDramas;
-            }
-
-            System.out.println("No. of dramas to process: " + fetchedDramas.size());
-
-            for (Drama drama : fetchedDramas) {
-                try {
-                    Map<String, String> platformInfoMap = platformScraper.getWorkTWOTTPlatformInfo(drama.getChineseName(), "drama");
-                    drama.setDramaTwPlatformMap(platformInfoMap);
-                    platformInfoMap.putAll(tmdbPlatformClient.getIntlPlatformInfoByWorkTmdbId(drama.getTmdbId(), drama.getSeasonNumber(), "drama"));
-                    System.out.println(drama.getChineseName() + ": " + platformInfoMap.keySet());
-                    drama.setLastUpdatedByApi(LocalDateTime.now());
-                } catch (Exception innerE) {
-                    System.err.println("Failed to save platform information of " + drama.getChineseName() + " due to" + innerE.getMessage());
-                    innerE.printStackTrace();
-                }
-            }
-
-            String backupFilePath = "backup/drama_backup.json";
-            File backupFile = new File(backupFilePath);
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, fetchedDramas);
-            System.out.println("Successfully save file: " + backupFile);
-
-            return fetchedDramas;
-
-        } catch (Exception e) {
-            System.err.println("Exception Occurred!" + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    // C1-4: Call TMDB API to fetch drama information based on tmdbId AND season number
-    // Called by DramaController.java's updateSelectedDramaViaApi()
-    public Drama getDramaFromTmdbByTmdbIdAndSeasonNumber(Integer tmdbId, Integer seasonNumber) {
-        try {
-            Drama fetchedDrama = tmdbDramaClient.fillDramaInfoByTmdbIdAndSeasonNumber(tmdbId, seasonNumber);
-            if (fetchedDrama != null) {
-                tmdbDramaClient.fillEngName(fetchedDrama);
-                tmdbDramaClient.fillKrAgeRestriction(fetchedDrama);
-                tmdbDramaClient.fillEpInfo(fetchedDrama, isMultipleSeasons(fetchedDrama));
-                tmdbDramaClient.fillDramaStaff(fetchedDrama);
-                fillTWPlatformInformation(fetchedDrama);
-            }
-            return fetchedDrama;
-		} catch (Exception e) {
-			System.err.println("Exception Occurred!" + e.getMessage());
-            e.printStackTrace();
-            return null;
-		}
-    }
-
-    // C1-5: Fill TW OTT Platform Information (parameter: a single Drama object only)
     public Drama fillTWPlatformInformation(Drama fetchedDrama) {
         try {
-            if (fetchedDrama.equals(null)) {
-                System.err.println("fetchedDrama is null or empty, so platform information cannot be filled!");
+            if (fetchedDrama == null) {
+                System.err.println("fetchedDrama is null, so platform information cannot be filled!");
                 return fetchedDrama;
             }
 
@@ -169,19 +128,9 @@ public class DramaService {
         }
     }
    
-    // C2-1: Save a drama
+    // C2: Save a drama
     public Drama saveDrama(@RequestBody Drama drama) {
         return dramaRepository.save(drama);
-    }
-
-    // C2-2: Save multiple seasons of a drama
-    public List<Drama> saveDramaAllSeasons (@RequestBody List<Drama> dramaSeasons) {
-        if (dramaSeasons != null) {
-            return dramaRepository.saveAll(dramaSeasons);
-        }
-        else {
-            return null;
-        }
     }
 
     // C-Bonus: Check if the TV Show is a drama
@@ -232,7 +181,7 @@ public class DramaService {
         return dramaRepository.findByChineseName(chineseName);
     }
 
-    // U1: Update a drama
+    // U: Update a drama
     public Drama updateDrama(@PathVariable Integer id, @RequestBody Drama dramaToUpdate, boolean apiMode) {
         return dramaRepository.findById(id)
                 .map(drama -> {
@@ -281,35 +230,6 @@ public class DramaService {
                     dramaToUpdate.setDramaId(id);
                     return dramaRepository.save(dramaToUpdate);
                 });
-    }
-
-    // U2: Update multiple seasons of a drama
-    // newDramaSeasons > originalDramaSeasons: Update if the season exists, save if the season does not exist
-    // originalDramaSeasons > newDramaSeasons (due to some seasons are filtered while searching for an actor): Update existing seasons only 
-    public List<Drama> updateDramaAllSeasons(List<Drama> originalDramaSeasons, List<Drama> newDramaSeasons) {
-        int originalSeasonCount = originalDramaSeasons.size();
-        int newSeasonCount = newDramaSeasons.size();
-        ArrayList<Drama> dramaToUpdates = new ArrayList<Drama>();
-
-        if (newSeasonCount > originalSeasonCount) {
-            for (int i = 0; i < originalSeasonCount; i++) {
-                if (originalDramaSeasons.get(i).getSeasonNumber() == newDramaSeasons.get(i).getSeasonNumber()) {
-                    dramaToUpdates.add(updateDrama(originalDramaSeasons.get(i).getDramaId(), newDramaSeasons.get(i), true));
-                }
-            }
-            for (int i = originalSeasonCount; i < newSeasonCount; i++) {
-                dramaToUpdates.add(saveDrama(newDramaSeasons.get(i)));
-            }
-        }
-        else {
-            for (int i = 0; i < newSeasonCount; i++) {
-                if (originalDramaSeasons.get(i).getSeasonNumber() == newDramaSeasons.get(i).getSeasonNumber()) {
-                    dramaToUpdates.add(updateDrama(originalDramaSeasons.get(i).getDramaId(), newDramaSeasons.get(i), true));
-                }
-            }
-        }
-
-        return dramaToUpdates;
     }
 
     // D: Delete a drama

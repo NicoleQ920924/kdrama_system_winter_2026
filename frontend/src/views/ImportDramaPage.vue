@@ -9,7 +9,7 @@
     const msgClass = ref('')
     const dramaName = ref('')
 
-    const dramaIds = ref([])
+    const dramaId = ref('')
 
     const router = useRouter()
 
@@ -29,14 +29,15 @@
             if (res.status === 200) {
                 msg.value = `${dramaName.value} 已成功加入資料庫！`
                 msgClass.value = 'success-msg text-center'
-                res.data.forEach(item => {
-                    dramaIds.value.push(item.dramaId)
-                })
+                dramaId.value = res.data.dramaId
             }
         } catch (err) {
             console.error(err)
             if (err.response && err.response.status === 409) {
                 msg.value = `${dramaName.value} 已存在資料庫！`
+                msgClass.value = 'error-msg text-center'
+            } else if (err.response && err.response.status === 404) {
+                msg.value = `${dramaName.value} 查無此韓劇！`
                 msgClass.value = 'error-msg text-center'
             } else {
                 msg.value = `加入 ${dramaName.value} 時發生錯誤`
@@ -67,18 +68,20 @@
             <div v-else>
                 <form class="form" method="post">
                     <p class="form-group form-text-p">
-                        <input v-model="dramaName" class="form-control form-text-field" name="dramaName" placeholder="請輸入韓劇的正確中文譯名" required aria-required="true">
+                        <input v-model="dramaName" class="form-control form-text-field" name="dramaName" placeholder="" required aria-required="true">
                     </p>
-                    <div class="input-msg text-center">1. 不要打季數 2. 會新增該韓劇所有已播出的季</div>
+                    <div class="input-msg text-center">請盡量打台灣官方譯名</div>
                     <div class="text-center">
                         <button @click="startImportDrama" type="button" class="btn form-btn shadow-none" :disabled="loadingDramas.length > 0">確定</button>
                     </div>
                 </form>
                 <div :class="msgClass">{{ msg }}</div>
                 <div v-if="msgClass == 'success-msg text-center'">
-                    <div v-for="(dramaId, index) in dramaIds" :key="index" class="text-center">
-                        <router-link class="btn back-btn text-center" :to="{ name: 'DramaPage', query: { id: dramaId } }">點我看 {{ dramaName }}{{ index + 1 == 1 ? '' : index + 1 }} 的專頁</router-link>
-                        <router-link class="btn back-btn text-center" :to="{ name: 'UpdateDramaPage', query: { id: dramaId } }">點我編輯 {{ dramaName }}{{ index + 1 == 1 ? '' : index + 1 }} 的資料</router-link>
+                    <div class="text-center">
+                        <router-link class="btn back-btn text-center" :to="{ name: 'DramaPage', query: { id: dramaId } }">點我看 {{ dramaName }}的專頁</router-link>
+                    </div>
+                    <div class="text-center">
+                        <router-link class="btn back-btn text-center" :to="{ name: 'UpdateDramaPage', query: { id: dramaId } }">點我編輯 {{ dramaName }}的資料</router-link>
                     </div>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">

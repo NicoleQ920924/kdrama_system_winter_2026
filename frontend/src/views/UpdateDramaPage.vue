@@ -88,7 +88,7 @@
         introPageUrl: '',
         chineseWikipediaPageUrl: '',
         namuWikiPageUrl: '', 
-        aiOrManuallyEdited: false,
+        aiOrManuallyEdited: null,
         lastUpdatedByApi: null    
     });
 
@@ -103,9 +103,9 @@
             const res = await updateSelectedDramaViaApi(dramaId)
             console.log(res.status)
             if (res.status === 200) {
-                loadDrama()
                 msg.value = `${loadedDrama.chineseName} 的API資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
+                loadDrama()
             }
         } catch (err) {
             console.error(err)
@@ -140,6 +140,7 @@
             if (res.status === 200) {
                 msg.value = `${loadedDrama.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
+                loadDrama()
             }
         } catch (err) {
             console.error(err)
@@ -174,6 +175,7 @@
             if (res.status === 200) {
                 msg.value = `${loadedDrama.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
+                loadDrama()
             }
         } catch (err) {
             console.error(err)
@@ -406,8 +408,8 @@
                         <input v-model="lastUpdatedByApiDisplay" id="lastUpdatedByApi" class="form-control form-text-field" name="lastUpdateByApi" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="manuallyEdited" class="form-label">是否有AI或人工更新</label>
-                        <input :value="loadedDrama.manuallyEdited ? '是' : '否'" id="manuallyEdited" class="form-control form-text-field" name="manuallyEdited" required readonly aria-required="true">
+                        <label for="aiOrManuallyEdited" class="form-label">是否有AI或人工更新</label>
+                        <input :value="loadedDrama.aiOrManuallyEdited ? '是' : '否'" id="aiOrManuallyEdited" class="form-control form-text-field" name="aiOrManuallyEdited" required readonly aria-required="true">
                     </p>
                     <div class="text-center">
                         <button @click="startUpdateDramaViaApi(loadedDrama.dramaId)" type="button" class="btn shadow-none form-btn" :disabled="updatingDramas.length > 0">透過TMDB API更新資料</button>

@@ -182,4 +182,7 @@ Below is for kdrama_system_winter_2026
 - Refine AI Import Drama Prompt
 - Enable AI Update Drama
 
+2026/1/29
+- Fix AI Import drama bugs (esp. the confusion between AI output Chinese name and the name registered on TMDB)
+
 ============================================================================================================

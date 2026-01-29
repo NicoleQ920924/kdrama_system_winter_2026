@@ -52,15 +52,15 @@
             // Call the import endpoint with the drama title
             const response = await importDrama(dramaTitle)
             if (response.status === 200) {
-                // response.data is an array of Drama objects
-                const dramas = response.data
-                if (dramas.length > 0) {
-                    const firstDrama = dramas[0]
-                    // Store the drama ID so the link becomes clickable
-                    addedDramas.value[dramaTitle] = firstDrama.dramaId
-                    alert(`成功將 ${dramaTitle} 加入資料庫！`)
-                    // Don't emit 'close' - let user click the transformed link or close with X button
+                // Store the drama ID so the link becomes clickable
+                addedDramas.value[dramaTitle] = loadedDrama.value.dramaId
+                alert(`成功將 ${dramaTitle} 加入資料庫！`)
+                loadDrama(dramaTitle)
+                while (loading.value) {
+                    await new Promise(resolve => setTimeout(resolve, 100))
                 }
+                addedDramas.value[dramaTitle] = loadedDrama.value.dramaId
+                // Don't emit 'close' - let user click the transformed link or close with X button
             }
         } catch (error) {
             console.error('Error importing drama:', error)

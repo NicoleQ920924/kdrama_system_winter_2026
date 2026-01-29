@@ -8,7 +8,6 @@ import com.kdrama.backend.service.AiService;
 import com.kdrama.backend.service.DramaService;
 import com.kdrama.backend.util.DisplayNameEnumSerializer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,20 +34,33 @@ public class DramaController {
 
     @PostMapping("/import")
     public ResponseEntity<?> importDrama(@RequestParam String name) {
-        // Check if the drama (with one or more seasons) already exists in database
-        Optional<List<Drama>> optionalExistingDramas = dramaService.getDramasByChineseName(name);
-        List<Drama> existingDramas = optionalExistingDramas.get();
-        if (existingDramas.size() > 0) {
+        // Check if the drama already exists in database
+        Optional<Drama> optionalExistingDrama = dramaService.getDramaByChineseName(name);
+        if (optionalExistingDrama.isPresent()) {
             // drama 已存在 → 回傳 409
             return ResponseEntity.status(HttpStatus.SC_CONFLICT)
                                 .body("Drama already exists in database");
         }
-        ArrayList<Drama> dramas = dramaService.getDramasFromTmdbByChineseName(name);
-        if (dramas == null) {
-            return ResponseEntity.notFound().build();
+        Drama drama = dramaService.fillDramaAiInfo(name);
+        
+         // Check if the drama already exists in database again with a AI-filled name
+        optionalExistingDrama = dramaService.getDramaByChineseName(drama.getChineseName());
+        if (optionalExistingDrama.isPresent()) {
+            // drama 已存在 → 回傳 409
+            return ResponseEntity.status(HttpStatus.SC_CONFLICT)
+                                .body("Drama already exists in database");
         }
-        List<Drama> savedDramas = dramaService.saveDramaAllSeasons(dramas);
-        return ResponseEntity.ok(savedDramas);
+        else {
+            drama = dramaService.fillDramaInfoViaTmdb(drama, null);
+
+             if (drama == null) {
+                return ResponseEntity.notFound().build();
+            }
+            else {
+                Drama savedDrama = dramaService.saveDrama(drama);
+                return ResponseEntity.ok(savedDrama);
+            }
+        }
     }
 
     @GetMapping("/findAll")
@@ -140,7 +152,7 @@ public class DramaController {
         }
         else {
             Drama drama = optionalDrama.get();
-            Drama updatedDrama = dramaService.getDramaFromTmdbByTmdbIdAndSeasonNumber(drama.getTmdbId(), drama.getSeasonNumber());
+            Drama updatedDrama = dramaService.fillDramaInfoViaTmdb(drama, null);
             if (updatedDrama == null) {
                 return ResponseEntity.notFound().build();
             }

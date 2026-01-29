@@ -38,31 +38,32 @@ public class JsonNodeRequest {
 
     public static JsonNode getJsonNodebyRequestQuery(String requestUrl) throws Exception {
         // With resilience
+        Supplier<JsonNode> decorated = null;
+
         try {
-            Supplier<JsonNode> decorated = Decorators.ofSupplier(() -> fetchJson(requestUrl))
+            decorated = Decorators.ofSupplier(() -> fetchJson(requestUrl))
                 .withRetry(retry)
                 .withRateLimiter(rateLimiter)
                 .decorate();
-            return decorated.get();
         } catch (RequestNotPermitted e) {
             // 被 RateLimiter 擋下來（超過頻率限制）
             System.err.println("TMDB API rate limit exceeded: " + requestUrl);
-            return null;
 
         } catch (io.github.resilience4j.retry.MaxRetriesExceededException e) {
             // 超過重試次數
             System.err.println("Max retries exceeded for: " + requestUrl);
-            return null;
 
         } catch (Exception e) {
             // 其他意外錯誤
             System.err.println("Unexpected error while calling TMDB API: " + e.getMessage());
-            return null;
         }
+        return decorated.get();
     }
 
     // Separate logic for fetching Json
     private static JsonNode fetchJson(String requestUrl) {
+        JsonNode rootNode = null;
+        
         try {
             URL url = URI.create(requestUrl).toURL();
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -75,9 +76,12 @@ public class JsonNodeRequest {
                 }
 
                 ObjectMapper mapper = new ObjectMapper();
-                JsonNode rootNode = mapper.readTree(ChineseCharacterConverter.toTraditional(jsonText.toString()));
-                JsonNode resultsNode;
-                if (rootNode.has("results")) {
+                rootNode = mapper.readTree(ChineseCharacterConverter.toTraditional(jsonText.toString()));
+                JsonNode resultsNode = null;
+                if (rootNode.path("status_message").asText().equals("The resource you requested could not be found.")) {
+                    return rootNode;
+                }
+                else if (rootNode.has("results")) {
                     resultsNode = rootNode.path("results");
                 } else {
                     resultsNode = rootNode;
@@ -87,7 +91,7 @@ public class JsonNodeRequest {
 
         } catch (Exception e) {
             System.out.println("Exception Occurred while calling TMDB API: " + e.getMessage());
-            return null;
+            return rootNode;
         }
     }
 }
