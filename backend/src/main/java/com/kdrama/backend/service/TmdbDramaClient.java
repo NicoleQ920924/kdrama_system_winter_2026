@@ -36,7 +36,7 @@ public class TmdbDramaClient {
 
     // Legacy method for searching for TMDB ID by Chinese name (only used in LLM mistakes correction)
     
-    public Integer getDramaTmdbIdByDramaName(String chineseName, String koreanName) throws IOException {
+    public Integer getDramaTmdbIdByDramaName(String chineseName) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
         String query = URLEncoder.encode(chineseName, "UTF-8");
 
@@ -46,9 +46,8 @@ public class TmdbDramaClient {
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
             if (results != null && results.isArray() && results.size() > 0) {
                 for (JsonNode node : results) {
-                    String fetchedKoreanName = node.path("original_name").asText();
                     String fetchedOriginalLanguage = node.path("original_language").asText();
-                    if (fetchedKoreanName != null && koreanName != null && fetchedKoreanName.contains(koreanName) && fetchedOriginalLanguage.equals("ko")) {
+                    if (fetchedOriginalLanguage.equals("ko")) {
                         return node.path("id").asInt();
                     }
                 }
@@ -64,26 +63,13 @@ public class TmdbDramaClient {
 
     public Drama fillDramaOtherInfo(Drama drama) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
+        if (drama == null) {
+            return null;
+        }
 
         try {
             String requestUrl = BASE_URL + "/" + drama.getTmdbId() +"?api_key=" + tmdbApiKey + "&language=zh-TW";
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-
-            // If LLM provided wrong TMDB ID, try searching by Chinese name via TMDB API again
-            if (results != null && results.path("status_message").asText().equals("The resource you requested could not be found.")) {
-                Integer correctTmdbId = getDramaTmdbIdByDramaName(drama.getChineseName(), drama.getKoreanName());
-                drama.setTmdbId(correctTmdbId);
-                requestUrl = BASE_URL + "/" + drama.getTmdbId() +"?api_key=" + tmdbApiKey + "&language=zh-TW";
-                results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-            }
-            else {
-                if (results != null && !drama.getKoreanName().contains(results.path("original_name").asText())) {
-                    Integer correctTmdbId = getDramaTmdbIdByDramaName(drama.getChineseName(), drama.getKoreanName());
-                    drama.setTmdbId(correctTmdbId);
-                    requestUrl = BASE_URL + "/" + drama.getTmdbId() +"?api_key=" + tmdbApiKey + "&language=zh-TW";
-                    results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-                }
-            }
 
             if (results != null && !results.path("status_message").asText().equals("The resource you requested could not be found.")) {
 

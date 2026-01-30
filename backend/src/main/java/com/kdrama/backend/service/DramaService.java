@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kdrama.backend.model.Actor;
 import com.kdrama.backend.model.Drama;
@@ -48,39 +47,27 @@ public class DramaService {
 
     // Refer to DramaRepository.java for the CRUD repository methods
 
-    // C1-1: Fill in all drama info (via AI and TMDB API)
-    public Drama fillDramaAiInfo(String title) {
-        JsonNode basicInfoJsonNode = aiService.aiGetDramaBasicInfo(title);
-        if (basicInfoJsonNode == null) {
-            return null;
-        }
-        Drama drama = new Drama();
-        
-        // Put info to drama object
-        drama.setTmdbId(basicInfoJsonNode.path("tmdbId").asInt());
-        drama.setSeasonNumber(basicInfoJsonNode.path("seasonNumber").asInt());
-        drama.setChineseName(basicInfoJsonNode.path("chineseName").asText());
-        drama.setEnglishName(basicInfoJsonNode.path("englishName").asText());
-        drama.setKoreanName(basicInfoJsonNode.path("koreanName").asText());
-
-        // Save the information of the drama to a .json file
+    // C1-1: Fetch drama information (TMDB ID and season number)
+    // Return back to DramaController to check if drama exists in database
+    public Drama fillDramaBasicInfo(String chineseName) {
         try {
-            String backupFilePath = "backup/drama_backup.json";
-            File backupFile = new File(backupFilePath);
-            backupFile.getParentFile().mkdirs();
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, drama);
-
-            return drama; 
-        } catch (Exception e) {
-            System.err.println("Exception Occurred!" + e.getMessage());
+            Drama drama = new Drama();
+            drama.setChineseName(chineseName);
+            Integer tmdbId = tmdbDramaClient.getDramaTmdbIdByDramaName(drama.getChineseName());
+            drama.setTmdbId(tmdbId);
+            Integer seasonNumber = aiService.aiGetDramaSeasonNumber(drama.getChineseName());
+            drama.setSeasonNumber(seasonNumber);
+            return drama;     
+		} catch (Exception e) {
+			System.err.println("Exception Occurred!" + e.getMessage());
             e.printStackTrace();
             return null;
-        }
+		}
     }
 
     // C1-2: Call TMDB API to fetch drama information
     // searchedActorName is passed by TmdbActorClient.java
-    public Drama fillDramaInfoViaTmdb(Drama drama, String searchedActorName) {
+    public Drama fillDramaMoreInfo(Drama drama, String searchedActorName) {
         try {
             drama = tmdbDramaClient.fillDramaOtherInfo(drama);
             drama = tmdbDramaClient.fillDramaSeasonalInfo(drama);
@@ -171,12 +158,17 @@ public class DramaService {
         return dramaRepository.findByTmdbId(id);
     }
 
-    // R4: Get information of dramas identified by Chinese title
+    // R4: Get information of a drama identified by tmdbId and season number
+    public Optional<Drama> getDramaByTmdbIdAndSeasonNumber(@PathVariable Integer tmdbId, @PathVariable Integer seasonNumber) {
+        return dramaRepository.findByTmdbIdAndSeasonNumber(tmdbId, seasonNumber);
+    }
+
+    // R5: Get information of dramas identified by Chinese title
     public Optional<List<Drama>> getDramasByChineseName(@PathVariable String chineseName) {
         return dramaRepository.findAllByChineseName(chineseName);
     }
 
-    // R5: Get information of a drama identified by Chinese title
+    // R6: Get information of a drama identified by Chinese title
     public Optional<Drama> getDramaByChineseName(@PathVariable String chineseName) {
         return dramaRepository.findByChineseName(chineseName);
     }

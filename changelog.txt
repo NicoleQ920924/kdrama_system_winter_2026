@@ -185,4 +185,7 @@ Below is for kdrama_system_winter_2026
 2026/1/29
 - Fix AI Import drama bugs (esp. the confusion between AI output Chinese name and the name registered on TMDB)
 
+2026/1/30
+- Improve AI Import Drama (esp. the sequence of filling data)
+
 ============================================================================================================

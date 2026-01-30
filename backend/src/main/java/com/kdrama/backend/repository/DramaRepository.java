@@ -14,6 +14,7 @@ public interface DramaRepository extends JpaRepository<Drama, Integer> {
     // Called by DramaService.java
     
     List<Drama> findByTmdbId(Integer tmdbId);
+    Optional<Drama> findByTmdbIdAndSeasonNumber(Integer tmdbId, Integer seasonNumber);
     Optional<List<Drama>> findAllByChineseName(String chineseName);
     Optional<Drama> findByChineseName(String chineseName);
 }

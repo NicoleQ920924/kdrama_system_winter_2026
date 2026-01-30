@@ -34,6 +34,7 @@ public class DramaController {
 
     @PostMapping("/import")
     public ResponseEntity<?> importDrama(@RequestParam String name) {
+        
         // Check if the drama already exists in database
         Optional<Drama> optionalExistingDrama = dramaService.getDramaByChineseName(name);
         if (optionalExistingDrama.isPresent()) {
@@ -41,25 +42,34 @@ public class DramaController {
             return ResponseEntity.status(HttpStatus.SC_CONFLICT)
                                 .body("Drama already exists in database");
         }
-        Drama drama = dramaService.fillDramaAiInfo(name);
         
-         // Check if the drama already exists in database again with a AI-filled name
-        optionalExistingDrama = dramaService.getDramaByChineseName(drama.getChineseName());
+        Drama drama = dramaService.fillDramaBasicInfo(name);
+        if (drama == null) {
+            return ResponseEntity.notFound().build(); // 404
+        }
+
+        // Check if the drama already exists in database
+        optionalExistingDrama = dramaService.getDramaByTmdbIdAndSeasonNumber(drama.getTmdbId(), drama.getSeasonNumber());
         if (optionalExistingDrama.isPresent()) {
             // drama 已存在 → 回傳 409
             return ResponseEntity.status(HttpStatus.SC_CONFLICT)
                                 .body("Drama already exists in database");
         }
-        else {
-            drama = dramaService.fillDramaInfoViaTmdb(drama, null);
+        
+        drama = dramaService.fillDramaMoreInfo(drama, null);
 
-             if (drama == null) {
+        if (drama == null) {
+            return ResponseEntity.notFound().build();
+        }
+        else {
+            drama = aiService.aiUpdateDramaInfo(drama);
+            if (drama == null) {
                 return ResponseEntity.notFound().build();
             }
             else {
                 Drama savedDrama = dramaService.saveDrama(drama);
                 return ResponseEntity.ok(savedDrama);
-            }
+            }    
         }
     }
 
@@ -152,7 +162,7 @@ public class DramaController {
         }
         else {
             Drama drama = optionalDrama.get();
-            Drama updatedDrama = dramaService.fillDramaInfoViaTmdb(drama, null);
+            Drama updatedDrama = dramaService.fillDramaMoreInfo(drama, null);
             if (updatedDrama == null) {
                 return ResponseEntity.notFound().build();
             }
