@@ -42,7 +42,7 @@ public class AiController {
             return ResponseEntity.badRequest().body(Map.of("error", "Prompt is required"));
         }
 
-        ArrayNode results = aiService.searchDramasByPrompt(prompt);
+        ArrayNode results = aiService.aiSearchDramasByPrompt(prompt);
         return ResponseEntity.ok(Map.of("results", results));
     }
 }

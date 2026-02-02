@@ -40,7 +40,7 @@ public class AiService {
      * Search for dramas based on user criteria and return top 3 results
      * Returns a JSON array with drama titles and summaries
      */
-    public ArrayNode searchDramasByPrompt(String prompt) {
+    public ArrayNode aiSearchDramasByPrompt(String prompt) {
         try {
             // Build a prompt to ask LLM for top 3 dramas with summaries
             String searchPrompt = prompt + "\n\n請列出 TOP 3 符合條件的韓劇。" +
@@ -140,10 +140,31 @@ public class AiService {
     public Integer aiGetDramaSeasonNumber(String dramaTitle) {
         try {
             // Build a prompt to ask LLM for number of seasons
-            String seasonPrompt = "請問韓劇\"" + dramaTitle + "\"是第幾季？" +
+            String seasonPrompt = "請問韓劇\"" + dramaTitle + "\"是第幾季 (注意，我問的不是有幾季，而是這個劇名是對應到整個系列的第幾季，如果這個系列就只有一季，那就是回傳1)？" +
                     "\n\n只回覆數字，不需要其他文字。";
 
             String response = generateResponse(seasonPrompt);
+
+            // Try to extract number from response
+            Pattern pattern = Pattern.compile("(\\d+)");
+            Matcher matcher = pattern.matcher(response);
+            if (matcher.find()) {
+                return Integer.parseInt(matcher.group(1));
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public Integer aiGetDramaTmdbId(String chineseName) {
+        try {
+            // Build a prompt to ask LLM for TMDB ID
+            String tmdbPrompt = "請問韓劇\"" + chineseName + "\" 的 TMDB ID 是多少？" +
+                    "\n\n只回覆數字，不需要其他文字。";
+
+            String response = generateResponse(tmdbPrompt);
 
             // Try to extract number from response
             Pattern pattern = Pattern.compile("(\\d+)");
@@ -163,7 +184,7 @@ public class AiService {
         try {
             // Build a prompt to ask LLM to update drama info
             String searchPrompt = "請搜尋並針對" + dramaToUpdate.getChineseName() + "這部韓劇更新內容：\n\n" +
-                    "包含：chineseName（台灣官方劇名）、englishName（英文官方劇名，以播放平台為準）、koreanName（韓文官方劇名）、trailerUrl (預告片連結，有台灣中文版更好)、chineseWikipediaPageUrl (中文維基百科連結) 以及 namuWikiPageUrl (韓國Namu Wiki針對此韓劇的介紹網頁)。" + "\n\n 以 JSON 陣列格式回覆，包含上述欄位。" +
+                    "包含：chineseName（台灣官方劇名）、englishName（英文官方劇名，以播放平台為準）、koreanName（韓文官方劇名）、trailerUrl (預告片連結，請透過韓文官方劇名加上메인 예고편來搜尋連結)、chineseWikipediaPageUrl (中文維基百科連結) 以及 namuWikiPageUrl (韓國Namu Wiki針對此韓劇的介紹網頁)。" + "\n\n 以 JSON 陣列格式回覆，包含上述欄位。" +
                     "\n\n回覆格式：{\"chineseName\": \"劇名\", \"englishName\": \"劇名\", \"koreanName\": \"劇名\", \"trailerUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
                     "\n\n只回覆 JSON 物件，不需要其他文字。" +
                     "\n\n如果無法找到相關資訊，請將對應欄位設為空字串。";

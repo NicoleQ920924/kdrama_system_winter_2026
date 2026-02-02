@@ -8,6 +8,7 @@
     const msg = ref('')
     const msgClass = ref('')
     const dramaName = ref('')
+    const dramaNameAdded = ref('')
 
     const dramaId = ref('')
 
@@ -22,29 +23,30 @@
 
         // Add loading status
         loadingDramas.value.push(dramaName.value)
+        dramaNameAdded.value = dramaName.value
 
         try {
             const res = await importDrama(dramaName.value)
             console.log(res.status)
             if (res.status === 200) {
-                msg.value = `${dramaName.value} 已成功加入資料庫！`
+                msg.value = `${dramaNameAdded.value} 已成功加入資料庫！`
                 msgClass.value = 'success-msg text-center'
                 dramaId.value = res.data.dramaId
             }
         } catch (err) {
             console.error(err)
             if (err.response && err.response.status === 409) {
-                msg.value = `${dramaName.value} 已存在資料庫！`
+                msg.value = `${dramaNameAdded.value} 已存在資料庫！`
                 msgClass.value = 'error-msg text-center'
             } else if (err.response && err.response.status === 404) {
-                msg.value = `${dramaName.value} 查無此韓劇！`
+                msg.value = `${dramaNameAdded.value} 查無此韓劇！有可能是TMDB ID找不到，您可以透過新增演員頁面重試。`
                 msgClass.value = 'error-msg text-center'
             } else {
-                msg.value = `加入 ${dramaName.value} 時發生錯誤`
+                msg.value = `加入 ${dramaNameAdded.value} 時發生錯誤`
                 msgClass.value = 'error-msg text-center'
             }
         } finally {
-            const index = loadingDramas.value.indexOf(dramaName.value)
+            const index = loadingDramas.value.indexOf(dramaNameAdded.value)
             if (index !== -1) loadingDramas.value.splice(index, 1)
         }
     }
@@ -78,10 +80,10 @@
                 <div :class="msgClass">{{ msg }}</div>
                 <div v-if="msgClass == 'success-msg text-center'">
                     <div class="text-center">
-                        <router-link class="btn back-btn text-center" :to="{ name: 'DramaPage', query: { id: dramaId } }">點我看 {{ dramaName }}的專頁</router-link>
+                        <router-link class="btn back-btn text-center" :to="{ name: 'DramaPage', query: { id: dramaId } }">點我看 {{ dramaNameAdded }}的專頁</router-link>
                     </div>
                     <div class="text-center">
-                        <router-link class="btn back-btn text-center" :to="{ name: 'UpdateDramaPage', query: { id: dramaId } }">點我編輯 {{ dramaName }}的資料</router-link>
+                        <router-link class="btn back-btn text-center" :to="{ name: 'UpdateDramaPage', query: { id: dramaId } }">點我編輯 {{ dramaNameAdded }}的資料</router-link>
                     </div>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">

@@ -53,10 +53,13 @@ public class DramaService {
         try {
             Drama drama = new Drama();
             drama.setChineseName(chineseName);
-            Integer tmdbId = tmdbDramaClient.getDramaTmdbIdByDramaName(drama.getChineseName());
-            drama.setTmdbId(tmdbId);
             Integer seasonNumber = aiService.aiGetDramaSeasonNumber(drama.getChineseName());
             drama.setSeasonNumber(seasonNumber);
+            Integer tmdbId = tmdbDramaClient.getDramaTmdbIdByDramaName(drama.getChineseName());
+            if (tmdbId == null) {
+                tmdbId = aiService.aiGetDramaTmdbId(drama.getChineseName());
+            }
+            drama.setTmdbId(tmdbId);
             return drama;     
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());
