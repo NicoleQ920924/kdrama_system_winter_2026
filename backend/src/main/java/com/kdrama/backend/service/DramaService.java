@@ -36,7 +36,7 @@ public class DramaService {
     @Autowired
     private TmdbPlatformClient tmdbPlatformClient;
 
-    private AiService aiService;
+    private final AiService aiService;
 
     private final ObjectMapper objectMapper;
 

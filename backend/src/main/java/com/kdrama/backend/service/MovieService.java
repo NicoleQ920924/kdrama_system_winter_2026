@@ -33,39 +33,47 @@ public class MovieService {
     @Autowired
     private TWOTTPlatformScraper platformScraper;
 
+    private final AiService aiService;
+
     private final ObjectMapper objectMapper;
 
-    public MovieService(ObjectMapper objectMapper) {
+    public MovieService(ObjectMapper objectMapper, AiService aiService) {
         this.objectMapper = objectMapper;
+        this.aiService = aiService;
     }
 
     // Refer to MovieRepository.java for the CRUD repository methods
 
     // C1-1: Call TMDB API to fetch movie information by chineseName
-    public Movie getMovieFromTmdbByChineseName(String title) {
+    // Return back to MovieController to check if movie exists in database
+    public Movie fillMovieBasicInfo(String chineseName) {
         try {
-            Integer tmdbId = tmdbMovieClient.getMovieTmdbIdByChineseName(title);
-            Movie fetchedMovie = getMovieFromTmdbByTmdbId(tmdbId);
-            return fetchedMovie;
+            Movie movie = new Movie();
+            movie.setChineseName(chineseName);
+            Integer tmdbId = tmdbMovieClient.getMovieTmdbIdByMovieName(movie.getChineseName());
+            if (tmdbId == null) {
+                tmdbId = aiService.aiGetMovieTmdbId(movie.getChineseName());
+            }
+            movie.setTmdbId(tmdbId);
+            return movie;     
 		} catch (Exception e) {
-			System.err.println("Exception Occurred!" + e.getStackTrace());
+			System.err.println("Exception Occurred!" + e.getMessage());
+            e.printStackTrace();
             return null;
 		}
     }
 
     // C1-2: Call TMDB API to fetch movie information by tmdbId
-    public Movie getMovieFromTmdbByTmdbId(Integer tmdbId) {
+    public Movie fillMovieMoreInfo(Movie movie) {
         try {
-            Movie fetchedMovie = tmdbMovieClient.fillMovieInfoByTmdbId(tmdbId);
-            if (fetchedMovie != null) {
-                tmdbMovieClient.fillEngName(fetchedMovie);
-                tmdbMovieClient.fillKrAgeRestriction(fetchedMovie);
-                tmdbMovieClient.fillMovieStaff(fetchedMovie);
-                fillTWPlatformInformation(fetchedMovie);
-            }
-            return fetchedMovie;
+            movie = tmdbMovieClient.fillMovieOtherInfo(movie);
+            movie = tmdbMovieClient.fillKrAgeRestriction(movie);
+            movie = tmdbMovieClient.fillMovieStaff(movie);
+            movie = fillTWPlatformInformation(movie);
+            return movie;     
 		} catch (Exception e) {
-			System.err.println("Exception Occurred!" + e.getStackTrace());
+			System.err.println("Exception Occurred!" + e.getMessage());
+            e.printStackTrace();
             return null;
 		}
     }
@@ -129,44 +137,47 @@ public class MovieService {
     }
 
     // U: Update a movie
-    public Movie updateMovie(@PathVariable Integer id, @RequestBody Movie updatedMovie, boolean apiMode) {
+    public Movie updateMovie(@PathVariable Integer id, @RequestBody Movie movieToUpdate, boolean apiMode) {
         return movieRepository.findById(id)
                 .map(movie -> {
-                    movie.setTmdbId(updatedMovie.getTmdbId());
+                    movie.setTmdbId(movieToUpdate.getTmdbId());
                     if ((movie.getChineseName().isEmpty() && apiMode) || !apiMode) {
-                        movie.setChineseName(updatedMovie.getChineseName());
+                        movie.setChineseName(movieToUpdate.getChineseName());
                     }
                     if ((movie.getEnglishName().isEmpty() && apiMode) || !apiMode) {
-                        movie.setEnglishName(updatedMovie.getEnglishName());
+                        movie.setEnglishName(movieToUpdate.getEnglishName());
                     }
                     if ((movie.getKoreanName().isEmpty() && apiMode) || !apiMode) {
-                        movie.setKoreanName(updatedMovie.getKoreanName());
+                        movie.setKoreanName(movieToUpdate.getKoreanName());
                     }
-                    movie.setTotalRuntime(updatedMovie.getTotalRuntime());
-                    movie.setKrAgeRestriction(updatedMovie.getKrAgeRestriction());
-                    movie.setReleaseDate(updatedMovie.getReleaseDate());
-                    movie.setGenres(updatedMovie.getGenres());
-                    movie.setMovieTwPlatformMap(updatedMovie.getMovieTwPlatformMap());
-                    movie.setLeadActors(updatedMovie.getLeadActors());
-                    movie.setDirectorNames(updatedMovie.getDirectorNames());
-                    movie.setScriptwriterNames(updatedMovie.getScriptwriterNames());
-                    movie.setMainPosterUrl(updatedMovie.getMainPosterUrl());
+                    movie.setTotalRuntime(movieToUpdate.getTotalRuntime());
+                    movie.setKrAgeRestriction(movieToUpdate.getKrAgeRestriction());
+                    movie.setReleaseDate(movieToUpdate.getReleaseDate());
+                    movie.setGenres(movieToUpdate.getGenres());
+                    movie.setMovieTwPlatformMap(movieToUpdate.getMovieTwPlatformMap());
+                    movie.setLeadActors(movieToUpdate.getLeadActors());
+                    movie.setDirectorNames(movieToUpdate.getDirectorNames());
+                    movie.setScriptwriterNames(movieToUpdate.getScriptwriterNames());
+                    movie.setMainPosterUrl(movieToUpdate.getMainPosterUrl());
                     if (!apiMode) {
-                        movie.setTrailerUrl(updatedMovie.getTrailerUrl());
+                        movie.setTrailerUrl(movieToUpdate.getTrailerUrl());
                     }
-                    movie.setIntroPageUrl(updatedMovie.getIntroPageUrl());
+                    movie.setIntroPageUrl(movieToUpdate.getIntroPageUrl());
                     if (!apiMode) {
-                        movie.setNamuWikiPageUrl(updatedMovie.getNamuWikiPageUrl());
+                        movie.setChineseWikipediaPageUrl(movieToUpdate.getChineseWikipediaPageUrl());
                     }
-                    if (movie.isManuallyEdited() == false) {
-                        movie.setManuallyEdited(updatedMovie.isManuallyEdited());
+                    if (!apiMode) {
+                        movie.setNamuWikiPageUrl(movieToUpdate.getNamuWikiPageUrl());
                     }
-                    movie.setLastUpdatedByApi(updatedMovie.getLastUpdatedByApi());
+                    if (movie.isAiOrManuallyEdited() == false) {
+                        movie.setAiOrManuallyEdited(movieToUpdate.isAiOrManuallyEdited());
+                    }
+                    movie.setLastUpdatedByApi(movieToUpdate.getLastUpdatedByApi());
                     return movieRepository.save(movie);
                 })
                 .orElseGet(() -> {
-                    updatedMovie.setMovieId(id);
-                    return movieRepository.save(updatedMovie);
+                    movieToUpdate.setMovieId(id);
+                    return movieRepository.save(movieToUpdate);
                 });
     }
 

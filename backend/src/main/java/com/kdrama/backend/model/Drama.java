@@ -75,7 +75,7 @@ public class Drama {
 
     private String mainPosterUrl; // Fetched via TMDB API
 
-    private String trailerUrl; // YouTube video link (manually edited)
+    private String trailerUrl; // YouTube video link (can be manually edited)
 
     private String introPageUrl; // The information page on TMDB
 

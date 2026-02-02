@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kdrama.backend.model.Movie;
+import com.kdrama.backend.service.AiService;
 import com.kdrama.backend.service.MovieService;
 
 @RestController
@@ -22,25 +23,49 @@ public class MovieController {
 
     private final ObjectMapper objectMapper;
 
-    public MovieController(ObjectMapper objectMapper) {
+    private final AiService aiService;
+
+    public MovieController(ObjectMapper objectMapper, AiService aiService) {
         this.objectMapper = objectMapper;
+        this.aiService = aiService;
     }
 
     @PostMapping("/import")
     public ResponseEntity<?> importMovie(@RequestParam String name) {
-        // Check if the movie (with one or more seasons) already exists in database
-        Optional<Movie> existingMovie = movieService.getMovieByChineseName(name);
-        if (existingMovie.isPresent()) {
+        // Check if the movie already exists in database
+        Optional<Movie> optionalExistingMovie = movieService.getMovieByChineseName(name);
+        if (optionalExistingMovie.isPresent()) {
             // movie 已存在 → 回傳 409
             return ResponseEntity.status(HttpStatus.SC_CONFLICT)
                                 .body("Movie already exists in database");
         }
-        Movie movie = movieService.getMovieFromTmdbByChineseName(name);
+        Movie movie = movieService.fillMovieBasicInfo(name);
         if (movie == null) {
             return ResponseEntity.notFound().build();
         }
-        Movie savedMovie = movieService.saveMovie(movie);
-        return ResponseEntity.ok(savedMovie);
+        // Check if the movie already exists in database
+        optionalExistingMovie = movieService.getMovieByTmdbId(movie.getTmdbId());
+        if (optionalExistingMovie.isPresent()) {
+            // movie 已存在 → 回傳 409
+            return ResponseEntity.status(HttpStatus.SC_CONFLICT)
+                                .body("Movie already exists in database");
+        }
+        
+        movie = movieService.fillMovieMoreInfo(movie);
+
+        if (movie == null) {
+            return ResponseEntity.notFound().build();
+        }
+        else {
+            movie = aiService.aiUpdateMovieInfo(movie);
+            if (movie == null) {
+                return ResponseEntity.notFound().build();
+            }
+            else {
+                Movie savedMovie = movieService.saveMovie(movie);
+                return ResponseEntity.ok(savedMovie);
+            }    
+        }
     }
 
     @GetMapping("/findAll")
@@ -94,20 +119,27 @@ public class MovieController {
         }
         else {
             Movie movie = optionalMovie.get();
-            Movie updatedMovie = movieService.getMovieFromTmdbByTmdbId(movie.getTmdbId());
+            Movie updatedMovie = movieService.fillMovieMoreInfo(movie);
             if (updatedMovie == null) {
                 return ResponseEntity.notFound().build();
             }
             else {
                 Movie savedMovie = movieService.updateMovie(id, updatedMovie, true);
                 return ResponseEntity.ok(savedMovie);
-            }
+            } 
         }
     }
 
+    @PutMapping("/aiupdate/{id}")
+    public ResponseEntity<?> updateSelectedMovieViaAiAndForm(@PathVariable Integer id, @RequestBody Movie movieToUpdate) {
+       Movie aiUpdated = aiService.aiUpdateMovieInfo(movieToUpdate);
+       Movie movie = movieService.updateMovie(id, aiUpdated, false);
+       return ResponseEntity.ok(movie);
+    }
+
     @PutMapping("/allupdate/{id}")
-    public ResponseEntity<Movie> updateSelectedMovieAllInfo(@PathVariable Integer id, @RequestBody Movie updatedMovie) {
-        Movie movie = movieService.updateMovie(id, updatedMovie, false);
+    public ResponseEntity<Movie> updateSelectedMovieViaForm(@PathVariable Integer id, @RequestBody Movie movieToUpdate) {
+        Movie movie = movieService.updateMovie(id, movieToUpdate, false);
         return ResponseEntity.ok(movie);
     }
 

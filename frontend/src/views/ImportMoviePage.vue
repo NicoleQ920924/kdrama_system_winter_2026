@@ -8,6 +8,7 @@
     const msg = ref('')
     const msgClass = ref('')
     const movieName = ref('')
+    const movieNameAdded = ref('')
 
     const movieId = ref('')
 
@@ -22,26 +23,30 @@
 
         // Add loading status
         loadingMovies.value.push(movieName.value)
+        movieNameAdded.value = movieName.value
 
         try {
             const res = await importMovie(movieName.value)
             console.log(res.status)
             if (res.status === 200) {
-                msg.value = `${movieName.value} 已成功加入資料庫！`
+                msg.value = `${movieNameAdded.value} 已成功加入資料庫！`
                 msgClass.value = 'success-msg text-center'
                 movieId.value = res.data.movieId
             }
         } catch (err) {
             console.error(err)
             if (err.response && err.response.status === 409) {
-                msg.value = `${movieName.value} 已存在資料庫！`
+                msg.value = `${movieNameAdded.value} 已存在資料庫！`
+                msgClass.value = 'error-msg text-center'
+            } else if (err.response && err.response.status === 404) {
+                msg.value = `${movieNameAdded.value} 查無此韓影！有可能是TMDB ID找不到，您可以透過新增演員頁面重試。`
                 msgClass.value = 'error-msg text-center'
             } else {
-                msg.value = `加入 ${movieName.value} 時發生錯誤`
+                msg.value = `加入 ${movieNameAdded.value} 時發生錯誤`
                 msgClass.value = 'error-msg text-center'
             }
         } finally {
-            const index = loadingMovies.value.indexOf(movieName.value)
+            const index = loadingMovies.value.indexOf(movieNameAdded.value)
             if (index !== -1) loadingMovies.value.splice(index, 1)
         }
     }
@@ -65,18 +70,19 @@
             <div v-else>
                 <form class="form" method="post">
                     <p class="form-group form-text-p">
-                        <input v-model="movieName" class="form-control form-text-field" name="movieName" placeholder="請輸入韓影的正確中文譯名" required aria-required="true">
+                        <input v-model="movieName" class="form-control form-text-field" name="movieName" placeholder="" required aria-required="true">
                     </p>
+                    <div class="input-msg text-center">請盡量打台灣官方譯名</div>
                     <div class="text-center">
                         <button @click="startImportMovie" type="button" class="btn form-btn shadow-none" :disabled="loadingMovies.length > 0">確定</button>
                     </div>
                 </form>
                 <div :class="msgClass">{{ msg }}</div>
                 <div v-if="msgClass == 'success-msg text-center'" class="text-center">
-                    <router-link class="btn back-btn text-center" :to="{ name: 'MoviePage', query: { id: movieId } }">點我看 {{ movieName }} 的專頁</router-link>
+                    <router-link class="btn back-btn text-center" :to="{ name: 'MoviePage', query: { id: movieId } }">點我看 {{ movieNameAdded }} 的專頁</router-link>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center'" class="text-center">
-                    <router-link class="btn back-btn text-center" :to="{ name: 'UpdateMoviePage', query: { id: movieId } }">點我編輯 {{ movieName }} 的資料</router-link>
+                    <router-link class="btn back-btn text-center" :to="{ name: 'UpdateMoviePage', query: { id: movieId } }">點我編輯 {{ movieNameAdded }} 的資料</router-link>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">
                     <button class="btn back-btn text-center" @click="backToMovieList">返回韓影列表</button>

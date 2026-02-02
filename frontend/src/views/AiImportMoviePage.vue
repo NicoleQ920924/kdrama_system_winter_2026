@@ -1,7 +1,8 @@
 <script setup>
     import { computed, ref } from 'vue'
     import Spinner from '@/components/Spinner.vue'
-    import { generateAiResponse } from '@/services/aiService'
+    import AiMovieSearchResultModal from '@/components/modals/AiMovieSearchResultModal.vue'
+    import { searchMoviesByPrompt } from '@/services/aiService'
     import { useRouter } from 'vue-router'
 
     const router = useRouter()
@@ -9,7 +10,10 @@
     const loading = ref(false)
     const msg = ref('')
     const msgClass = ref('')
-    const aiResponse = ref('')
+    const searchResults = ref([])
+    const showSearchModal = ref(false)
+
+    const movieIncludeString = ref('')
 
     const actorName1 = ref('')
     const actorName2 = ref('')
@@ -48,7 +52,8 @@
     const pickedPlatforms = computed(() => (selectedPlatforms.value ?? []).map(trimmed).filter(Boolean))
 
     const hasAnyCoreCriteria = computed(() => {
-        return pickedActors.value.length > 0 ||
+        return movieIncludeString.value !== '' ||
+            pickedActors.value.length > 0 ||
             pickedCharacters.value.length > 0 ||
             trimmed(characterDescription.value) !== '' ||
             trimmed(partOfPlot.value) !== ''
@@ -58,8 +63,9 @@
 
     const promptToSend = computed(() => {
         const lines = []
-        lines.push('請搜尋一部韓影，並根據以下條件挑選最符合的一部（若不確定請列出 3 個候選並簡述理由）。')
+        lines.push('請搜尋一部韓影，並根據以下條件挑選最符合的一部（若不確定請列出 3 個候選）。')
 
+        if (movieIncludeString.value !== '') lines.push(`- 電影名稱包含的字串：${movieIncludeString.value}`)
         if (pickedActors.value.length) lines.push(`- 演員：${pickedActors.value.join('、')}`)
         if (pickedCharacters.value.length) lines.push(`- 角色名稱：${pickedCharacters.value.join('、')}`)
         if (trimmed(characterDescription.value) !== '') lines.push(`- 角色描述：${trimmed(characterDescription.value)}`)
@@ -67,7 +73,8 @@
         if (pickedGenres.value.length) lines.push(`- 類型：${pickedGenres.value.join('、')}`)
         if (pickedPlatforms.value.length) lines.push(`- 台灣可觀看平台（越符合越好）：${pickedPlatforms.value.join('、')}`)
 
-        lines.push('請用繁體中文回覆，並包含：作品名稱（中/英/韓如可）、簡短介紹、主要演員、以及為何符合上述條件。')
+       lines.push('請再三透過搜尋確認片名都是台灣官方譯名，且簡介有包含劇情大綱。')
+        lines.push('請用繁體中文回覆，並以 JSON 格式提供片名和簡介。')
         return lines.join('\n')
     })
 
@@ -76,21 +83,29 @@
 
         msg.value = ''
         msgClass.value = ''
-        aiResponse.value = ''
+        searchResults.value = []
+        showSearchModal.value = false
 
         if (!hasAnyCoreCriteria.value) {
-            msg.value = '送出前請至少填寫：任一位演員 / 任一個角色 / 角色描述 / 劇情片段'
+            msg.value = '送出前請至少填寫：片名包含的字串 / 任一位演員 / 任一個角色 / 角色描述 / 劇情片段'
             msgClass.value = 'error-msg text-center'
             return
         }
 
         loading.value = true
         try {
-            const res = await generateAiResponse(promptToSend.value)
+            const res = await searchMoviesByPrompt(promptToSend.value)
             if (res.status === 200) {
-                aiResponse.value = res.data?.response ?? ''
-                msg.value = 'AI 搜尋完成！'
-                msgClass.value = 'success-msg text-center'
+                const results = res.data?.results ?? []
+                if (results.length > 0) {
+                    searchResults.value = results
+                    showSearchModal.value = true
+                    msg.value = 'AI 搜尋完成！請點擊彈出視窗裡的片名加入資料庫'
+                    msgClass.value = 'success-msg text-center'
+                } else {
+                    msg.value = 'AI 未能找到符合條件的韓影，請重新搜尋'
+                    msgClass.value = 'error-msg text-center'
+                }
             }
         } catch (err) {
             console.error(err)
@@ -108,6 +123,13 @@
 
 <template>
     <div>
+        <!-- AI Search Result Modal -->
+        <AiMovieSearchResultModal 
+            v-if="showSearchModal"
+            :searchResults="searchResults"
+            @close="closeSearchModal"
+        />
+
         <h2>AI 搜尋韓影（依條件）</h2>
 
         <transition name="fade" mode="out-in">
@@ -117,6 +139,10 @@
 
             <div v-else key="form">
                 <form class="form" method="post">
+                    <p class="form-group form-text-p">
+                        <label for="movieIncludeString" class="form-label">片名包含的字串</label>
+                        <input v-model="movieIncludeString" id="movieIncludeString" class="form-control form-text-field" name="movieIncludeString" placeholder="例如：犯罪, 殺手, 愛情">
+                    </p>
                     <p class="form-group form-text-p">
                         <label for="actorName1" class="form-label">演員姓名 1</label>
                         <input v-model="actorName1" id="actorName1" class="form-control form-text-field" name="actorName1" placeholder="例如：宋康昊">
@@ -187,7 +213,7 @@
                     </div>
 
                     <div class="input-msg text-center">
-                        送出前請至少填寫：任一位演員 / 任一個角色 / 角色描述 / 劇情片段（其他欄位可選填）。
+                        送出前請至少填寫：片名包含的字串 / 任一位演員 / 任一個角色 / 角色描述 / 劇情片段（其他欄位可選填）。
                     </div>
 
                     <div class="text-center">
@@ -204,12 +230,7 @@
 
                 <div :class="msgClass">{{ msg }}</div>
 
-                <div v-if="aiResponse" class="response-wrap">
-                    <h5 class="text-center response-title">AI 回覆</h5>
-                    <pre class="form-control response-pre">{{ aiResponse }}</pre>
-                </div>
-
-                <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">
+                <div v-if="msgClass == 'success-msg text-center'" class="text-center">
                     <button class="btn back-btn text-center" @click="backToMovieList">返回韓影列表</button>
                 </div>
             </div>

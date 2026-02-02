@@ -15,12 +15,22 @@ export const findSelectedMovie = (id) => {
   return axios.get(`${API_BASE}/${id}`);
 };
 
+export const findSelectedMovieByChineseName = (chineseName, displayNameMode) => {
+  return axios.get(`${API_BASE}/chineseName`, {
+    params: { chineseName, displayNameMode }
+  });
+};
+
 export const updateSelectedMovieViaApi = (id) => {
   return axios.put(`${API_BASE}/apiupdate/${id}`, {});
 };
 
-export const updateSelectedMovieAllInfo = (id, updatedMovie) => {
-  return axios.put(`${API_BASE}/allupdate/${id}`, updatedMovie);
+export const updateSelectedMovieViaAiAndForm = (id, movieToUpdate) => {
+  return axios.put(`${API_BASE}/aiupdate/${id}`, movieToUpdate);
+};
+
+export const updateSelectedMovieViaForm = (id, movieToUpdate) => {
+  return axios.put(`${API_BASE}/allupdate/${id}`, movieToUpdate);
 };
 
 export const deleteSelectedMovie = (id) => {

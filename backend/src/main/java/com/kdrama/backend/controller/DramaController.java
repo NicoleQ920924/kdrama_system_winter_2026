@@ -25,7 +25,7 @@ public class DramaController {
 
     private final ObjectMapper objectMapper;
     
-    private AiService aiService;
+    private final AiService aiService;
 
     public DramaController(ObjectMapper objectMapper, AiService aiService) {
         this.objectMapper = objectMapper;

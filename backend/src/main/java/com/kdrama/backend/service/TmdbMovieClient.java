@@ -28,37 +28,43 @@ public class TmdbMovieClient {
     private static final String BASE_SEARCH_URL = "https://api.themoviedb.org/3/search/movie";
     private static final String BASE_URL = "https://api.themoviedb.org/3/movie";
 
-    public Integer getMovieTmdbIdByChineseName(String name) throws IOException {
+    public Integer getMovieTmdbIdByMovieName(String chineseName) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
-        String query = URLEncoder.encode(name, "UTF-8");
+        String query = URLEncoder.encode(chineseName, "UTF-8");
+
         String requestUrl = BASE_SEARCH_URL + "?api_key=" + tmdbApiKey + "&language=zh-TW&query=" + query;
 
         try {
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-            if (results.isArray() && results.size() > 0) {
-                JsonNode firstResult = results.get(0);
-                Integer tmdbId = firstResult.path("id").asInt();
-
-                return tmdbId;
+            if (results != null && results.isArray() && results.size() > 0) {
+                for (JsonNode node : results) {
+                    String fetchedOriginalLanguage = node.path("original_language").asText();
+                    if (fetchedOriginalLanguage.equals("ko")) {
+                        return node.path("id").asInt();
+                    }
+                }
             }
             return null;
 
         } catch (Exception e) {
-            System.out.println("Exception Occurred!" + e.getStackTrace());
+            System.out.println("Exception Occurred!" + e.getMessage());
+            e.printStackTrace();
             return null;
         }      
     }
 
-    public Movie fillMovieInfoByTmdbId(Integer tmdbId) throws IOException {
+    public Movie fillMovieOtherInfo(Movie movie) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
-        String requestUrl = BASE_URL + "/" + tmdbId + "?api_key=" + tmdbApiKey + "&language=zh-TW";
+        if (movie == null) {
+            return null;
+        }
 
         try {
+            String requestUrl = BASE_URL + "/" + movie.getTmdbId() + "?api_key=" + tmdbApiKey + "&language=zh-TW";
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
             
-            if (results.size() > 0 ) {
+            if (results != null && !results.path("status_message").asText().equals("The resource you requested could not be found.")) {
                 // Fill in additional information from the fetched object
-                Movie movie = new Movie();
 
                 // A condition "original_country = 'KR'" added on 2025/8/16
                 if (results.path("origin_country").path(0).asText().equals("KR")) {
@@ -74,9 +80,6 @@ public class TmdbMovieClient {
                     }
 
                     // Others
-                    movie.setTmdbId(tmdbId);
-                    movie.setChineseName(results.path("title").asText()); // The same as the search query as for now
-                    movie.setKoreanName(results.path("original_title").asText());
                     movie.setMainPosterUrl("https://image.tmdb.org/t/p/original" + results.path("poster_path").asText());
                     movie.setIntroPageUrl("https://www.themoviedb.org/movie/" + results.path("id").asInt());
                     movie.setTotalRuntime(results.path("runtime").asInt());
@@ -100,39 +103,16 @@ public class TmdbMovieClient {
         }      
     }
 
-    public Movie fillEngName(Movie movie) throws IOException {
-        String tmdbApiKey = tmdbProperties.getKey();
-        String requestUrl = BASE_URL + "/" + movie.getTmdbId() + "?api_key=" + tmdbApiKey + "&language=en";
-
-        try {
-            JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-            if (results.size() > 0) {
-                // Fill in the English information
-                movie.setEnglishName(results.path("title").asText());
-
-                // Save the information of the movie to a .json file
-                String backupFilePath = "backup/movie_backup.json";
-                File backupFile = new File(backupFilePath);
-                backupFile.getParentFile().mkdirs();
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, movie);
-
-                return movie;
-            }
-            return null;
-
-        } catch (Exception e) {
-            System.out.println("Exception Occurred!" + e.getStackTrace());
-            return null;
-        }      
-    }
-
     public Movie fillKrAgeRestriction(Movie movie) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
-        String requestUrl = BASE_URL + "/" + movie.getTmdbId() + "/release_dates?api_key=" + tmdbApiKey;
+        if (movie == null) {
+            return null;
+        }
 
         try {
+            String requestUrl = BASE_URL + "/" + movie.getTmdbId() + "/release_dates?api_key=" + tmdbApiKey;
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-            if (results.size() > 0) {
+            if (results != null && !results.path("status_message").asText().equals("The resource you requested could not be found.")) {
                 // Fill in the Korean Age Restriction
                 if (results.isArray()) {
                     for (JsonNode node : results) {
@@ -160,11 +140,14 @@ public class TmdbMovieClient {
 
     public Movie fillMovieStaff (Movie movie) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
-        String requestUrl = BASE_URL + "/" + movie.getTmdbId() + "/credits?api_key=" + tmdbApiKey + "&language=zh-TW";
+        if (movie == null) {
+            return null;
+        }
 
         try {
+            String requestUrl = BASE_URL + "/" + movie.getTmdbId() + "/credits?api_key=" + tmdbApiKey + "&language=zh-TW";
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-            if (results.size() > 0) {
+            if (results != null && !results.path("status_message").asText().equals("The resource you requested could not be found.")) {
                 // Fill in additional information from the fetched object
                 // Director and Scriptwriter Names
                 List<String> directorNames = new ArrayList<String>();

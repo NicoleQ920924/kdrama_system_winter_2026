@@ -190,5 +190,6 @@ Below is for kdrama_system_winter_2026
 
 2026/2/2
 - Fix AI Import Drama
+- Start writing code for AI Import Movie (not completed yet)
 
 ============================================================================================================

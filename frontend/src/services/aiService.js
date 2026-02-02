@@ -13,3 +13,11 @@ export const generateAiResponse = (prompt) => {
 export const searchDramasByPrompt = (prompt) => {
   return axios.post(`${API_BASE}/drama/search`, { prompt });
 };
+
+/**
+ * Search for movies based on user criteria
+ * Returns top 3 results with titles and summaries
+ */
+export const searchMoviesByPrompt = (prompt) => {
+  return axios.post(`${API_BASE}/movie/search`, { prompt });
+};
