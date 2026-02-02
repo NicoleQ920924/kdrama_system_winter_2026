@@ -188,4 +188,7 @@ Below is for kdrama_system_winter_2026
 2026/1/30
 - Improve AI Import Drama (esp. the sequence of filling data)
 
+2026/2/2
+- Fix AI Import Drama
+
 ============================================================================================================
