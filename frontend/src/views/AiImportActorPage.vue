@@ -1,7 +1,8 @@
 <script setup>
     import { computed, ref } from 'vue'
     import Spinner from '@/components/Spinner.vue'
-    import { generateAiResponse } from '@/services/aiService'
+    import AiActorSearchResultModal from '@/components/modals/AiActorSearchResultModal.vue'
+    import { searchActorsByPrompt } from '@/services/aiService'
     import { useRouter } from 'vue-router'
 
     const router = useRouter()
@@ -9,12 +10,12 @@
     const loading = ref(false)
     const msg = ref('')
     const msgClass = ref('')
+    const searchResults = ref([])
+    const showSearchModal = ref(false)
 
     const characterName = ref('')
     const workName = ref('')
     const workDescription = ref('')
-
-    const aiResponse = ref('')
 
     const trimmedCharacterName = computed(() => characterName.value.trim())
     const trimmedWorkName = computed(() => workName.value.trim())
@@ -28,9 +29,9 @@
     const promptToSend = computed(() => {
         // Prefer Drama/Movie name if provided; otherwise use description
         if (trimmedWorkName.value !== '') {
-            return `請搜尋一位韓國演員，他/她有演過 ${trimmedWorkName.value} 這部作品裡的 ${trimmedCharacterName.value}`
+            return `請搜尋三位韓國演員，他/她有演過 ${trimmedWorkName.value} 這部作品裡的 ${trimmedCharacterName.value}`
         }
-        return `請搜尋一位韓國演員，他/她有演過有符合 ${trimmedWorkDescription.value} 描述的作品裡的 ${trimmedCharacterName.value}`
+        return `請搜尋三位韓國演員，他/她有演過有符合 ${trimmedWorkDescription.value} 描述的作品裡的 ${trimmedCharacterName.value}`
     })
 
     async function startAiImportActor() {
@@ -38,7 +39,8 @@
 
         msg.value = ''
         msgClass.value = ''
-        aiResponse.value = ''
+        searchResults.value = []
+        showSearchModal.value = false
 
         if (trimmedCharacterName.value === '') {
             msg.value = '請先填寫「角色名稱」'
@@ -53,11 +55,18 @@
 
         loading.value = true
         try {
-            const res = await generateAiResponse(promptToSend.value)
+            const res = await searchActorsByPrompt(promptToSend.value)
             if (res.status === 200) {
-                aiResponse.value = res.data?.response ?? ''
-                msg.value = 'AI 搜尋完成！'
-                msgClass.value = 'success-msg text-center'
+                const results = res.data?.results ?? []
+                if (results.length > 0) {
+                    searchResults.value = results
+                    showSearchModal.value = true
+                    msg.value = 'AI 搜尋完成！請點擊彈出視窗裡的演員名稱加入資料庫'
+                    msgClass.value = 'success-msg text-center'
+                } else {
+                    msg.value = 'AI 未能找到符合條件的韓國演員，請重新搜尋'
+                    msgClass.value = 'error-msg text-center'
+                }
             }
         } catch (err) {
             console.error(err)
@@ -75,6 +84,13 @@
 
 <template>
     <div>
+        <!-- AI Search Result Modal -->
+        <AiActorSearchResultModal 
+            v-if="showSearchModal"
+            :searchResults="searchResults"
+            @close="closeSearchModal"
+        />
+
         <h2>AI 搜尋演員（依角色）</h2>
 
         <transition name="fade" mode="out-in">
@@ -139,11 +155,6 @@
                 </form>
 
                 <div :class="msgClass">{{ msg }}</div>
-
-                <div v-if="aiResponse" class="response-wrap">
-                    <h5 class="text-center response-title">AI 回覆</h5>
-                    <pre class="form-control response-pre">{{ aiResponse }}</pre>
-                </div>
 
                 <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">
                     <button class="btn back-btn text-center" @click="backToActorList">返回演員列表</button>

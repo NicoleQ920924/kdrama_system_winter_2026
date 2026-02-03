@@ -55,11 +55,11 @@ public class DramaService {
             drama.setChineseName(chineseName);
             Integer seasonNumber = aiService.aiGetDramaSeasonNumber(drama.getChineseName());
             drama.setSeasonNumber(seasonNumber);
-            Integer tmdbId = tmdbDramaClient.getDramaTmdbIdByDramaName(drama.getChineseName());
-            if (tmdbId == null) {
-                tmdbId = aiService.aiGetDramaTmdbId(drama.getChineseName());
+            Integer fetchedTmdbId = tmdbDramaClient.getDramaTmdbIdByDramaName(drama.getChineseName());
+            if (fetchedTmdbId == null) {
+                fetchedTmdbId = aiService.aiGetDramaTmdbId(drama.getChineseName());
             }
-            drama.setTmdbId(tmdbId);
+            drama.setTmdbId(fetchedTmdbId);
             return drama;     
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());
@@ -134,15 +134,15 @@ public class DramaService {
 		}
     }
 
-    // C-Bonus: Check if a drama has multiple seasons (to check if new seasonal posters are necessary)
-    public boolean isMultipleSeasons(Drama drama) {
-        Integer tmdbId = drama.getTmdbId();
-        List<Drama> fetchedDramas = getDramasByTmdbId(tmdbId);
-        if (drama.getSeasonNumber() > 1 || fetchedDramas.size() > 1) {
-            return true;
+    // C-Bonus 2: Check how many seasons a drama has according to tmdbId
+    public Integer getDramaSeasonCount (@RequestBody Integer tmdbId) {
+        try {
+            Integer totalSeasons = tmdbDramaClient.getTotalSeasonsByTmdbId(tmdbId);
+            return totalSeasons;
         }
-        else {
-            return false;
+        catch (Exception e) {
+            System.err.println("Exception Occurred!" + e.getMessage());
+            return null;
         }
     }
 

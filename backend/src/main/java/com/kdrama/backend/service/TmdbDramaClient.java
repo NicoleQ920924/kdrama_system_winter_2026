@@ -418,5 +418,26 @@ public class TmdbDramaClient {
             return isDrama;
         }      
     }
+
+    public Integer getTotalSeasonsByTmdbId (Integer tmdbId) throws IOException {
+        String tmdbApiKey = tmdbProperties.getKey();
+        String requestUrl = BASE_URL + "/" + tmdbId + "?api_key=" + tmdbApiKey + "&language=zh-TW";
+
+        Integer totalSeasons = 0;
+
+        try {
+            JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
+            if (!results.path("status_message").asText().equals("The resource you requested could not be found.")) {
+                totalSeasons = results.path("number_of_seasons").asInt();
+            }
+
+            return totalSeasons;
+
+        } catch (Exception e) {
+            System.out.println("Exception Occurred!" + e.getMessage());
+            e.printStackTrace();
+            return totalSeasons;
+        }      
+    }
 }
 

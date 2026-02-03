@@ -160,7 +160,7 @@ public class MovieController {
        return ResponseEntity.ok(movie);
     }
 
-    @PutMapping("/allupdate/{id}")
+    @PutMapping("/formupdate/{id}")
     public ResponseEntity<Movie> updateSelectedMovieViaForm(@PathVariable Integer id, @RequestBody Movie movieToUpdate) {
         Movie movie = movieService.updateMovie(id, movieToUpdate, false);
         return ResponseEntity.ok(movie);

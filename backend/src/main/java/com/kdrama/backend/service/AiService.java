@@ -37,6 +37,43 @@ public class AiService {
     }
 
     /**
+     * Search for actors based on user criteria and return top 3 results
+     * Returns a JSON array with summaries and notable works
+     */
+    public ArrayNode aiSearchActorsByPrompt(String prompt) {
+        try {
+            // Build a prompt to ask LLM for top 3 actors with summaries and notable works
+            String searchPrompt = prompt + "\n\n請列出 TOP 3 符合條件的韓國演員。" +
+                    "以 JSON 陣列格式回覆，包含：name（台灣中文譯名），summary（40字以下簡介，包含該演員有出演的1~3部著名影視作品）。" +
+                    "回覆格式：[{\"name\": \"演員名1\", \"summary\": \"簡介1\"}, {\"name\": \"演員名2\", \"summary\": \"簡介2\"}, {\"name\": \"演員名3\", \"summary\": \"簡介3\"}]" +
+                    "只回覆 JSON 陣列，不需要其他文字。";
+
+            String response = generateResponse(searchPrompt);
+
+            // Try to parse the response as JSON
+            ArrayNode results = parseAndExtractItems(response);
+            
+            // If parsing fails or we get fewer than 3 results, try again with clearer instructions
+            if (results.size() == 0) {
+                results = fallbackParseItems(response);
+            }
+
+            // Ensure we have at most 3 results
+            ArrayNode limitedResults = objectMapper.createArrayNode();
+            for (int i = 0; i < Math.min(results.size(), 3); i++) {
+                limitedResults.add(results.get(i));
+            }
+
+            return limitedResults;
+
+        } catch (Exception e) {
+            System.err.println("Exception occurred during drama search: " + e.getMessage());
+            e.printStackTrace();
+            return objectMapper.createArrayNode();
+        }
+    }
+
+    /**
      * Search for dramas based on user criteria and return top 3 results
      * Returns a JSON array with drama titles and summaries
      */
@@ -44,18 +81,18 @@ public class AiService {
         try {
             // Build a prompt to ask LLM for top 3 dramas with summaries
             String searchPrompt = prompt + "\n\n請列出 TOP 3 符合條件的韓劇。" +
-                    "以 JSON 陣列格式回覆，包含：title（劇名），summary（20字左右簡介）。" +
-                    "回覆格式：[{\"title\": \"劇名1\", \"summary\": \"簡介1\"}, {\"title\": \"劇名2\", \"summary\": \"簡介2\"}, {\"title\": \"劇名3\", \"summary\": \"簡介3\"}]" +
+                    "以 JSON 陣列格式回覆，包含：name（劇名），summary（20字左右簡介）。" +
+                    "回覆格式：[{\"name\": \"劇名1\", \"summary\": \"簡介1\"}, {\"name\": \"劇名2\", \"summary\": \"簡介2\"}, {\"name\": \"劇名3\", \"summary\": \"簡介3\"}]" +
                     "只回覆 JSON 陣列，不需要其他文字。";
 
             String response = generateResponse(searchPrompt);
 
             // Try to parse the response as JSON
-            ArrayNode results = parseAndExtractWorks(response);
+            ArrayNode results = parseAndExtractItems(response);
             
             // If parsing fails or we get fewer than 3 results, try again with clearer instructions
             if (results.size() == 0) {
-                results = fallbackParseWorks(response);
+                results = fallbackParseItems(response);
             }
 
             // Ensure we have at most 3 results
@@ -77,18 +114,18 @@ public class AiService {
         try {
             // Build a prompt to ask LLM for top 3 movies with summaries
             String searchPrompt = prompt + "\n\n請列出 TOP 3 符合條件的韓國電影。" +
-                    "以 JSON 陣列格式回覆，包含：title（劇名），summary（20字左右簡介）。" +
-                    "回覆格式：[{\"title\": \"劇名1\", \"summary\": \"簡介1\"}, {\"title\": \"劇名2\", \"summary\": \"簡介2\"}, {\"title\": \"劇名3\", \"summary\": \"簡介3\"}]" +
+                    "以 JSON 陣列格式回覆，包含：name（劇名），summary（20字左右簡介）。" +
+                    "回覆格式：[{\"name\": \"劇名1\", \"summary\": \"簡介1\"}, {\"name\": \"劇名2\", \"summary\": \"簡介2\"}, {\"name\": \"劇名3\", \"summary\": \"簡介3\"}]" +
                     "只回覆 JSON 陣列，不需要其他文字。";
 
             String response = generateResponse(searchPrompt);
 
             // Try to parse the response as JSON
-            ArrayNode results = parseAndExtractWorks(response);
+            ArrayNode results = parseAndExtractItems(response);
             
             // If parsing fails or we get fewer than 3 results, try again with clearer instructions
             if (results.size() == 0) {
-                results = fallbackParseWorks(response);
+                results = fallbackParseItems(response);
             }
 
             // Ensure we have at most 3 results
@@ -109,7 +146,7 @@ public class AiService {
     /**
      * Parse JSON response from LLM
      */
-    private ArrayNode parseAndExtractWorks(String response) {
+    private ArrayNode parseAndExtractItems(String response) {
         try {
             // Find JSON array pattern
             Pattern pattern = Pattern.compile("\\[\\s*\\{.*?\\}\\s*\\]", Pattern.DOTALL);
@@ -130,9 +167,9 @@ public class AiService {
 
     /**
      * Fallback parsing if JSON extraction fails
-     * Extracts work titles and summaries from natural language response
+     * Extracts items (name and summary) from natural language response
      */
-    private ArrayNode fallbackParseWorks(String response) {
+    private ArrayNode fallbackParseItems(String response) {
         ArrayNode results = objectMapper.createArrayNode();
         
         try {
@@ -156,10 +193,10 @@ public class AiService {
                         summary = summary.substring(0, 50) + "...";
                     }
                     
-                    ObjectNode work = objectMapper.createObjectNode();
-                    work.put("title", title);
-                    work.put("summary", summary);
-                    results.add(work);
+                    ObjectNode item = objectMapper.createObjectNode();
+                    item.put("name", title);
+                    item.put("summary", summary);
+                    results.add(item);
                     count++;
                 }
             }
@@ -168,6 +205,27 @@ public class AiService {
         }
         
         return results;
+    }
+
+    public Integer aiGetActorTmdbId(String chineseName) {
+        try {
+            // Build a prompt to ask LLM for TMDB ID
+            String tmdbPrompt = "請問韓國演員\"" + chineseName + "\" 的 TMDB ID 是多少？" +
+                    "\n\n只回覆數字，不需要其他文字。";
+
+            String response = generateResponse(tmdbPrompt);
+
+            // Try to extract number from response
+            Pattern pattern = Pattern.compile("(\\d+)");
+            Matcher matcher = pattern.matcher(response);
+            if (matcher.find()) {
+                return Integer.parseInt(matcher.group(1));
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public Integer aiGetDramaSeasonNumber(String dramaTitle) {
@@ -231,6 +289,67 @@ public class AiService {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public Actor aiUpdateActorInfo(Actor actorToUpdate) {
+        Actor actorBefore = actorToUpdate;
+        try {
+            // Build a prompt to ask LLM to update actor info
+            String searchPrompt = "請搜尋並針對" + actorToUpdate.getChineseName() + "這位韓國演員更新內容：\n\n" +
+                    "包含：biography（請為該演員撰寫最多200字的簡介）、instagramPageUrl（該演員的官方Instagram帳號）、chineseWikipediaPageUrl (中文維基百科連結) 以及 namuWikiPageUrl (韓國Namu Wiki針對此演員的介紹網頁)。" + "\n\n 以 JSON 陣列格式回覆，包含上述欄位。" +
+                    "\n\n回覆格式：{\"biography\": \"簡介\", \"instagramPageUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
+                    "\n\n只回覆 JSON 物件，不需要其他文字。" +
+                    "\n\n如果無法找到相關資訊，請將對應欄位設為空字串。";
+
+            String response = generateResponse(searchPrompt);
+            
+            // Try to parse the response as JSON           
+            JsonNode parsed = objectMapper.readTree(response).path(0);
+
+            // Save the information of the parsed JsonNode to a .json file
+            String backupFilePath = "backup/ai_update_backup.json";
+            File backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, parsed);
+
+            String checkPrompt = "請以正確性衡量更新前還是更新後的資訊比較好：\n\n" +
+                    "演員簡介: " + "更新前 - \"" + actorBefore.getBiography() + "\" / 更新後 - \"" + parsed.path("biography").asText() + "\"\n" +
+                    "Instagram連結: " + "更新前 - \"" + actorBefore.getInstagramPageUrl() + "\" / 更新後 - \"" + parsed.path("instagramPageUrl").asText() + "\"\n" +
+                    "中文維基百科連結: " + "更新前 - \"" + actorBefore.getChineseWikipediaPageUrl() + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText() + "\"\n" +
+                    "韓國Namu Wiki連結: " + "更新前 - \"" + actorBefore.getNamuWikiPageUrl() + "\" / 更新後 - \"" + parsed.path("namuWikiPageUrl").asText() + "\"\n\n" +
+                    "請回傳出比較好的名稱。" +
+                    "\n\n回覆格式：{\"biography\": \"簡介\", \"instagramPageUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
+                    "\n\n只回覆 JSON 物件，不需要其他文字。";
+            
+            String checkResponse = generateResponse(checkPrompt);
+
+            // Try to parse the check response as JSON
+            JsonNode finalParsed = objectMapper.readTree(checkResponse);
+
+            // Update dramaToUpdate with finalParsed values if not empty
+            if (finalParsed.has("biography") && !finalParsed.path("biography").asText().isEmpty()) {
+                actorToUpdate.setBiography(finalParsed.path("biography").asText());
+            }
+            if (finalParsed.has("instagramPageUrl") && !finalParsed.path("instagramPageUrl").asText().isEmpty()) {
+                actorToUpdate.setInstagramPageUrl(finalParsed.path("instagramPageUrl").asText());
+            }
+            if (finalParsed.has("chineseWikipediaPageUrl") && !finalParsed.path("chineseWikipediaPageUrl").asText().isEmpty()) {
+                actorToUpdate.setChineseWikipediaPageUrl(finalParsed.path("chineseWikipediaPageUrl").asText());
+            }
+            if (finalParsed.has("namuWikiPageUrl") && !finalParsed.path("namuWikiPageUrl").asText().isEmpty()) {
+                actorToUpdate.setNamuWikiPageUrl(finalParsed.path("namuWikiPageUrl").asText());
+            }
+
+            // Save the information of the parsed JsonNode to a .json file
+            backupFilePath = "backup/actor_backup.json";
+            backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, actorToUpdate);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return actorToUpdate;
     }
 
     public Drama aiUpdateDramaInfo(Drama dramaToUpdate) {
@@ -360,7 +479,7 @@ public class AiService {
             }
 
             // Save the information of the parsed JsonNode to a .json file
-            backupFilePath = "backup/drama_backup.json";
+            backupFilePath = "backup/movie_backup.json";
             backupFile = new File(backupFilePath);
             backupFile.getParentFile().mkdirs();
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, movieToUpdate);

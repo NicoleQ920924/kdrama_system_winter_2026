@@ -73,7 +73,7 @@
         if (pickedGenres.value.length) lines.push(`- 類型：${pickedGenres.value.join('、')}`)
         if (pickedPlatforms.value.length) lines.push(`- 台灣可觀看平台（越符合越好）：${pickedPlatforms.value.join('、')}`)
 
-       lines.push('請再三透過搜尋確認片名都是台灣官方譯名，且簡介有包含劇情大綱。')
+        lines.push('請再三透過搜尋確認片名都是台灣官方譯名，且簡介有包含劇情大綱。')
         lines.push('請用繁體中文回覆，並以 JSON 格式提供片名和簡介。')
         return lines.join('\n')
     })

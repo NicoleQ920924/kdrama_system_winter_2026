@@ -1,6 +1,6 @@
 <script setup>
     import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-    import { findSelectedActor, updateSelectedActorViaApi, updateSelectedActorAllInfo } from '@/services/actorService'
+    import { findSelectedActorById, updateSelectedActorViaApi, updateSelectedActorViaAiAndForm, updateSelectedActorViaForm } from '@/services/actorService'
     import Spinner from '@/components/Spinner.vue'
     import { useRoute, useRouter } from 'vue-router'
 
@@ -14,6 +14,8 @@
     const selectedActorId = computed(() => route.query.id ?? '')
 
     const biographyBefore = ref('')
+    const instagramPageUrlBefore = ref('')
+    const chineseWikipediaPageUrlBefore = ref('')
     const namuWikiPageUrlBefore = ref('')
 
     const displayData = (data) => {
@@ -28,27 +30,27 @@
     ];
 
     const birthdayDisplay = computed({ // by ChatGPT
-        get: () => formatDate(updatedActor.birthday),  // 顯示用格式化
+        get: () => formatDate(loadedActor.birthday),  // 顯示用格式化
         set: (val) => {
-            updatedActor.birthday = parseDateChineseStr(val);
+            loadedActor.birthday = parseDateChineseStr(val);
         }
     });
 
     const biographyDisplay = computed({
-        get: () => displayData(updatedActor.biography),
+        get: () => displayData(loadedActor.biography),
         set: (val) => {
-            updatedActor.biography = (val === '無資料') ? '' : val;
+            loadedActor.biography = (val === '無資料') ? '' : val;
         }
     });
 
     const lastUpdatedByApiDisplay = computed({
-        get: () => formatDateTime(updatedActor.lastUpdatedByApi),
+        get: () => formatDateTime(loadedActor.lastUpdatedByApi),
         set: (val) => {
-            updatedActor.lastUpdatedByApi = parseDateTimeChineseStr(val);
+            loadedActor.lastUpdatedByApi = parseDateTimeChineseStr(val);
         }
     });
 
-    const updatedActor = reactive({
+    const loadedActor = reactive({
         actorId: null,            
         tmdbId: null,
         chineseName: '',
@@ -60,8 +62,10 @@
         biography: '',
         dramas: [],                
         movies: [],
+        instagramPageUrl: '',
+        chineseWikipediaPageUrl: '',
         namuWikiPageUrl: '',                
-        manuallyEdited: false,
+        aiOrManuallyEdited: false,
         lastUpdatedByApi: null    
     });
 
@@ -76,13 +80,13 @@
             const res = await updateSelectedActorViaApi(actorId, includesExistingWork)
             console.log(res.status)
             if (res.status === 200) {
-                loadActor()
-                msg.value = `${updatedActor.chineseName} 的API資料已更新完畢！`
+                msg.value = `${loadedActor.chineseName} 的API資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
+                loadActor()
             }
         } catch (err) {
             console.error(err)
-            msg.value = `更新 ${updatedActor.chineseName} 的API資料時發生錯誤`
+            msg.value = `更新 ${loadedActor.chineseName} 的API資料時發生錯誤`
             msgClass.value = 'error-msg text-center'
         } finally {
             // Remove loading status
@@ -91,7 +95,7 @@
         }
     }
 
-    async function startUpdateActorAllInfo(actorId, updatedActor) {
+    async function startUpdateActorViaAiAndForm(actorId, loadedActor) {
         // Return while loading
         if (updatingActors.value.includes(actorId)) return;
 
@@ -99,20 +103,56 @@
         updatingActors.value.push(actorId)
 
         try {
-            if (updatedActor.manuallyEdited == false && 
-                (biographyBefore.value != updatedActor.biography || 
-                namuWikiPageUrlBefore.value != updatedActor.namuWikiPageUrl)) {
-                updatedActor.manuallyEdited = true
+            if (loadedActor.aiOrManuallyEdited == false && 
+                (biographyBefore.value != loadedActor.biography || 
+                namuWikiPageUrlBefore.value != loadedActor.namuWikiPageUrl || 
+                instagramPageUrlBefore.value != loadedActor.instagramPageUrl || 
+                chineseWikipediaPageUrlBefore.value != loadedActor.chineseWikipediaPageUrl)) {
+                loadedActor.aiOrManuallyEdited = true
             }
-            const res = await updateSelectedActorAllInfo(actorId, updatedActor)
+            const res = await updateSelectedActorViaAiAndForm(actorId, loadedActor)
             console.log(res.status)
             if (res.status === 200) {
-                msg.value = `${updatedActor.chineseName} 的資料已更新完畢！`
+                msg.value = `${loadedActor.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
+                loadActor()
             }
         } catch (err) {
             console.error(err)
-            msg.value = `更新 ${updatedActor.chineseName} 的資料時發生錯誤`
+            msg.value = `更新 ${loadedActor.chineseName} 的資料時發生錯誤`
+            msgClass.value = 'error-msg text-center'
+        } finally {
+            // Remove loading status
+            const index = updatingActors.value.indexOf(actorId)
+            if (index !== -1) updatingActors.value.splice(index, 1)
+        }
+    }
+
+    async function startUpdateActorViaForm(actorId, loadedActor) {
+        // Return while loading
+        if (updatingActors.value.includes(actorId)) return;
+
+        // Add loading status
+        updatingActors.value.push(actorId)
+
+        try {
+            if (loadedActor.aiOrManuallyEdited == false && 
+                (biographyBefore.value != loadedActor.biography || 
+                namuWikiPageUrlBefore.value != loadedActor.namuWikiPageUrl || 
+                instagramPageUrlBefore.value != loadedActor.instagramPageUrl || 
+                chineseWikipediaPageUrlBefore.value != loadedActor.chineseWikipediaPageUrl)) {
+                loadedActor.aiOrManuallyEdited = true
+            }
+            const res = await updateSelectedActorViaForm(actorId, loadedActor)
+            console.log(res.status)
+            if (res.status === 200) {
+                msg.value = `${loadedActor.chineseName} 的資料已更新完畢！`
+                msgClass.value = 'success-msg text-center'
+                loadActor()
+            }
+        } catch (err) {
+            console.error(err)
+            msg.value = `更新 ${loadedActor.chineseName} 的資料時發生錯誤`
             msgClass.value = 'error-msg text-center'
         } finally {
             // Remove loading status
@@ -123,12 +163,14 @@
 
     function loadActor() {
         loading.value = true;
-        findSelectedActor(selectedActorId.value, false) // displayNameMode = false -> value = MALE / FEMALE
+        findSelectedActorById(selectedActorId.value, false) // displayNameMode = false -> value = MALE / FEMALE
         .then(res => {
             const data = res.data
-            Object.assign(updatedActor, data)
-            biographyBefore.value = updatedActor.biography
-            namuWikiPageUrlBefore.value = updatedActor.namuWikiPageUrl
+            Object.assign(loadedActor, data)
+            biographyBefore.value = loadedActor.biography
+            instagramPageUrlBefore.value = loadedActor.instagramPageUrl
+            chineseWikipediaPageUrlBefore.value = loadedActor.chineseWikipediaPageUrl
+            namuWikiPageUrlBefore.value = loadedActor.namuWikiPageUrl
         })
         .catch(err => console.error(err))
         .finally(() => loading.value = false)
@@ -191,7 +233,7 @@
     }
 
     onMounted(() => loadActor())
-    onUnmounted(() => updatedActor.value = {})
+    onUnmounted(() => loadedActor.value = {})
 </script>
 
 <template>
@@ -209,37 +251,37 @@
                 <form class="form" method="post">
                     <p class="form-group form-text-p">
                         <label for="actorId" class="form-label">演員的ID</label>
-                        <input v-model="updatedActor.actorId" id="actorId" class="form-control form-text-field" name="actorId" required readonly aria-required="true">
+                        <input v-model="loadedActor.actorId" id="actorId" class="form-control form-text-field" name="actorId" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="tmdbId" class="form-label">演員在TMDB上的ID</label>
-                        <input v-model="updatedActor.tmdbId" id="tmdbId" class="form-control form-text-field" name="tmdbId" required readonly aria-required="true">
+                        <input v-model="loadedActor.tmdbId" id="tmdbId" class="form-control form-text-field" name="tmdbId" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="chineseName" class="form-label">中文譯名</label>
-                        <input v-model="updatedActor.chineseName" id="chineseName" class="form-control form-text-field" name="chineseName" required readonly aria-required="true">
+                        <input v-model="loadedActor.chineseName" id="chineseName" class="form-control form-text-field" name="chineseName" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="englishName" class="form-label">英文譯名</label>
-                        <input v-model="updatedActor.englishName" id="englishName" class="form-control form-text-field" name="englishName" required readonly aria-required="true">
+                        <input v-model="loadedActor.englishName" id="englishName" class="form-control form-text-field" name="englishName" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="koreanName" class="form-label">韓文名字</label>
-                        <input v-model="updatedActor.koreanName" id="koreanName" class="form-control form-text-field" name="koreanName" required readonly aria-required="true">
+                        <input v-model="loadedActor.koreanName" id="koreanName" class="form-control form-text-field" name="koreanName" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="profilePicUrl" class="form-label">大頭照連結</label>
-                        <input v-model="updatedActor.profilePicUrl" id="profilePicUrl" class="form-control form-text-field" name="profilePicUrl" required readonly aria-required="true">
+                        <input v-model="loadedActor.profilePicUrl" id="profilePicUrl" class="form-control form-text-field" name="profilePicUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="actorGender" class="form-label">性別</label>
-                        <select id="actorGender" class="form-select gender-select" v-model="updatedActor.actorGender" disabled>
+                        <select id="actorGender" class="form-select gender-select" v-model="loadedActor.actorGender" disabled>
                             <option v-for="opt in genderOptions" :key="opt.value" :value="opt.value">
                             {{ opt.label }}
                             </option>
                         </select>
                         <!-- Keep the original value to submit -->
-                        <input type="hidden"  name="actorGender" :value="updatedActor.actorGender" />
+                        <input type="hidden"  name="actorGender" :value="loadedActor.actorGender" />
                     </p>
                     <p class="form-group form-text-p">
                         <label for="birthday" class="form-label">出生年月日</label>
@@ -254,7 +296,7 @@
                         <table class="table form-control work-table">
                             <tr>
                                 <ul>
-                                    <li v-for="drama in updatedActor.dramas" :key="drama.dramaId">
+                                    <li v-for="drama in loadedActor.dramas" :key="drama.dramaId">
                                         {{ drama.chineseName }}
                                     </li>
                                 </ul>
@@ -264,7 +306,7 @@
                         <table class="table form-control work-table">
                             <tr>
                                 <ul>
-                                    <li v-for="movie in updatedActor.movies" :key="movie.Id">
+                                    <li v-for="movie in loadedActor.movies" :key="movie.Id">
                                         {{ movie.chineseName }}
                                     </li>
                                 </ul>
@@ -272,26 +314,35 @@
                         </table>
                     </div>
                     <p class="form-group form-text-p">
-                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (需要人工更新)</label>
-                        <input v-model="updatedActor.namuWikiPageUrl" id="namuWikiPageUrl" class="form-control form-text-field" name="namuWikiPageUrl">
+                        <label for="instagramPageUrl" class="form-label">Instagram帳號連結 (需要AI或人工更新)</label>
+                        <input v-model="loadedActor.instagramPageUrl" id="instagramPageUrl" class="form-control form-text-field" name="instagramPageUrl">
+                    </p>
+                    <p class="form-group form-text-p">
+                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (需要AI或人工更新)</label>
+                        <input v-model="loadedActor.chineseWikipediaPageUrl" id="chineseWikipediaPageUrl" class="form-control form-text-field" name="chineseWikipediaPageUrl">
+                    </p>
+                    <p class="form-group form-text-p">
+                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (需要AI或人工更新)</label>
+                        <input v-model="loadedActor.namuWikiPageUrl" id="namuWikiPageUrl" class="form-control form-text-field" name="namuWikiPageUrl">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="lastUpdatedByApi" class="form-label">API最近更新時間</label>
                         <input v-model="lastUpdatedByApiDisplay" id="lastUpdatedByApi" class="form-control form-text-field" name="lastUpdateByApi" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="manuallyEdited" class="form-label">是否有人工更新</label>
-                        <input :value="updatedActor.manuallyEdited ? '是' : '否'" id="manuallyEdited" class="form-control form-text-field" name="manuallyEdited" required readonly aria-required="true">
+                        <label for="aiOrManuallyEdited" class="form-label">是否有人工更新</label>
+                        <input :value="loadedActor.aiOrManuallyEdited ? '是' : '否'" id="aiOrManuallyEdited" class="form-control form-text-field" name="aiOrManuallyEdited" required readonly aria-required="true">
                     </p>
                     <div class="text-center">
-                        <button @click="startUpdateActorViaApi(updatedActor.actorId, true)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">更新API資料 (包含現有作品)</button>
-                        <button @click="startUpdateActorViaApi(updatedActor.actorId, false)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">更新API資料 (不包含現有作品)</button>
-                        <button @click="startUpdateActorAllInfo(updatedActor.actorId, updatedActor)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">更新其他資訊</button>
+                        <button @click="startUpdateActorViaApi(loadedActor.actorId, true)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">更新API資料 (包含現有作品)</button>
+                        <button @click="startUpdateActorViaApi(loadedActor.actorId, false)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">更新API資料 (不包含現有作品)</button>
+                        <button @click="startUpdateActorViaAiAndForm(loadedActor.actorId, false)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">透過AI和人工更新資料</button>
+                        <button @click="startUpdateActorViaForm(loadedActor.actorId, loadedActor)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">儲存人工更新資料</button>
                     </div>
                 </form>
                 <div :class="msgClass">{{ msg }}</div>
                 <div v-if="msgClass == 'success-msg text-center'" class="text-center">
-                    <router-link class="btn back-btn text-center" :to="{ name: 'ActorPage', query: { id: updatedActor.actorId } }">點我看 {{ updatedActor.chineseName }} 的專頁</router-link>
+                    <router-link class="btn back-btn text-center" :to="{ name: 'ActorPage', query: { id: loadedActor.actorId } }">點我看 {{ loadedActor.chineseName }} 的專頁</router-link>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">
                     <button class="btn back-btn text-center" @click="backToActorList">返回演員列表</button>

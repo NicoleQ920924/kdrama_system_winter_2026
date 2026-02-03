@@ -30,7 +30,7 @@ export const updateSelectedMovieViaAiAndForm = (id, movieToUpdate) => {
 };
 
 export const updateSelectedMovieViaForm = (id, movieToUpdate) => {
-  return axios.put(`${API_BASE}/allupdate/${id}`, movieToUpdate);
+  return axios.put(`${API_BASE}/formupdate/${id}`, movieToUpdate);
 };
 
 export const deleteSelectedMovie = (id) => {

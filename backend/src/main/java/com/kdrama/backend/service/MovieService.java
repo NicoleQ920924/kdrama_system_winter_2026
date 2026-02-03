@@ -44,17 +44,17 @@ public class MovieService {
 
     // Refer to MovieRepository.java for the CRUD repository methods
 
-    // C1-1: Call TMDB API to fetch movie information by chineseName
+    // C1-1: Fetch movie information (TMDB ID)
     // Return back to MovieController to check if movie exists in database
     public Movie fillMovieBasicInfo(String chineseName) {
         try {
             Movie movie = new Movie();
             movie.setChineseName(chineseName);
-            Integer tmdbId = tmdbMovieClient.getMovieTmdbIdByMovieName(movie.getChineseName());
-            if (tmdbId == null) {
-                tmdbId = aiService.aiGetMovieTmdbId(movie.getChineseName());
+            Integer fetchedTmdbId = tmdbMovieClient.getMovieTmdbIdByMovieName(movie.getChineseName());
+            if (fetchedTmdbId == null) {
+                fetchedTmdbId = aiService.aiGetMovieTmdbId(movie.getChineseName());
             }
-            movie.setTmdbId(tmdbId);
+            movie.setTmdbId(fetchedTmdbId);
             return movie;     
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());
@@ -63,7 +63,7 @@ public class MovieService {
 		}
     }
 
-    // C1-2: Call TMDB API to fetch movie information by tmdbId
+    // C1-2: Call TMDB API to fetch movie information
     public Movie fillMovieMoreInfo(Movie movie) {
         try {
             movie = tmdbMovieClient.fillMovieOtherInfo(movie);

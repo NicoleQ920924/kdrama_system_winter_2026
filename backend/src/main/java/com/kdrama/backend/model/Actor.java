@@ -39,7 +39,7 @@ public class Actor {
     private String birthday; // fetch "birthday"
 
     @Column(length = 600) // Around 200 Chinese Characters
-    private String biography; // fetch "biography"
+    private String biography; // fetch "biography" + can be edited via AI
 
     // Set Relationships with Drama and Movie
 
@@ -65,9 +65,13 @@ public class Actor {
         this.getMovies().remove(movie);
     }
 
-    private String namuWikiPageUrl; // Manually added
+    private String instagramPageUrl; // Suggested by Github Copilot + Manually added or added via AI
 
-    private boolean manuallyEdited = false; // e.g. Manual Addition of Information
+    private String chineseWikipediaPageUrl; // Manually added or added via AI
+
+    private String namuWikiPageUrl; // Manually added or added via AI
+
+    private boolean aiOrManuallyEdited = false; // e.g. Manual Addition of Information
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdatedByApi; // Sync with TMDB API

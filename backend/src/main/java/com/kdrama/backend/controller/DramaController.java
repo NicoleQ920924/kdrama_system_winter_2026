@@ -180,7 +180,7 @@ public class DramaController {
        return ResponseEntity.ok(drama);
     }
 
-    @PutMapping("/allupdate/{id}")
+    @PutMapping("/formupdate/{id}")
     public ResponseEntity<Drama> updateSelectedDramaViaForm(@PathVariable Integer id, @RequestBody Drama dramaToUpdate) {
         Drama drama = dramaService.updateDrama(id, dramaToUpdate, false);
         return ResponseEntity.ok(drama);

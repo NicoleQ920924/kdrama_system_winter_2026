@@ -7,6 +7,14 @@ export const generateAiResponse = (prompt) => {
 };
 
 /**
+ * Search for actors based on user criteria
+ * Returns top 3 results with summaries and notable works
+ */
+export const searchActorsByPrompt = (prompt) => {
+  return axios.post(`${API_BASE}/actor/search`, { prompt });
+};
+
+/**
  * Search for dramas based on user criteria
  * Returns top 3 results with titles and summaries
  */

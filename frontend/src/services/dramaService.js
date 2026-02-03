@@ -34,7 +34,7 @@ export const updateSelectedDramaViaAiAndForm = (id, dramaToUpdate) => {
 };
 
 export const updateSelectedDramaViaForm = (id, dramaToUpdate) => {
-  return axios.put(`${API_BASE}/allupdate/${id}`, dramaToUpdate);
+  return axios.put(`${API_BASE}/formupdate/${id}`, dramaToUpdate);
 };
 
 export const deleteSelectedDrama = (id) => {

@@ -85,9 +85,9 @@ onMounted(() => loadActor())
                         </td>
                         <td>
                             <h4><span>韓國{{ actor.actorGender }}演員</span></h4>
-                            <h3>{{ actor.chineseName }}</h3>
-                            <h3><a :href="actor.namuWikiPageUrl" class="namu-wiki-link">{{ actor.koreanName }}</a></h3>
-                            <h3>{{ actor.englishName }}</h3>
+                            <h3 class="drama-info"><a :href="actor.chineseWikipediaPageUrl" class="actor-link">{{ actor.chineseName }}</a></h3> 
+                            <h3 class="drama-info"><a :href="actor.namuWikiPageUrl" class="actor-link">{{ actor.koreanName }}</a></h3>
+                            <h3 class="drama-info"><a :href="actor.instagramPageUrl" class="actor-link">{{ actor.englishName }}</a></h3>
                             <h4>出生年月日：{{ formatDate(actor.birthday) }}</h4>
                         </td>
                     </tr>
@@ -218,7 +218,7 @@ hr {
   color:$autumn-dark-orange;
   padding-top:5px;
 }
-.namu-wiki-link {
+.actor-link {
     text-align:start;
     color:$autumn-text-dark;
     padding:5px 0px;

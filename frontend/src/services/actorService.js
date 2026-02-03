@@ -13,9 +13,15 @@ export const findActors = (displayNameMode) => {
   });
 };
 
-export const findSelectedActor = (id, displayNameMode) => {
+export const findSelectedActorById = (id, displayNameMode) => {
   return axios.get(`${API_BASE}/${id}`, {
     params: { displayNameMode }
+  });
+};
+
+export const findSelectedActorByChineseName = (chineseName) => {
+  return axios.get(`${API_BASE}/chineseName`, {
+    params: { chineseName }
   });
 };
 
@@ -25,8 +31,12 @@ export const updateSelectedActorViaApi = (id, includesExistingWork) => {
   });
 };
 
-export const updateSelectedActorAllInfo = (id, updatedActor) => {
-  return axios.put(`${API_BASE}/allupdate/${id}`, updatedActor);
+export const updateSelectedActorViaAiAndForm = (id, actorToUpdate) => {
+  return axios.put(`${API_BASE}/aiupdate/${id}`, actorToUpdate);
+};
+
+export const updateSelectedActorViaForm = (id, actorToUpdate) => {
+  return axios.put(`${API_BASE}/formupdate/${id}`, actorToUpdate);
 };
 
 export const deleteSelectedActor = (id) => {

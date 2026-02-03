@@ -32,6 +32,21 @@ public class AiController {
     }
 
     /**
+     * Search for actors based on user criteria
+     * Returns top 3 results with summaries and notable works
+     */
+    @PostMapping("/actor/search")
+    public ResponseEntity<?> searchActors(@RequestBody Map<String, String> request) {
+        String prompt = request.get("prompt");
+        if (prompt == null || prompt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Prompt is required"));
+        }
+
+        ArrayNode results = aiService.aiSearchActorsByPrompt(prompt);
+        return ResponseEntity.ok(Map.of("results", results));
+    }
+
+    /**
      * Search for dramas based on user criteria
      * Returns top 3 results with titles and summaries
      */

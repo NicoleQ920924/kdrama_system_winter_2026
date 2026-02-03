@@ -8,6 +8,7 @@
     const msg = ref('')
     const msgClass = ref('')
     const actorName = ref('')
+    const actorNameAdded = ref('')
 
     const actorId = ref('')
 
@@ -22,26 +23,30 @@
 
         // Add loading status
         loadingActors.value.push(actorName.value)
+        actorNameAdded.value = actorName.value
 
         try {
             const res = await importActor(actorName.value)
             console.log(res.status)
             if (res.status === 200) {
-                msg.value = `${actorName.value} 已成功加入資料庫！`
+                msg.value = `${actorNameAdded.value} 已成功加入資料庫！`
                 msgClass.value = 'success-msg text-center'
                 actorId.value = res.data.actorId
             }
         } catch (err) {
             console.error(err)
             if (err.response && err.response.status === 409) {
-                msg.value = `${actorName.value} 已存在資料庫！`
+                msg.value = `${actorNameAdded.value} 已存在資料庫！`
+                msgClass.value = 'error-msg text-center'
+            } else if (err.response && err.response.status === 404) {
+                msg.value = `${actorNameAdded.value} 查無此演員！有可能是TMDB ID找不到，您可以改透過韓劇或韓影專頁新增演員。`
                 msgClass.value = 'error-msg text-center'
             } else {
-                msg.value = `加入 ${actorName.value} 時發生錯誤`
+                msg.value = `加入 ${actorNameAdded.value} 時發生錯誤`
                 msgClass.value = 'error-msg text-center'
             }
         } finally {
-            const index = loadingActors.value.indexOf(actorName.value)
+            const index = loadingActors.value.indexOf(actorNameAdded.value)
             if (index !== -1) loadingActors.value.splice(index, 1)
         }
     }
@@ -65,18 +70,19 @@
             <div v-else>
                 <form class="form" method="post">
                     <p class="form-group form-text-p">
-                        <input v-model="actorName" class="form-control form-text-field" name="actorName" placeholder="請輸入演員的正確中文譯名" required aria-required="true">
+                        <input v-model="actorName" class="form-control form-text-field" name="actorName" placeholder="" required aria-required="true">
                     </p>
+                    <div class="input-msg text-center">請盡量打台灣官方譯名</div>
                     <div class="text-center">
                         <button @click="startImportActor" type="button" class="btn form-btn shadow-none" :disabled="loadingActors.length > 0">確定</button>
                     </div>
                 </form>
                 <div :class="msgClass">{{ msg }}</div>
                 <div v-if="msgClass == 'success-msg text-center'" class="text-center">
-                    <router-link class="btn back-btn text-center" :to="{ name: 'ActorPage', query: { id: actorId } }">點我看 {{ actorName }} 的專頁</router-link>
+                    <router-link class="btn back-btn text-center" :to="{ name: 'ActorPage', query: { id: actorId } }">點我看 {{ actorNameAdded }} 的專頁</router-link>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center'" class="text-center">
-                    <router-link class="btn back-btn text-center" :to="{ name: 'UpdateActorPage', query: { id: actorId } }">點我編輯 {{ actorName }} 的資料</router-link>
+                    <router-link class="btn back-btn text-center" :to="{ name: 'UpdateActorPage', query: { id: actorId } }">點我編輯 {{ actorNameAdded }} 的資料</router-link>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">
                     <button class="btn back-btn text-center" @click="backToActorList">返回演員列表</button>
@@ -134,6 +140,13 @@
         color:$autumn-red;
         font-size:large;
         margin:15px 0px;
+    }
+    .input-msg
+    {
+        font-weight:normal;
+        color:$autumn-dark-orange;
+        font-size:large;
+        margin:25px 0px;
     }
     .back-btn
     {

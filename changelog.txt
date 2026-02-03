@@ -194,5 +194,6 @@ Below is for kdrama_system_winter_2026
 
 2026/2/3
 - Complete writing code for AI Import Movie
+- Start writing code for AI Import Actor (not completed yet, but just a little bit left)
 
 ============================================================================================================

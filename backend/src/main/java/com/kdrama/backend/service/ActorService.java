@@ -22,40 +22,49 @@ public class ActorService {
     @Autowired
     private ActorRepository actorRepository;
 
+    private final AiService aiService;
+
     private final ObjectMapper objectMapper;
 
-    public ActorService(ObjectMapper objectMapper) {
+    public ActorService(ObjectMapper objectMapper, AiService aiService) {
         this.objectMapper = objectMapper;
+        this.aiService = aiService;
     }
 
     // Refer to ActorRepository.java for the CRUD repository methods
 
-    // C1-1: Call TMDB API to fetch actor information
-    public Actor getActorFromTmdbByChineseName(String name) {
+    // C1-1: Fetch actor information (TMDB ID)
+    // Return back to ActorController to check if actor exists in database
+    public Actor fillActorBasicInfo(String name) {
         try {
-            Integer tmdb = tmdbActorClient.getActorTmdbIdByChineseName(name);
-            Actor fetchedActor = getActorFromTmdbByTmdbId(tmdb, false);
-            return fetchedActor;
+            Actor actor = new Actor();
+            actor.setChineseName(name);
+            Integer tmdbId = tmdbActorClient.getActorTmdbIdByActorName(actor.getChineseName());
+            if (tmdbId == null) {
+                tmdbId = aiService.aiGetActorTmdbId(actor.getChineseName());
+            }
+            actor.setTmdbId(tmdbId);
+            return actor; 
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());
             return null;
 		}
     }
 
-    // C1-2: Call TMDB API to fetch actor information (Also the entrance to update via API)
-    public Actor getActorFromTmdbByTmdbId(Integer tmdbId, boolean includesExistingWork) {
+    // C1-2: Call TMDB API to fetch actor information
+    public Actor fillActorMoreInfo(Actor actor, boolean includesExistingWork) {
         try {
-			Actor fetchedActor = tmdbActorClient.fillActorInfoByTmdbId(tmdbId);
-            tmdbActorClient.fillNames(fetchedActor);
-            tmdbActorClient.fillActorWorks(fetchedActor, includesExistingWork);
-            fetchedActor.setLastUpdatedByApi(LocalDateTime.now());
+			actor = tmdbActorClient.fillActorOtherInfo(actor);
+            actor = tmdbActorClient.fillNames(actor);
+            actor = tmdbActorClient.fillActorWorks(actor, includesExistingWork);
+            actor.setLastUpdatedByApi(LocalDateTime.now());
 
             String backupFilePath = "backup/actor_backup.json";
             File backupFile = new File(backupFilePath);
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, fetchedActor);
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, actor);
             System.out.println("Successfully save file: " + backupFile);
 
-            return fetchedActor;
+            return actor;
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());
             return null;
@@ -77,39 +86,50 @@ public class ActorService {
         return actorRepository.findById(id);
     }
 
-    // R3: Get an actor identified by Chinese name
+    // R3: Get an actor identified by TMDB ID
+    public Optional<Actor> getActorByTmdbId(Integer tmdbId) {
+        return actorRepository.findByTmdbId(tmdbId);
+    }
+
+    // R4: Get an actor identified by Chinese name
     public Optional<Actor> getActorByChineseName(String name) {
         return actorRepository.findByChineseName(name);
     }
 
     // U: Update an actor
-    public Actor updateActor(@PathVariable Integer id, @RequestBody Actor updatedActor, boolean apiMode) {
+    public Actor updateActor(@PathVariable Integer id, @RequestBody Actor actorToUpdate, boolean apiMode) {
         return actorRepository.findById(id)
                 .map(actor -> {
-                    actor.setTmdbId(updatedActor.getTmdbId());
-                    actor.setChineseName(updatedActor.getChineseName());
-                    actor.setEnglishName(updatedActor.getEnglishName());
-                    actor.setKoreanName(updatedActor.getKoreanName());
-                    actor.setProfilePicUrl(updatedActor.getProfilePicUrl());
-                    actor.setActorGender(updatedActor.getActorGender());
-                    actor.setBirthday(updatedActor.getBirthday());
-                    if (actor.getBiography().isEmpty() && apiMode || !apiMode) {
-                        actor.setBiography(updatedActor.getBiography());
-                    }
-                    actor.setDramas(updatedActor.getDramas());
-                    actor.setMovies(updatedActor.getMovies());
+                    actor.setTmdbId(actorToUpdate.getTmdbId());
+                    actor.setChineseName(actorToUpdate.getChineseName());
+                    actor.setEnglishName(actorToUpdate.getEnglishName());
+                    actor.setKoreanName(actorToUpdate.getKoreanName());
+                    actor.setProfilePicUrl(actorToUpdate.getProfilePicUrl());
+                    actor.setActorGender(actorToUpdate.getActorGender());
+                    actor.setBirthday(actorToUpdate.getBirthday());
                     if (!apiMode) {
-                        actor.setNamuWikiPageUrl(updatedActor.getNamuWikiPageUrl());
+                        actor.setBiography(actorToUpdate.getBiography());
                     }
-                    actor.setLastUpdatedByApi(updatedActor.getLastUpdatedByApi());
-                    if (actor.isManuallyEdited() == false) {
-                        actor.setManuallyEdited(updatedActor.isManuallyEdited());
+                    actor.setDramas(actorToUpdate.getDramas());
+                    actor.setMovies(actorToUpdate.getMovies());
+                    if (!apiMode) {
+                        actor.setInstagramPageUrl(actorToUpdate.getInstagramPageUrl());
+                    }
+                    if (!apiMode) {
+                        actor.setChineseWikipediaPageUrl(actorToUpdate.getChineseWikipediaPageUrl());
+                    }
+                    if (!apiMode) {
+                        actor.setNamuWikiPageUrl(actorToUpdate.getNamuWikiPageUrl());
+                    }
+                    actor.setLastUpdatedByApi(actorToUpdate.getLastUpdatedByApi());
+                    if (actor.isAiOrManuallyEdited() == false) {
+                        actor.setAiOrManuallyEdited(actorToUpdate.isAiOrManuallyEdited());
                     }
                     return actorRepository.save(actor);
                 })
                 .orElseGet(() -> {
-                    updatedActor.setActorId(id);
-                    return actorRepository.save(updatedActor);
+                    actorToUpdate.setActorId(id);
+                    return actorRepository.save(actorToUpdate);
                 });
     }
 
