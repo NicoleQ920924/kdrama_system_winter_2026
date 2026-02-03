@@ -11,13 +11,13 @@ export const findMovies = () => {
   return axios.get(`${API_BASE}/findAll`);
 };
 
-export const findSelectedMovie = (id) => {
+export const findSelectedMovieById = (id) => {
   return axios.get(`${API_BASE}/${id}`);
 };
 
-export const findSelectedMovieByChineseName = (chineseName, displayNameMode) => {
+export const findSelectedMovieByChineseName = (chineseName) => {
   return axios.get(`${API_BASE}/chineseName`, {
-    params: { chineseName, displayNameMode }
+    params: { chineseName }
   });
 };
 

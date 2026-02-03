@@ -141,6 +141,13 @@
         font-size:large;
         margin:15px 0px;
     }
+    .input-msg
+    {
+        font-weight:normal;
+        color:$autumn-dark-orange;
+        font-size:large;
+        margin:25px 0px;
+    }
     .back-btn
     {
         border:none;

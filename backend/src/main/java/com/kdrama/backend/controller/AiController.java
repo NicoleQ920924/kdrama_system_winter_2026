@@ -45,4 +45,15 @@ public class AiController {
         ArrayNode results = aiService.aiSearchDramasByPrompt(prompt);
         return ResponseEntity.ok(Map.of("results", results));
     }
+
+    @PostMapping("/movie/search")
+    public ResponseEntity<?> searchMovies(@RequestBody Map<String, String> request) {
+        String prompt = request.get("prompt");
+        if (prompt == null || prompt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Prompt is required"));
+        }
+
+        ArrayNode results = aiService.aiSearchMoviesByPrompt(prompt);
+        return ResponseEntity.ok(Map.of("results", results));
+    }
 }

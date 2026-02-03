@@ -1,6 +1,6 @@
 <script setup>
     import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-    import { findSelectedMovie, updateSelectedMovieViaApi, updateSelectedMovieAllInfo } from '@/services/movieService'
+    import { findSelectedMovieById, updateSelectedMovieViaApi, updateSelectedMovieViaAiAndForm, updateSelectedMovieViaForm } from '@/services/movieService'
     import Spinner from '@/components/Spinner.vue'
     import { useRoute, useRouter } from 'vue-router'
 
@@ -13,6 +13,7 @@
     const englishNameBefore = ref('')
     const koreanNameBefore = ref('')
     const trailerUrlBefore = ref('')
+    const chineseWikipediaPageUrlBefore = ref('')
     const namuWikiPageUrlBefore = ref('')
 
     const route = useRoute()
@@ -26,34 +27,34 @@
     }
 
     const krAgeRestrictionDisplay = computed({
-        get: () => displayData(updatedMovie.krAgeRestriction),
+        get: () => displayData(loadedMovie.krAgeRestriction),
         set: (val) => {
-            val == '無資料' ? '' : updatedMovie.krAgeRestriction;
+            val == '無資料' ? '' : loadedMovie.krAgeRestriction;
         }
     });
 
     const releaseDateDisplay = computed({ // by ChatGPT
-        get: () => formatDate(displayData(updatedMovie.releaseDate)),  // 顯示用格式化
+        get: () => formatDate(displayData(loadedMovie.releaseDate)),  // 顯示用格式化
         set: (val) => {
-            updatedMovie.releaseDate = parseDateChineseStr(val);
+            loadedMovie.releaseDate = parseDateChineseStr(val);
         }
     });
 
     const totalRuntimeDisplay = computed({
-        get: () => displayData(updatedMovie.totalRuntime),
+        get: () => displayData(loadedMovie.totalRuntime),
         set: (val) => {
-            val == '無資料' ? '' : updatedMovie.totalRuntime;
+            val == '無資料' ? '' : loadedMovie.totalRuntime;
         }
     });
 
     const lastUpdatedByApiDisplay = computed({
-        get: () => formatDateTime(updatedMovie.lastUpdatedByApi),
+        get: () => formatDateTime(loadedMovie.lastUpdatedByApi),
         set: (val) => {
-            updatedMovie.lastUpdatedByApi = parseDateTimeChineseStr(val);
+            loadedMovie.lastUpdatedByApi = parseDateTimeChineseStr(val);
         }
     });
 
-    const updatedMovie = reactive({
+    const loadedMovie = reactive({
         movieId: null,            
         tmdbId: null,
         chineseName: '',
@@ -70,8 +71,9 @@
         mainPosterUrl: '',
         trailerUrl: '',
         introPageUrl: '',
+        chineseWikipediaPageUrl: '',
         namuWikiPageUrl: '',
-        manuallyEdited: false,
+        aiOrManuallyEdited: false,
         lastUpdatedByApi: null    
     });
 
@@ -86,13 +88,13 @@
             const res = await updateSelectedMovieViaApi(movieId)
             console.log(res.status)
             if (res.status === 200) {
-                loadMovie()
-                msg.value = `${updatedMovie.chineseName} 的API資料已更新完畢！`
+                msg.value = `${loadedMovie.chineseName} 的API資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
+                loadMovie()
             }
         } catch (err) {
             console.error(err)
-            msg.value = `更新 ${updatedMovie.chineseName} 的API資料時發生錯誤`
+            msg.value = `更新 ${loadedMovie.chineseName} 的API資料時發生錯誤`
             msgClass.value = 'error-msg text-center'
         } finally {
             // Remove loading status
@@ -101,7 +103,7 @@
         }
     }
 
-    async function startUpdateMovieAllInfo(movieId, updatedMovie) {
+    async function startUpdateMovieViaAiAndForm(movieId, loadedMovie) {
         // Return while loading
         if (updatingMovies.value.includes(movieId)) return;
 
@@ -109,23 +111,60 @@
         updatingMovies.value.push(movieId)
 
         try {
-            if (updatedMovie.manuallyEdited == false && 
-                (trailerUrlBefore.value != updatedMovie.trailerUrl ||
-                namuWikiPageUrlBefore.value != updatedMovie.namuWikiPageUrl ||
-                chineseNameBefore.value != updatedMovie.chineseName ||
-                englishNameBefore.value != updatedMovie.englishName ||
-                koreanNameBefore.value != updatedMovie.koreanName)) {
-                updatedMovie.manuallyEdited = true
+            if (loadedMovie.aiOrManuallyEdited == false && 
+                (trailerUrlBefore.value != loadedMovie.trailerUrl ||
+                chineseWikipediaPageUrlBefore.value != loadedMovie.chineseWikipediaPageUrl ||
+                namuWikiPageUrlBefore.value != loadedMovie.namuWikiPageUrl ||
+                chineseNameBefore.value != loadedMovie.chineseName ||
+                englishNameBefore.value != loadedMovie.englishName ||
+                koreanNameBefore.value != loadedMovie.koreanName)) {
+                loadedMovie.aiOrManuallyEdited = true
             }
-            const res = await updateSelectedMovieAllInfo(movieId, updatedMovie)
+            const res = await updateSelectedMovieViaAiAndForm(movieId, loadedMovie)
             console.log(res.status)
             if (res.status === 200) {
-                msg.value = `${updatedMovie.chineseName} 的資料已更新完畢！`
+                msg.value = `${loadedMovie.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
+                loadMovie()
             }
         } catch (err) {
             console.error(err)
-            msg.value = `更新 ${updatedMovie.chineseName} 的資料時發生錯誤`
+            msg.value = `更新 ${loadedMovie.chineseName} 的資料時發生錯誤`
+            msgClass.value = 'error-msg text-center'
+        } finally {
+            // Remove loading status
+            const index = updatingMovies.value.indexOf(movieId)
+            if (index !== -1) updatingMovies.value.splice(index, 1)
+        }
+    }
+
+    async function startUpdateMovieViaForm(movieId, loadedMovie) {
+        // Return while loading
+        if (updatingMovies.value.includes(movieId)) return;
+
+        // Add loading status
+        updatingMovies.value.push(movieId)
+
+        try {
+            if (loadedMovie.aiOrManuallyEdited == false && 
+                (trailerUrlBefore.value != loadedMovie.trailerUrl ||
+                chineseWikipediaPageUrlBefore.value != loadedMovie.chineseWikipediaPageUrl ||
+                namuWikiPageUrlBefore.value != loadedMovie.namuWikiPageUrl ||
+                chineseNameBefore.value != loadedMovie.chineseName ||
+                englishNameBefore.value != loadedMovie.englishName ||
+                koreanNameBefore.value != loadedMovie.koreanName)) {
+                loadedMovie.aiOrManuallyEdited = true
+            }
+            const res = await updateSelectedMovieViaForm(movieId, loadedMovie)
+            console.log(res.status)
+            if (res.status === 200) {
+                msg.value = `${loadedMovie.chineseName} 的資料已更新完畢！`
+                msgClass.value = 'success-msg text-center'
+                loadMovie()
+            }
+        } catch (err) {
+            console.error(err)
+            msg.value = `更新 ${loadedMovie.chineseName} 的資料時發生錯誤`
             msgClass.value = 'error-msg text-center'
         } finally {
             // Remove loading status
@@ -136,15 +175,16 @@
 
     function loadMovie() {
         loading.value = true;
-        findSelectedMovie(selectedMovieId.value)
+        findSelectedMovieById(selectedMovieId.value)
         .then(res => {
             const data = res.data
-            Object.assign(updatedMovie, data)
-            chineseNameBefore.value = updatedMovie.chineseName
-            englishNameBefore.value = updatedMovie.englishName
-            koreanNameBefore.value = updatedMovie.koreanName
-            trailerUrlBefore.value = updatedMovie.trailerUrl
-            namuWikiPageUrlBefore.value = updatedMovie.namuWikiPageUrl
+            Object.assign(loadedMovie, data)
+            chineseNameBefore.value = loadedMovie.chineseName
+            englishNameBefore.value = loadedMovie.englishName
+            koreanNameBefore.value = loadedMovie.koreanName
+            trailerUrlBefore.value = loadedMovie.trailerUrl
+            chineseWikipediaPageUrlBefore.value = loadedMovie.chineseWikipediaPageUrl
+            namuWikiPageUrlBefore.value = loadedMovie.namuWikiPageUrl
         })
         .catch(err => console.error(err))
         .finally(() => loading.value = false)
@@ -207,7 +247,7 @@
     }
 
     onMounted(() => loadMovie())
-    onUnmounted(() => updatedMovie.value = {})
+    onUnmounted(() => loadedMovie.value = {})
 </script>
 
 <template>
@@ -225,23 +265,23 @@
                 <form class="form" method="post">
                     <p class="form-group form-text-p">
                         <label for="movieId" class="form-label">韓影的ID</label>
-                        <input v-model="updatedMovie.movieId" id="movieId" class="form-control form-text-field" name="movieId" required readonly aria-required="true">
+                        <input v-model="loadedMovie.movieId" id="movieId" class="form-control form-text-field" name="movieId" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="tmdbId" class="form-label">韓影在TMDB上的ID</label>
-                        <input v-model="updatedMovie.tmdbId" id="tmdbId" class="form-control form-text-field" name="tmdbId" required readonly aria-required="true">
+                        <input v-model="loadedMovie.tmdbId" id="tmdbId" class="form-control form-text-field" name="tmdbId" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="chineseName" class="form-label">中文譯名 (可人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
-                        <input v-model="updatedMovie.chineseName" id="chineseName" class="form-control form-text-field" name="chineseName" required aria-required="true">
+                        <label for="chineseName" class="form-label">中文譯名 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <input v-model="loadedMovie.chineseName" id="chineseName" class="form-control form-text-field" name="chineseName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="englishName" class="form-label">英文譯名 (可人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
-                        <input v-model="updatedMovie.englishName" id="englishName" class="form-control form-text-field" name="englishName" required aria-required="true">
+                        <label for="englishName" class="form-label">英文譯名 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <input v-model="loadedMovie.englishName" id="englishName" class="form-control form-text-field" name="englishName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="koreanName" class="form-label">韓文名字 (可人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
-                        <input v-model="updatedMovie.koreanName" id="koreanName" class="form-control form-text-field" name="koreanName" required aria-required="true">
+                        <label for="koreanName" class="form-label">韓文名字 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <input v-model="loadedMovie.koreanName" id="koreanName" class="form-control form-text-field" name="koreanName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="totalRuntime" class="form-label">片長 (分鐘)</label>
@@ -259,8 +299,8 @@
                         <h6>類型：</h6>
                         <table class="table form-control info-table">
                             <tr>
-                                <ul v-if="updatedMovie.genres.length > 0">
-                                    <li v-for="genre in updatedMovie.genres" :key="genre">
+                                <ul v-if="loadedMovie.genres.length > 0">
+                                    <li v-for="genre in loadedMovie.genres" :key="genre">
                                         {{ genre }}
                                     </li>
                                 </ul>
@@ -270,8 +310,8 @@
                         <h6>台灣播出平台 (平台：連結)：</h6>
                         <table class="table form-control info-table">
                             <tr>
-                                <ul v-if="Object.keys(updatedMovie.movieTwPlatformMap).length">
-                                    <li v-for="(value, key) in updatedMovie.movieTwPlatformMap" :key="key">
+                                <ul v-if="Object.keys(loadedMovie.movieTwPlatformMap).length">
+                                    <li v-for="(value, key) in loadedMovie.movieTwPlatformMap" :key="key">
                                         {{ key }} : {{ value }}
                                     </li>
                                 </ul>
@@ -281,8 +321,8 @@
                         <h6>主演演員：</h6>
                         <table class="table form-control info-table">
                             <tr>
-                                <ul v-if="updatedMovie.leadActors.length > 0">
-                                    <li v-for="actor in updatedMovie.leadActors" :key="actor">
+                                <ul v-if="loadedMovie.leadActors.length > 0">
+                                    <li v-for="actor in loadedMovie.leadActors" :key="actor">
                                         {{ actor }}
                                     </li>
                                 </ul>
@@ -292,8 +332,8 @@
                         <h6>導演：</h6>
                         <table class="table form-control info-table">
                             <tr>
-                                <ul v-if="updatedMovie.directorNames.length > 0">
-                                    <li v-for="name in updatedMovie.directorNames" :key="name">
+                                <ul v-if="loadedMovie.directorNames.length > 0">
+                                    <li v-for="name in loadedMovie.directorNames" :key="name">
                                         {{ name }}
                                     </li>
                                 </ul>
@@ -303,8 +343,8 @@
                         <h6>劇本作家：</h6>
                         <table class="table form-control info-table">
                             <tr>
-                                <ul v-if="updatedMovie.scriptwriterNames.length > 0">
-                                    <li v-for="name in updatedMovie.scriptwriterNames" :key="name">
+                                <ul v-if="loadedMovie.scriptwriterNames.length > 0">
+                                    <li v-for="name in loadedMovie.scriptwriterNames" :key="name">
                                         {{ name }}
                                     </li>
                                 </ul>
@@ -314,36 +354,41 @@
                     </div>
                     <p class="form-group form-text-p">
                         <label for="mainPosterUrl" class="form-label">海報連結</label>
-                        <input v-model="updatedMovie.mainPosterUrl" id="mainPosterUrl" class="form-control form-text-field" name="mainPosterUrl" required readonly aria-required="true">
+                        <input v-model="loadedMovie.mainPosterUrl" id="mainPosterUrl" class="form-control form-text-field" name="mainPosterUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="trailerUrl" class="form-label">預告片連結 (需要人工更新)</label>
-                        <input v-model="updatedMovie.trailerUrl" id="trailerUrl" class="form-control form-text-field" name="trailerUrl">
+                        <label for="trailerUrl" class="form-label">預告片連結 (需要AI或人工更新)</label>
+                        <input v-model="loadedMovie.trailerUrl" id="trailerUrl" class="form-control form-text-field" name="trailerUrl">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="introPageUrl" class="form-label">TMDB介紹頁連結</label>
-                        <input v-model="updatedMovie.introPageUrl" id="introPageUrl" class="form-control form-text-field" name="introPageUrl" required readonly aria-required="true">
+                        <input v-model="loadedMovie.introPageUrl" id="introPageUrl" class="form-control form-text-field" name="introPageUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (需要人工更新)</label>
-                        <input v-model="updatedMovie.namuWikiPageUrl" id="namuWikiPageUrl" class="form-control form-text-field" name="namuWikiPageUrl">
+                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (需要AI或人工更新)</label>
+                        <input v-model="loadedMovie.chineseWikipediaPageUrl" id="chineseWikipediaPageUrl" class="form-control form-text-field" name="chineseWikipediaPageUrl">
+                    </p>
+                    <p class="form-group form-text-p">
+                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (需要AI或人工更新)</label>
+                        <input v-model="loadedMovie.namuWikiPageUrl" id="namuWikiPageUrl" class="form-control form-text-field" name="namuWikiPageUrl">
                     </p>
                     <p class="form-group form-text-p">
                         <label for="lastUpdatedByApi" class="form-label">API最近更新時間</label>
                         <input v-model="lastUpdatedByApiDisplay" id="lastUpdatedByApi" class="form-control form-text-field" name="lastUpdateByApi" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="manuallyEdited" class="form-label">是否有人工更新</label>
-                        <input :value="updatedMovie.manuallyEdited ? '是' : '否'" id="manuallyEdited" class="form-control form-text-field" name="manuallyEdited" required readonly aria-required="true">
+                        <label for="aiOrManuallyEdited" class="form-label">是否有AI或人工更新</label>
+                        <input :value="loadedMovie.aiOrManuallyEdited ? '是' : '否'" id="aiOrManuallyEdited" class="form-control form-text-field" name="aiOrManuallyEdited" required readonly aria-required="true">
                     </p>
                     <div class="text-center">
-                        <button @click="startUpdateMovieViaApi(updatedMovie.movieId)" type="button" class="btn shadow-none form-btn" :disabled="updatingMovies.length > 0">更新API資料</button>
-                        <button @click="startUpdateMovieAllInfo(updatedMovie.movieId, updatedMovie)" type="button" class="btn shadow-none form-btn" :disabled="updatingMovies.length > 0">更新其他資訊</button>
+                        <button @click="startUpdateMovieViaApi(loadedMovie.movieId)" type="button" class="btn shadow-none form-btn" :disabled="updatingMovies.length > 0">透過TMDB API更新資料</button>
+                        <button @click="startUpdateMovieViaAiAndForm(loadedMovie.movieId, loadedMovie)" type="button" class="btn shadow-none form-btn" :disabled="updatingMovies.length > 0">透過AI和人工更新資料</button>
+                        <button @click="startUpdateMovieViaForm(loadedMovie.movieId, loadedMovie)" type="button" class="btn shadow-none form-btn" :disabled="updatingMovies.length > 0">儲存人工更新資料</button>
                     </div>
                 </form>
                 <div :class="msgClass">{{ msg }}</div>
                 <div v-if="msgClass == 'success-msg text-center'" class="text-center">
-                    <router-link class="btn back-btn text-center" :to="{ name: 'MoviePage', query: { id: updatedMovie.movieId } }">點我看 {{ updatedMovie.chineseName }} 的專頁</router-link>
+                    <router-link class="btn back-btn text-center" :to="{ name: 'MoviePage', query: { id: loadedMovie.movieId } }">點我看 {{ loadedMovie.chineseName }} 的專頁</router-link>
                 </div>
                 <div v-if="msgClass == 'success-msg text-center' || msgClass == 'error-msg text-center'" class="text-center">
                     <button class="btn back-btn text-center" @click="backToMovieList">返回韓影列表</button>

@@ -39,7 +39,8 @@ public class TmdbMovieClient {
             if (results != null && results.isArray() && results.size() > 0) {
                 for (JsonNode node : results) {
                     String fetchedOriginalLanguage = node.path("original_language").asText();
-                    if (fetchedOriginalLanguage.equals("ko")) {
+                    String fetchTitle = node.path("title").asText();
+                    if (fetchedOriginalLanguage.equals("ko") && fetchTitle.equals(chineseName)) {
                         return node.path("id").asInt();
                     }
                 }

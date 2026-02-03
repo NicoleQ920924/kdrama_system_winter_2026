@@ -1,7 +1,7 @@
 <!-- Imported in MoviePage.vue -->
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { findSelectedMovie } from '@/services/movieService'
+import { findSelectedMovieById } from '@/services/movieService'
 import { importActor } from '@/services/actorService'
 import Spinner from './Spinner.vue'
 
@@ -18,7 +18,7 @@ const loadingActors = ref([]) // for handleActorClick()
 
 function loadMovie() {
   loading.value = true;
-  findSelectedMovie(props.selectedMovieId)
+  findSelectedMovieById(props.selectedMovieId)
     .then(res => {
       movie.value = res.data;
     })
@@ -182,8 +182,8 @@ onMounted(() => loadMovie())
                             <a v-if="movie.trailerUrl != null && movie.trailerUrl != undefined && movie.trailerUrl != ''" :href="movie.trailerUrl" class="trailer-url">點我觀賞預告片</a>
                         </td>
                         <td>
-                            <h3 class="movie-info">{{ movie.chineseName }}</h3> 
-                            <h4 class="movie-info"><a :href="movie.namuWikiPageUrl" class="namu-wiki-link">{{ movie.koreanName }}</a></h4>
+                            <h3 class="movie-info"><a :href="movie.chineseWikipediaPageUrl" class="wiki-link">{{ movie.chineseName }}</a></h3> 
+                            <h4 class="movie-info"><a :href="movie.namuWikiPageUrl" class="wiki-link">{{ movie.koreanName }}</a></h4>
                             <h4 class="movie-info">{{ movie.englishName }}</h4>
                             <div>
                                 <ul>
@@ -410,7 +410,7 @@ ul li {
   color:$autumn-dark-orange;
   padding-top:5px;
 }
-.namu-wiki-link {
+.wiki-link {
     text-align:start;
     color:$autumn-text-dark;
     padding:5px 0px;

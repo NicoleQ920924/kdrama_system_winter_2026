@@ -129,7 +129,7 @@
             if (loadedDrama.aiOrManuallyEdited == false && 
                 (trailerUrlBefore.value != loadedDrama.trailerUrl || 
                 chineseWikipediaPageUrlBefore.value != loadedDrama.chineseWikipediaPageUrl ||
-                namuWikiPageUrlBefore.value != loadedDrama.namuWikiPageUrlBefore || 
+                namuWikiPageUrlBefore.value != loadedDrama.namuWikiPageUrl || 
                 chineseNameBefore.value != loadedDrama.chineseName ||
                 englishNameBefore.value != loadedDrama.englishName ||
                 koreanNameBefore.value != loadedDrama.koreanName)) {
@@ -164,7 +164,7 @@
             if (loadedDrama.aiOrManuallyEdited == false && 
                 (trailerUrlBefore.value != loadedDrama.trailerUrl || 
                 chineseWikipediaPageUrlBefore.value != loadedDrama.chineseWikipediaPageUrl ||
-                namuWikiPageUrlBefore.value != loadedDrama.namuWikiPageUrlBefore || 
+                namuWikiPageUrlBefore.value != loadedDrama.namuWikiPageUrl || 
                 chineseNameBefore.value != loadedDrama.chineseName ||
                 englishNameBefore.value != loadedDrama.englishName ||
                 koreanNameBefore.value != loadedDrama.koreanName)) {
@@ -198,6 +198,7 @@
             englishNameBefore.value = loadedDrama.englishName
             koreanNameBefore.value = loadedDrama.koreanName
             trailerUrlBefore.value = loadedDrama.trailerUrl
+            chineseWikipediaPageUrlBefore.value = loadedDrama.chineseWikipediaPageUrl
             namuWikiPageUrlBefore.value = loadedDrama.namuWikiPageUrl
         })
         .catch(err => console.error(err))

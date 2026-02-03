@@ -88,10 +88,33 @@ public class MovieController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<JsonNode> findSelectedMovie(
+    public ResponseEntity<JsonNode> findSelectedMovieById(
         @PathVariable Integer id) {
         
         Optional<Movie> optionalMovie = movieService.getMovieById(id);
+        if (optionalMovie.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204
+        }
+        
+        Movie movie = optionalMovie.get();
+
+        ObjectMapper mapper = objectMapper.copy();
+
+        try {
+            // Return JsonNode to frontend
+            JsonNode jsonNode = mapper.valueToTree(movie);
+            return ResponseEntity.ok(jsonNode);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/chineseName")
+    public ResponseEntity<JsonNode> findSelectedMovieByChineseName(
+        @RequestParam String chineseName) {
+        
+        Optional<Movie> optionalMovie = movieService.getMovieByChineseName(chineseName);
         if (optionalMovie.isEmpty()) {
             return ResponseEntity.noContent().build(); // 204
         }
