@@ -4,12 +4,14 @@
   const links = [
     { name: "MyDramaList", info: "本系統的設計概念有參考此現有的線上平台", url: "https://mydramalist.com/"},
     { name: "TMDB (The Movie Database) API", info: "本系統主要的API資料來源，所有透過TMDB API爬到的資料都歸TMDB擁有 (資料庫中，海報圖片、演員大頭照等只存取URL超連結)", url: "https://developer.themoviedb.org/docs/"},
-    { name: "Spring Boot", info: "本系統使用的後端框架", url: "https://spring.io/projects/spring-boot"},
+    { name: "Spring", info: "本系統使用的後端框架", url: "https://spring.io/"},
     { name: "Vue.js", info: "本系統使用的前端框架", url: "https://vuejs.org/"},
     { name: "Web Driver Manager", info: "本系統爬台灣影音平台資訊所使用的Chrome Driver 來源", url: "https://github.com/bonigarcia/webdrivermanager"},
     { name: "Axios", info: "本系統所使用的HTTP請求函式庫", url: "https://axios-http.com/docs/intro"},
     { name: "OpenCC", info: "本系統所使用的繁簡轉換函式庫", url: "https://github.com/BYVoid/OpenCC"},
     { name: "Figma", info:"本系統UI的初步設計", url: "https://www.figma.com/design/2QaUITWlMZ5K7iSIpjDvBw/Kdrama-System?node-id=0-1&p=f&t=8fH5c6Fol75TyrFe-0"},
+    { name: "Cursor", info:"協助開發本系統的AI Agent", url: "https://cursor.com/?from=home"},
+    { name: "Google AI Studio", info:"AI 搜尋功能API Key獲得來源", url: "https://aistudio.google.com/"}
   ]
   
 </script>

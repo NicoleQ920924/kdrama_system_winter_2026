@@ -74,6 +74,9 @@ public class TmdbActorClient {
                 actor.setProfilePicUrl("https://media.themoviedb.org/t/p/w300_and_h450_bestv2/" + results.path("profile_path").asText());
                 actor.setBirthday(results.path("birthday").asText());
 
+                // Handling refined Chinese name for further work fetching
+                actor.setChineseName(results.path("name").asText());
+                
                 // Handling actorGender
                 String genderIndex = results.path("gender").asText();
                 if (genderIndex.equals("1")) {
@@ -170,17 +173,18 @@ public class TmdbActorClient {
                                 Movie filledMovie = movieService.fillMovieMoreInfo(movie);
                                 if (filledMovie != null) {
                                     filledMovie = aiService.aiUpdateMovieInfo(filledMovie);
+                                    filledMovie = movieService.fillTWPlatformInformation(filledMovie);
+                                    Movie existingMovie = optionalMovie.get();
+                                    if (filledMovie != null) {
+                                    savedMovie = movieService.updateMovie(existingMovie.getMovieId(), filledMovie, true);
+                                    } else {
+                                        System.out.println("Movie fetch failed or skipped for tmdbId: " + tmdbWorkId);
+                                        savedMovie = null;
+                                    }
                                 }
                                 else {
                                     System.out.println("Movie fetch failed or skipped for tmdbId: " + tmdbWorkId);
                                     continue;
-                                }
-                                Movie existingMovie = optionalMovie.get();
-                                if (filledMovie != null) {
-                                   savedMovie = movieService.updateMovie(existingMovie.getMovieId(), filledMovie, true);
-                                } else {
-                                    System.out.println("Movie fetch failed or skipped for tmdbId: " + tmdbWorkId);
-                                    savedMovie = null;
                                 }
                             }
                             else { // Only add movies not in the database
@@ -190,6 +194,7 @@ public class TmdbActorClient {
                                     Movie filledMovie = movieService.fillMovieMoreInfo(movie);
                                     if (filledMovie != null) {
                                         filledMovie = aiService.aiUpdateMovieInfo(filledMovie);
+                                        filledMovie = movieService.fillTWPlatformInformation(filledMovie);
                                          if (filledMovie != null) {
                                             return movieService.saveMovie(filledMovie);
                                         } else {
@@ -208,8 +213,7 @@ public class TmdbActorClient {
                                 try {
                                     if (!actor.getMovies().contains(savedMovie) && savedMovie.getLeadActors().contains(actor.getChineseName())) {
                                         actor.getMovies().add(savedMovie);
-                                    }  
-                                    actor.getMovies().add(savedMovie);
+                                    }
                                 } catch (Exception e) {
                                     System.out.println("Exception occurred at movie: " + savedMovie.getChineseName());
                                     e.printStackTrace();
@@ -230,37 +234,37 @@ public class TmdbActorClient {
 
                                 drama.setTmdbId(tmdbWorkId);
                                 drama.setSeasonNumber(season);
-                                drama.setChineseName(workNode.path("name").asText());
+                                drama.setChineseName(workNode.path("name").asText() + " - 第" + season + "季");
 
                                 filledDrama = dramaService.fillDramaMoreInfo(drama, actor.getChineseName());
 
                                 if (filledDrama != null) {
                                     filledDrama = aiService.aiUpdateDramaInfo(filledDrama);
+                                    filledDrama = dramaService.fillTWPlatformInformation(filledDrama);
+                                    Optional<Drama> existingDramaOpt = dramaService.getDramaByTmdbIdAndSeasonNumber(tmdbWorkId, season);
+                                    if (existingDramaOpt.isPresent()) {
+                                        if (!includesExistingWork) {
+                                            continue; // Skip if not including updating existing works
+                                        }
+                                        Drama existingDrama = existingDramaOpt.get();
+                                        if (filledDrama != null) {
+                                            drama = dramaService.updateDrama(existingDrama.getDramaId(), filledDrama, false);
+                                        } else {
+                                            System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
+                                            drama = null;
+                                        }
+                                    }
+                                    else {
+                                        if (filledDrama != null) {
+                                            drama = dramaService.saveDrama(filledDrama);
+                                        } else {
+                                            System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
+                                        }
+                                    }
                                 }
                                 else {
                                     System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
                                     continue;
-                                }
-
-                                Optional<Drama> existingDramaOpt = dramaService.getDramaByTmdbIdAndSeasonNumber(tmdbWorkId, season);
-                                if (existingDramaOpt.isPresent()) {
-                                    if (!includesExistingWork) {
-                                        continue; // Skip if not including updating existing works
-                                    }
-                                    Drama existingDrama = existingDramaOpt.get();
-                                    if (filledDrama != null) {
-                                        drama = dramaService.updateDrama(existingDrama.getDramaId(), filledDrama, false);
-                                    } else {
-                                        System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
-                                        drama = null;
-                                    }
-                                }
-                                else {
-                                    if (filledDrama != null) {
-                                        drama = dramaService.saveDrama(filledDrama);
-                                    } else {
-                                        System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
-                                    }
                                 }
 
                                 if (drama != null) {

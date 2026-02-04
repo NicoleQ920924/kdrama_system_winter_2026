@@ -1,7 +1,7 @@
 <!-- Imported in ActorPage.vue -->
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { findSelectedActor } from '@/services/actorService'
+import { findSelectedActorById } from '@/services/actorService'
 import Spinner from './Spinner.vue'
 
 const props = defineProps({
@@ -33,7 +33,7 @@ const groupedMovies = computed(() => {
 
 function loadActor() {
   loading.value = true;
-  findSelectedActor(props.selectedActorId)
+  findSelectedActorById(props.selectedActorId)
     .then(res => {
       actor.value = res.data;
     })

@@ -63,6 +63,7 @@ public class DramaController {
         }
         else {
             drama = aiService.aiUpdateDramaInfo(drama);
+            drama = dramaService.fillTWPlatformInformation(drama);
             if (drama == null) {
                 return ResponseEntity.notFound().build();
             }

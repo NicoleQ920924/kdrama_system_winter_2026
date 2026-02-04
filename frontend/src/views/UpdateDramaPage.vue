@@ -126,13 +126,7 @@
         updatingDramas.value.push(dramaId)
 
         try {
-            if (loadedDrama.aiOrManuallyEdited == false && 
-                (trailerUrlBefore.value != loadedDrama.trailerUrl || 
-                chineseWikipediaPageUrlBefore.value != loadedDrama.chineseWikipediaPageUrl ||
-                namuWikiPageUrlBefore.value != loadedDrama.namuWikiPageUrl || 
-                chineseNameBefore.value != loadedDrama.chineseName ||
-                englishNameBefore.value != loadedDrama.englishName ||
-                koreanNameBefore.value != loadedDrama.koreanName)) {
+            if (loadedDrama.aiOrManuallyEdited == false) {
                 loadedDrama.aiOrManuallyEdited = true
             }
             const res = await updateSelectedDramaViaAiAndForm(dramaId, loadedDrama)

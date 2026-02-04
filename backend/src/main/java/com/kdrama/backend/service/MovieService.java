@@ -69,7 +69,6 @@ public class MovieService {
             movie = tmdbMovieClient.fillMovieOtherInfo(movie);
             movie = tmdbMovieClient.fillKrAgeRestriction(movie);
             movie = tmdbMovieClient.fillMovieStaff(movie);
-            movie = fillTWPlatformInformation(movie);
             return movie;     
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());

@@ -76,7 +76,6 @@ public class DramaService {
             drama = tmdbDramaClient.fillDramaSeasonalInfo(drama);
             drama = tmdbDramaClient.fillKrAgeRestriction(drama);
             drama = tmdbDramaClient.fillDramaStaff(drama, searchedActorName);
-            drama = fillTWPlatformInformation(drama);
             return drama;     
 		} catch (Exception e) {
 			System.err.println("Exception Occurred!" + e.getMessage());

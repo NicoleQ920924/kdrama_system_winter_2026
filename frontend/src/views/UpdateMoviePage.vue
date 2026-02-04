@@ -111,13 +111,7 @@
         updatingMovies.value.push(movieId)
 
         try {
-            if (loadedMovie.aiOrManuallyEdited == false && 
-                (trailerUrlBefore.value != loadedMovie.trailerUrl ||
-                chineseWikipediaPageUrlBefore.value != loadedMovie.chineseWikipediaPageUrl ||
-                namuWikiPageUrlBefore.value != loadedMovie.namuWikiPageUrl ||
-                chineseNameBefore.value != loadedMovie.chineseName ||
-                englishNameBefore.value != loadedMovie.englishName ||
-                koreanNameBefore.value != loadedMovie.koreanName)) {
+            if (loadedMovie.aiOrManuallyEdited == false) {
                 loadedMovie.aiOrManuallyEdited = true
             }
             const res = await updateSelectedMovieViaAiAndForm(movieId, loadedMovie)

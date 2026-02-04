@@ -119,6 +119,9 @@
     function backToMovieList() {
         router.push({ name: 'MoviePage', query: {} })
     }
+    function closeSearchModal() {
+        showSearchModal.value = false
+    }
 </script>
 
 <template>

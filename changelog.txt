@@ -196,4 +196,8 @@ Below is for kdrama_system_winter_2026
 - Complete writing code for AI Import Movie
 - Start writing code for AI Import Actor (not completed yet, but just a little bit left)
 
+2026/2/4
+- Fix all AI imports and updates
+- Update ExternalLinksPage.vue and referces.md for additional resources referred to
+
 ============================================================================================================

@@ -58,6 +58,7 @@ public class MovieController {
         }
         else {
             movie = aiService.aiUpdateMovieInfo(movie);
+            movie = movieService.fillTWPlatformInformation(movie);
             if (movie == null) {
                 return ResponseEntity.notFound().build();
             }

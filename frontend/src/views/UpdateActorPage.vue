@@ -103,11 +103,7 @@
         updatingActors.value.push(actorId)
 
         try {
-            if (loadedActor.aiOrManuallyEdited == false && 
-                (biographyBefore.value != loadedActor.biography || 
-                namuWikiPageUrlBefore.value != loadedActor.namuWikiPageUrl || 
-                instagramPageUrlBefore.value != loadedActor.instagramPageUrl || 
-                chineseWikipediaPageUrlBefore.value != loadedActor.chineseWikipediaPageUrl)) {
+            if (loadedActor.aiOrManuallyEdited == false) {
                 loadedActor.aiOrManuallyEdited = true
             }
             const res = await updateSelectedActorViaAiAndForm(actorId, loadedActor)
@@ -288,7 +284,7 @@
                         <input v-model="birthdayDisplay" id="birthday" class="form-control form-text-field" name="birthday" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="biography" class="form-label">簡介 (最多200字，可人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <label for="biography" class="form-label">簡介 (最多200字，可AI或人工更新)</label>
                         <input v-model="biographyDisplay" id="biography" class="form-control form-text-field" name="biography" required aria-required="true">
                     </p>
                     <div class="form-group form-text-p">
@@ -330,13 +326,13 @@
                         <input v-model="lastUpdatedByApiDisplay" id="lastUpdatedByApi" class="form-control form-text-field" name="lastUpdateByApi" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="aiOrManuallyEdited" class="form-label">是否有人工更新</label>
+                        <label for="aiOrManuallyEdited" class="form-label">是否有AI或人工更新</label>
                         <input :value="loadedActor.aiOrManuallyEdited ? '是' : '否'" id="aiOrManuallyEdited" class="form-control form-text-field" name="aiOrManuallyEdited" required readonly aria-required="true">
                     </p>
                     <div class="text-center">
                         <button @click="startUpdateActorViaApi(loadedActor.actorId, true)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">更新API資料 (包含現有作品)</button>
                         <button @click="startUpdateActorViaApi(loadedActor.actorId, false)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">更新API資料 (不包含現有作品)</button>
-                        <button @click="startUpdateActorViaAiAndForm(loadedActor.actorId, false)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">透過AI和人工更新資料</button>
+                        <button @click="startUpdateActorViaAiAndForm(loadedActor.actorId, loadedActor)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">透過AI和人工更新資料 (不包含作品列表)</button>
                         <button @click="startUpdateActorViaForm(loadedActor.actorId, loadedActor)" type="button" class="btn shadow-none form-btn" :disabled="updatingActors.length > 0">儲存人工更新資料</button>
                     </div>
                 </form>

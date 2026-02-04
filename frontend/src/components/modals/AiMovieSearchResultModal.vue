@@ -4,7 +4,7 @@
 <script setup>
     import { defineProps, defineEmits, ref } from 'vue'
     import { useRouter } from 'vue-router'
-    import { importMovie, findSelectedMovieByChineseName } from '@/services/movieService'
+    import { importMovie } from '@/services/movieService'
 
     const router = useRouter()
 
@@ -20,20 +20,8 @@
     const loadingMovies = ref([]) // for handleMovieClick()
     const addedMovies = ref({}) // maps movieTitle to movieId
 
-    const loadedMovie = ref({})
+    const loadedMovieId = ref('')
     const loading = ref(false)
-
-    function loadMovie(name) {
-        loading.value = true;
-        findSelectedMovieByChineseName(name)
-            .then(res => {
-            loadedMovie.value = res.data;
-            })
-            .catch(err => console.error(err))
-            .finally(() => 
-                loading.value = false
-            )
-    }
 
     async function handleMovieClick(movieTitle) {
         // If already added, navigate to the movie page
@@ -53,27 +41,16 @@
             const response = await importMovie(movieTitle)
             if (response.status === 200) {
                 // Store the movie ID so the link becomes clickable
-                addedMovies.value[movieTitle] = loadedMovie.value.movieId
                 alert(`成功將 ${movieTitle} 加入資料庫！`)
-                loadMovie(movieTitle)
-                while (loading.value) {
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
-                addedMovies.value[movieTitle] = loadedMovie.value.movieId
+                loadedMovieId.value = response.data.movieId
+                addedMovies.value[movieTitle] = loadedMovieId.value
                 // Don't emit 'close' - let user click the transformed link or close with X button
             }
         } catch (error) {
             console.error('Error importing movie:', error)
             if (error.response && error.response.status === 409) {
                 // Movie already exists - treat it as added
-                alert(`${movieTitle} 已存在資料庫中`)
-                // We need to fetch the movie ID from the DB
-                loadMovie(movieTitle)
-                // Wait until loadedMovie is set
-                while (loading.value) {
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
-                addedMovies.value[movieTitle] = loadedMovie.value.movieId
+                alert(`${movieTitle} 已存在資料庫中，請至韓影列表頁面查看`)
             } else {
                 alert(`加入 ${movieTitle} 時發生錯誤，請稍後重試`)
             }
@@ -103,21 +80,21 @@
                                 <li v-for="(movie, index) in searchResults" :key="index" class="result-item">
                                     <!-- Button before movie is added -->
                                     <button 
-                                        v-if="!addedMovies[movie.title]"
+                                        v-if="!addedMovies[movie.name]"
                                         class="movie-title-btn border-0"
-                                        @click="handleMovieClick(movie.title)"
-                                        :disabled="loadingMovies.includes(movie.title)"
+                                        @click="handleMovieClick(movie.name)"
+                                        :disabled="loadingMovies.includes(movie.name)"
                                     >
-                                        {{ movie.title }}
+                                        {{ movie.name }}
                                     </button>
 
                                     <!-- Link after movie is added -->
                                     <router-link 
                                         v-else
-                                        :to="{ name: 'MoviePage', query: { id: addedMovies[movie.title] } }"
+                                        :to="{ name: 'MoviePage', query: { id: addedMovies[movie.name] } }"
                                         class="movie-title-link"
                                     >
-                                        {{ movie.title }}
+                                        {{ movie.name }}
                                     </router-link>
 
                                     <span class="movie-summary">({{ movie.summary }})</span>

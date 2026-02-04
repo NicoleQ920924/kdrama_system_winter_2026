@@ -339,13 +339,13 @@ public class TmdbDramaClient {
                 // Lead Actors' Names
                 List<String> castNames = new ArrayList<String>();
                 JsonNode castNodes = results.path("cast");
-                int castCount = 1; // Max: 10
+                int castCount = 1; // Max: 15
                 if (castNodes.isArray()) {
                     for (JsonNode node : castNodes) {
                         String name = node.path("name").asText();
                         castNames.add(name);
                         castCount++;
-                        if (castCount > 10) {
+                        if (castCount > 15) {
                             break;
                         }
                     }

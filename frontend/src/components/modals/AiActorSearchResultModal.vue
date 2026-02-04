@@ -20,20 +20,8 @@
     const loadingActors = ref([]) // for handleActorClick()
     const addedActors = ref({}) // maps actorTitle to actorId
 
-    const loadedActor = ref({})
+    const loadedActorId = ref('')
     const loading = ref(false)
-
-    function loadActor(name) {
-        loading.value = true;
-        findSelectedActorByChineseName(name)
-            .then(res => {
-            loadedActor.value = res.data;
-            })
-            .catch(err => console.error(err))
-            .finally(() => 
-                loading.value = false
-            )
-    }
 
     async function handleActorClick(actorTitle) {
         // If already added, navigate to the actor page
@@ -53,27 +41,16 @@
             const response = await importActor(actorTitle)
             if (response.status === 200) {
                 // Store the actor ID so the link becomes clickable
-                addedActors.value[actorTitle] = loadedActor.value.actorId
                 alert(`成功將 ${actorTitle} 加入資料庫！`)
-                loadActor(actorTitle)
-                while (loading.value) {
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
-                addedActors.value[actorTitle] = loadedActor.value.actorId
+                loadedActorId.value = response.data.actorId
+                addedActors.value[actorTitle] = loadedActorId.value
                 // Don't emit 'close' - let user click the transformed link or close with X button
             }
         } catch (error) {
             console.error('Error importing actor:', error)
             if (error.response && error.response.status === 409) {
                 // Actor already exists - treat it as added
-                alert(`${actorTitle} 已存在資料庫中`)
-                // We need to fetch the actor ID from the DB
-                loadActor(actorTitle)
-                // Wait until loadedActor is set
-                while (loading.value) {
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
-                addedActors.value[actorTitle] = loadedActor.value.actorId
+                alert(`${actorTitle} 已存在資料庫中，請至演員列表頁面查看`)
             } else {
                 alert(`加入 ${actorTitle} 時發生錯誤，請稍後重試`)
             }
@@ -103,21 +80,21 @@
                                 <li v-for="(actor, index) in searchResults" :key="index" class="result-item">
                                     <!-- Button before actor is added -->
                                     <button 
-                                        v-if="!addedActors[actor.title]"
+                                        v-if="!addedActors[actor.name]"
                                         class="actor-title-btn border-0"
-                                        @click="handleActorClick(actor.title)"
-                                        :disabled="loadingActors.includes(actor.title)"
+                                        @click="handleActorClick(actor.name)"
+                                        :disabled="loadingActors.includes(actor.name)"
                                     >
-                                        {{ actor.title }}
+                                        {{ actor.name }}
                                     </button>
 
                                     <!-- Link after actor is added -->
                                     <router-link 
                                         v-else
-                                        :to="{ name: 'ActorPage', query: { id: addedActors[actor.title] } }"
+                                        :to="{ name: 'ActorPage', query: { id: addedActors[actor.name] } }"
                                         class="actor-title-link"
                                     >
-                                        {{ actor.title }}
+                                        {{ actor.name }}
                                     </router-link>
 
                                     <span class="actor-summary">({{ actor.summary }})</span>

@@ -4,7 +4,7 @@
 <script setup>
     import { defineProps, defineEmits, ref } from 'vue'
     import { useRouter } from 'vue-router'
-    import { importDrama, findSelectedDramaByChineseName } from '@/services/dramaService'
+    import { importDrama } from '@/services/dramaService'
 
     const router = useRouter()
 
@@ -20,20 +20,8 @@
     const loadingDramas = ref([]) // for handleDramaClick()
     const addedDramas = ref({}) // maps dramaTitle to dramaId
 
-    const loadedDrama = ref({})
+    const loadedDramaId = ref('')
     const loading = ref(false)
-
-    function loadDrama(name) {
-        loading.value = true;
-        findSelectedDramaByChineseName(name)
-            .then(res => {
-            loadedDrama.value = res.data;
-            })
-            .catch(err => console.error(err))
-            .finally(() => 
-                loading.value = false
-            )
-    }
 
     async function handleDramaClick(dramaTitle) {
         // If already added, navigate to the drama page
@@ -53,27 +41,16 @@
             const response = await importDrama(dramaTitle)
             if (response.status === 200) {
                 // Store the drama ID so the link becomes clickable
-                addedDramas.value[dramaTitle] = loadedDrama.value.dramaId
                 alert(`成功將 ${dramaTitle} 加入資料庫！`)
-                loadDrama(dramaTitle)
-                while (loading.value) {
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
-                addedDramas.value[dramaTitle] = loadedDrama.value.dramaId
+                loadedDramaId.value = response.data.dramaId
+                addedDramas.value[dramaTitle] = loadedDramaId.value
                 // Don't emit 'close' - let user click the transformed link or close with X button
             }
         } catch (error) {
             console.error('Error importing drama:', error)
             if (error.response && error.response.status === 409) {
                 // Drama already exists - treat it as added
-                alert(`${dramaTitle} 已存在資料庫中`)
-                // We need to fetch the drama ID from the DB
-                loadDrama(dramaTitle)
-                // Wait until loadedDrama is set
-                while (loading.value) {
-                    await new Promise(resolve => setTimeout(resolve, 100))
-                }
-                addedDramas.value[dramaTitle] = loadedDrama.value.dramaId
+                alert(`${dramaTitle} 已存在資料庫中，請至韓劇列表頁面查看`)
             } else {
                 alert(`加入 ${dramaTitle} 時發生錯誤，請稍後重試`)
             }
@@ -103,21 +80,21 @@
                                 <li v-for="(drama, index) in searchResults" :key="index" class="result-item">
                                     <!-- Button before drama is added -->
                                     <button 
-                                        v-if="!addedDramas[drama.title]"
+                                        v-if="!addedDramas[drama.name]"
                                         class="drama-title-btn border-0"
-                                        @click="handleDramaClick(drama.title)"
-                                        :disabled="loadingDramas.includes(drama.title)"
+                                        @click="handleDramaClick(drama.name)"
+                                        :disabled="loadingDramas.includes(drama.name)"
                                     >
-                                        {{ drama.title }}
+                                        {{ drama.name }}
                                     </button>
 
                                     <!-- Link after drama is added -->
                                     <router-link 
                                         v-else
-                                        :to="{ name: 'DramaPage', query: { id: addedDramas[drama.title] } }"
+                                        :to="{ name: 'DramaPage', query: { id: addedDramas[drama.name] } }"
                                         class="drama-title-link"
                                     >
-                                        {{ drama.title }}
+                                        {{ drama.name }}
                                     </router-link>
 
                                     <span class="drama-summary">({{ drama.summary }})</span>

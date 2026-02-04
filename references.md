@@ -22,6 +22,7 @@ List of References
 - Jackson & Java LocalDateTime Issue: https://www.javacodegeeks.com/jackson-java-8-date-time-localdate-support-issues.html
 - Cursor (Let AI agent help write code): https://cursor.com/?from=home
 - Generative AI (such as ChatGPT): Refer to the subfolder "GAI Prompts" in kdrama_system_summer_2025 project folder for screenshots of prompts; other prompts include simple Google searches and Google Gemini prompts (much fewer)
+- Google AI Studio: https://aistudio.google.com/
 
 2. Original Content Created by the Designer: Commercial use is prohibited
 - Figma Prototype Link: https://www.figma.com/design/2QaUITWlMZ5K7iSIpjDvBw/Kdrama-System?node-id=0-1&p=f&t=8fH5c6Fol75TyrFe-0

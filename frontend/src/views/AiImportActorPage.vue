@@ -80,6 +80,10 @@
     function backToActorList() {
         router.push({ name: 'ActorPage', query: {} })
     }
+
+    function closeSearchModal() {
+        showSearchModal.value = false
+    }
 </script>
 
 <template>
