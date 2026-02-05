@@ -140,14 +140,13 @@ public class MovieService {
         return movieRepository.findById(id)
                 .map(movie -> {
                     movie.setTmdbId(movieToUpdate.getTmdbId());
-                    if ((movie.getChineseName().isEmpty() && apiMode) || !apiMode) {
+                    if (!apiMode) {
                         movie.setChineseName(movieToUpdate.getChineseName());
-                    }
-                    if ((movie.getEnglishName().isEmpty() && apiMode) || !apiMode) {
                         movie.setEnglishName(movieToUpdate.getEnglishName());
-                    }
-                    if ((movie.getKoreanName().isEmpty() && apiMode) || !apiMode) {
                         movie.setKoreanName(movieToUpdate.getKoreanName());
+                        movie.setTrailerUrl(movieToUpdate.getTrailerUrl());
+                        movie.setChineseWikipediaPageUrl(movieToUpdate.getChineseWikipediaPageUrl());
+                        movie.setNamuWikiPageUrl(movieToUpdate.getNamuWikiPageUrl());
                     }
                     movie.setTotalRuntime(movieToUpdate.getTotalRuntime());
                     movie.setKrAgeRestriction(movieToUpdate.getKrAgeRestriction());
@@ -158,16 +157,7 @@ public class MovieService {
                     movie.setDirectorNames(movieToUpdate.getDirectorNames());
                     movie.setScriptwriterNames(movieToUpdate.getScriptwriterNames());
                     movie.setMainPosterUrl(movieToUpdate.getMainPosterUrl());
-                    if (!apiMode) {
-                        movie.setTrailerUrl(movieToUpdate.getTrailerUrl());
-                    }
                     movie.setIntroPageUrl(movieToUpdate.getIntroPageUrl());
-                    if (!apiMode) {
-                        movie.setChineseWikipediaPageUrl(movieToUpdate.getChineseWikipediaPageUrl());
-                    }
-                    if (!apiMode) {
-                        movie.setNamuWikiPageUrl(movieToUpdate.getNamuWikiPageUrl());
-                    }
                     if (movie.isAiOrManuallyEdited() == false) {
                         movie.setAiOrManuallyEdited(movieToUpdate.isAiOrManuallyEdited());
                     }

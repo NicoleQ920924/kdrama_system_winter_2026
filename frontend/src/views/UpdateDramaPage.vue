@@ -103,9 +103,9 @@
             const res = await updateSelectedDramaViaApi(dramaId)
             console.log(res.status)
             if (res.status === 200) {
+                loadDrama()
                 msg.value = `${loadedDrama.chineseName} 的API資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadDrama()
             }
         } catch (err) {
             console.error(err)
@@ -132,9 +132,9 @@
             const res = await updateSelectedDramaViaAiAndForm(dramaId, loadedDrama)
             console.log(res.status)
             if (res.status === 200) {
+                loadDrama()
                 msg.value = `${loadedDrama.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadDrama()
             }
         } catch (err) {
             console.error(err)
@@ -167,9 +167,9 @@
             const res = await updateSelectedDramaViaForm(dramaId, loadedDrama)
             console.log(res.status)
             if (res.status === 200) {
+                loadDrama()
                 msg.value = `${loadedDrama.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadDrama()
             }
         } catch (err) {
             console.error(err)
@@ -259,39 +259,39 @@
                         <input v-model="loadedDrama.seasonNumber" id="seasonNumber" class="form-control form-text-field" name="seasonNumber" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="chineseName" class="form-label">中文譯名 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <label for="chineseName" class="form-label">中文譯名 (AI或人工更新)</label>
                         <input v-model="loadedDrama.chineseName" id="chineseName" class="form-control form-text-field" name="chineseName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="englishName" class="form-label">英文譯名 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <label for="englishName" class="form-label">英文譯名 (AI或人工更新)</label>
                         <input v-model="loadedDrama.englishName" id="englishName" class="form-control form-text-field" name="englishName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="koreanName" class="form-label">韓文劇名 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <label for="koreanName" class="form-label">韓文劇名 (AI或人工更新)</label>
                         <input v-model="loadedDrama.koreanName" id="koreanName" class="form-control form-text-field" name="koreanName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="totalNumOfEps" class="form-label">總集數</label>
+                        <label for="totalNumOfEps" class="form-label">總集數 (API更新)</label>
                         <input v-model="loadedDrama.totalNumOfEps" id="totalNumOfEps" class="form-control form-text-field" name="totalNumOfEps" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="currentEpNo" class="form-label">最近播畢集數</label>
+                        <label for="currentEpNo" class="form-label">最近播畢集數 (API更新)</label>
                         <input v-model="loadedDrama.currentEpNo" id="currentEpNo" class="form-control form-text-field" name="currentEpNo" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="estRuntimePerEp" class="form-label">每集時長 (分鐘)</label>
+                        <label for="estRuntimePerEp" class="form-label">每集時長 (分鐘) (API更新)</label>
                         <input v-model="loadedDrama.estRuntimePerEp" id="estRuntimePerEp" class="form-control form-text-field" name="estRuntimePerEp" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="krAgeRestriction" class="form-label">觀賞年齡限制 (0表示普遍級)</label>
+                        <label for="krAgeRestriction" class="form-label">觀賞年齡限制 (0表示普遍級) (API更新)</label>
                         <input v-model="krAgeRestrictionDisplay" id="krAgeRestriction" class="form-control form-text-field" name="krAgeRestriction" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="releaseYear" class="form-label">播出年度</label>
+                        <label for="releaseYear" class="form-label">播出年度 (API更新)</label>
                         <input v-model="releaseYearDisplay" id="releaseYear" class="form-control form-text-field" name="releaseYear" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="status" class="form-label">播出狀態</label>
+                        <label for="status" class="form-label">播出狀態 (API更新)</label>
                         <select id="status" class="form-select enum-select" v-model="loadedDrama.status" disabled>
                             <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
                             {{ opt.label }}
@@ -301,7 +301,7 @@
                         <input type="hidden"  name="status" :value="loadedDrama.status" />
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="krReleaseSchedule" class="form-label">韓國播出日程</label>
+                        <label for="krReleaseSchedule" class="form-label">韓國播出日程 (API更新)</label>
                         <select id="krReleaseSchedule" class="form-select enum-select" v-model="loadedDrama.krReleaseSchedule" disabled>
                             <option v-for="opt in releaseScheduleOptions" :key="opt.value" :value="opt.value">
                             {{ opt.label }}
@@ -311,7 +311,7 @@
                         <input type="hidden"  name="krReleaseSchedule" :value="loadedDrama.krReleaseSchedule" />
                     </p>
                     <div class="form-group form-text-p">
-                        <h6>類型：</h6>
+                        <h6>類型 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedDrama.genres.length > 0">
@@ -322,7 +322,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>韓國原始播出頻道或平台：</h6>
+                        <h6>韓國原始播出頻道或平台 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedDrama.networks.length > 0">
@@ -333,7 +333,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>台灣播出平台 (平台：連結)：</h6>
+                        <h6>台灣播出平台 (平台：連結) (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="Object.keys(loadedDrama.dramaTwPlatformMap).length > 0">
@@ -344,7 +344,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>主演演員：</h6>
+                        <h6>主演演員 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedDrama.leadActors.length > 0">
@@ -355,7 +355,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>導演：</h6>
+                        <h6>導演 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedDrama.directorNames.length > 0">
@@ -366,7 +366,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>劇本作家：</h6>
+                        <h6>劇本作家 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedDrama.scriptwriterNames.length > 0">
@@ -379,23 +379,23 @@
                         </table>
                     </div>
                     <p class="form-group form-text-p">
-                        <label for="mainPosterUrl" class="form-label">海報連結</label>
+                        <label for="mainPosterUrl" class="form-label">海報連結 (API更新)</label>
                         <input v-model="loadedDrama.mainPosterUrl" id="mainPosterUrl" class="form-control form-text-field" name="mainPosterUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="trailerUrl" class="form-label">預告片連結 (需要AI或人工更新)</label>
+                        <label for="trailerUrl" class="form-label">預告片連結 (AI或人工更新)</label>
                         <input v-model="loadedDrama.trailerUrl" id="trailerUrl" class="form-control form-text-field" name="trailerUrl">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="introPageUrl" class="form-label">TMDB介紹頁連結</label>
+                        <label for="introPageUrl" class="form-label">TMDB介紹頁連結 (API更新)</label>
                         <input v-model="loadedDrama.introPageUrl" id="introPageUrl" class="form-control form-text-field" name="introPageUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (需要AI或人工更新)</label>
+                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (AI或人工更新)</label>
                         <input v-model="loadedDrama.chineseWikipediaPageUrl" id="chineseWikipediaPageUrl" class="form-control form-text-field" name="chineseWikipediaPageUrl">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (需要AI或人工更新)</label>
+                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (AI或人工更新)</label>
                         <input v-model="loadedDrama.namuWikiPageUrl" id="namuWikiPageUrl" class="form-control form-text-field" name="namuWikiPageUrl">
                     </p>
                     <p class="form-group form-text-p">

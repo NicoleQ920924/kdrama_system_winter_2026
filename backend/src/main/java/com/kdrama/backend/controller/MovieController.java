@@ -144,6 +144,7 @@ public class MovieController {
         else {
             Movie movie = optionalMovie.get();
             Movie updatedMovie = movieService.fillMovieMoreInfo(movie);
+            updatedMovie = movieService.fillTWPlatformInformation(updatedMovie);
             if (updatedMovie == null) {
                 return ResponseEntity.notFound().build();
             }

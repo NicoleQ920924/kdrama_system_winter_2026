@@ -109,18 +109,12 @@ public class ActorService {
                     actor.setBirthday(actorToUpdate.getBirthday());
                     if (!apiMode) {
                         actor.setBiography(actorToUpdate.getBiography());
+                        actor.setInstagramPageUrl(actorToUpdate.getInstagramPageUrl());
+                        actor.setChineseWikipediaPageUrl(actorToUpdate.getChineseWikipediaPageUrl());
+                        actor.setNamuWikiPageUrl(actorToUpdate.getNamuWikiPageUrl());
                     }
                     actor.setDramas(actorToUpdate.getDramas());
                     actor.setMovies(actorToUpdate.getMovies());
-                    if (!apiMode) {
-                        actor.setInstagramPageUrl(actorToUpdate.getInstagramPageUrl());
-                    }
-                    if (!apiMode) {
-                        actor.setChineseWikipediaPageUrl(actorToUpdate.getChineseWikipediaPageUrl());
-                    }
-                    if (!apiMode) {
-                        actor.setNamuWikiPageUrl(actorToUpdate.getNamuWikiPageUrl());
-                    }
                     actor.setLastUpdatedByApi(actorToUpdate.getLastUpdatedByApi());
                     if (actor.isAiOrManuallyEdited() == false) {
                         actor.setAiOrManuallyEdited(actorToUpdate.isAiOrManuallyEdited());

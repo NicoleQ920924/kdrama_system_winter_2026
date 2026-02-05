@@ -313,10 +313,10 @@ public class AiService {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, parsed);
 
             String checkPrompt = "請以正確性衡量更新前還是更新後的資訊比較好：\n\n" +
-                    "演員簡介: " + "更新前 - \"" + actorBefore.getBiography() + "\" / 更新後 - \"" + parsed.path("biography").asText() + "\"\n" +
-                    "Instagram連結: " + "更新前 - \"" + actorBefore.getInstagramPageUrl() + "\" / 更新後 - \"" + parsed.path("instagramPageUrl").asText() + "\"\n" +
-                    "中文維基百科連結: " + "更新前 - \"" + actorBefore.getChineseWikipediaPageUrl() + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText() + "\"\n" +
-                    "韓國Namu Wiki連結: " + "更新前 - \"" + actorBefore.getNamuWikiPageUrl() + "\" / 更新後 - \"" + parsed.path("namuWikiPageUrl").asText() + "\"\n\n" +
+                    "演員簡介: " + "更新前 - \"" + (actorBefore.getBiography() != null ? actorBefore.getBiography() : "") + "\" / 更新後 - \"" + parsed.path("biography").asText() + "\"\n" +
+                    "Instagram連結: " + "更新前 - \"" + (actorBefore.getInstagramPageUrl() != null ? actorBefore.getInstagramPageUrl() : "") + "\" / 更新後 - \"" + parsed.path("instagramPageUrl").asText() + "\"\n" +
+                    "中文維基百科連結: " + "更新前 - \"" + (actorBefore.getChineseWikipediaPageUrl() != null ? actorBefore.getChineseWikipediaPageUrl() : "") + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText() + "\"\n" +
+                    "韓國Namu Wiki連結: " + "更新前 - \"" + (actorBefore.getNamuWikiPageUrl() != null ? actorBefore.getNamuWikiPageUrl() : "") + "\" / 更新後 - \"" + parsed.path("namuWikiPageUrl").asText() + "\"\n\n" +
                     "請回傳出比較好的名稱。" +
                     "\n\n回覆格式：{\"biography\": \"簡介\", \"instagramPageUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
                     "\n\n只回覆 JSON 物件，不需要其他文字。";
@@ -362,7 +362,7 @@ public class AiService {
         Drama dramaBefore = dramaToUpdate;
         try {
             // Build a prompt to ask LLM to update drama info
-            String searchPrompt = "請搜尋並針對" + dramaToUpdate.getChineseName() + "這部韓劇更新內容：\n\n" +
+            String searchPrompt = "請搜尋並針對" + (dramaToUpdate.getChineseName() != null ? dramaToUpdate.getChineseName() : "TMDB ID是" + dramaToUpdate.getTmdbId() + "且為第" + dramaToUpdate.getSeasonNumber() + "季") + "這部韓劇更新內容：\n\n" +
                     "包含：chineseName（台灣官方劇名）、englishName（英文官方劇名，以播放平台為準）、koreanName（韓文官方劇名）、trailerUrl (預告片連結，請利用 \" YouTube網址 + /results?search_query={台灣中文官方片名}+預告片 \" 來生成搜尋連結)、chineseWikipediaPageUrl (中文維基百科連結) 以及 namuWikiPageUrl (韓國Namu Wiki針對此韓劇的介紹網頁)。" + "\n\n 以 JSON 陣列格式回覆，包含上述欄位。" +
                     "\n\n回覆格式：{\"chineseName\": \"劇名\", \"englishName\": \"劇名\", \"koreanName\": \"劇名\", \"trailerUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
                     "\n\n只回覆 JSON 物件，不需要其他文字。" +
@@ -380,12 +380,12 @@ public class AiService {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, parsed);
 
             String checkPrompt = "請以正確性衡量更新前還是更新後的資訊比較好：\n\n" +
-                    "台灣官方劇名: " + "更新前 - \"" + dramaBefore.getChineseName() + "\" / 更新後 - \"" + parsed.path("chineseName").asText() + "\"\n" +
-                    "英文官方劇名: " + "更新前 - \"" + dramaBefore.getEnglishName() + "\" / 更新後 - \"" + parsed.path("englishName").asText() + "\"\n" +
-                    "韓文官方劇名: " + "更新前 - \"" + dramaBefore.getKoreanName() + "\" / 更新後 - \"" + parsed.path("koreanName").asText() + "\"\n\n" +
-                    "預告片連結: " + "更新前 - \"" + dramaBefore.getTrailerUrl() + "\" / 更新後 - \"" + parsed.path("trailerUrl").asText() + "\"\n" +
-                    "中文維基百科連結: " + "更新前 - \"" + dramaBefore.getChineseWikipediaPageUrl() + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText() + "\"\n" +
-                    "韓國Namu Wiki連結: " + "更新前 - \"" + dramaBefore.getNamuWikiPageUrl() + "\" / 更新後 - \"" + parsed.path("namuWikiPageUrl").asText() + "\"\n\n" +
+                    "台灣官方劇名: " + "更新前 - \"" + (dramaBefore.getChineseName() != null ? dramaBefore.getChineseName() : "") + "\" / 更新後 - \"" + parsed.path("chineseName").asText() + "\"\n" +
+                    "英文官方劇名: " + "更新前 - \"" + (dramaBefore.getEnglishName() != null ? dramaBefore.getEnglishName() : "") + "\" / 更新後 - \"" + parsed.path("englishName").asText() + "\"\n" +
+                    "韓文官方劇名: " + "更新前 - \"" + (dramaBefore.getKoreanName() != null ? dramaBefore.getKoreanName() : "") + "\" / 更新後 - \"" + parsed.path("koreanName").asText() + "\"\n\n" +
+                    "預告片連結: " + "更新前 - \"" + (dramaBefore.getTrailerUrl() != null ? dramaBefore.getTrailerUrl() : "") + "\" / 更新後 - \"" + parsed.path("trailerUrl").asText() + "\"\n" +
+                    "中文維基百科連結: " + "更新前 - \"" + (dramaBefore.getChineseWikipediaPageUrl() != null ? dramaBefore.getChineseWikipediaPageUrl() : "")  + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText()  + "\"\n" +
+                    "韓國Namu Wiki連結: " + "更新前 - \""  + (dramaBefore.getNamuWikiPageUrl() != null ? dramaBefore.getNamuWikiPageUrl() : "")  +"\" / 更新後 - \""  + parsed.path("namuWikiPageUrl").asText()  +"\"\n\n" +
                     "請回傳出比較好的名稱。" +
                     "\n\n回覆格式：{\"chineseName\": \"劇名\", \"englishName\": \"劇名\", \"koreanName\": \"劇名\", \"trailerUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
                     "\n\n只回覆 JSON 物件，不需要其他文字。";
@@ -431,7 +431,7 @@ public class AiService {
         Movie movieBefore = movieToUpdate;
         try {
             // Build a prompt to ask LLM to update movie info
-            String searchPrompt = "請搜尋並針對" + movieToUpdate.getChineseName() + "這部韓國電影更新內容：\n\n" +
+            String searchPrompt = "請搜尋並針對" + (movieToUpdate.getChineseName() != null ? movieToUpdate.getChineseName() : "TMDB ID是" + movieToUpdate.getTmdbId()) + "這部韓國電影更新內容：\n\n" +
                     "包含：chineseName（台灣官方片名）、englishName（英文官方片名，以播放平台為準）、koreanName（韓文官方片名）、trailerUrl (預告片連結，請利用 \" YouTube網址 + /results?search_query={台灣中文官方片名}+預告片 \" 來生成搜尋連結)、chineseWikipediaPageUrl (中文維基百科連結) 以及 namuWikiPageUrl (韓國Namu Wiki針對此韓國電影的介紹網頁)。" + "\n\n 以 JSON 陣列格式回覆，包含上述欄位。" +
                     "\n\n回覆格式：{\"chineseName\": \"片名\", \"englishName\": \"片名\", \"koreanName\": \"片名\", \"trailerUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
                     "\n\n只回覆 JSON 物件，不需要其他文字。" +
@@ -449,12 +449,12 @@ public class AiService {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, parsed);
 
             String checkPrompt = "請以正確性衡量更新前還是更新後的資訊比較好：\n\n" +
-                    "台灣官方片名: " + "更新前 - \"" + movieBefore.getChineseName() + "\" / 更新後 - \"" + parsed.path("chineseName").asText() + "\"\n" +
-                    "英文官方片名: " + "更新前 - \"" + movieBefore.getEnglishName() + "\" / 更新後 - \"" + parsed.path("englishName").asText() + "\"\n" +
-                    "韓文官方片名: " + "更新前 - \"" + movieBefore.getKoreanName() + "\" / 更新後 - \"" + parsed.path("koreanName").asText() + "\"\n\n" +
-                    "預告片連結: " + "更新前 - \"" + movieBefore.getTrailerUrl() + "\" / 更新後 - \"" + parsed.path("trailerUrl").asText() + "\"\n" +
-                    "中文維基百科連結: " + "更新前 - \"" + movieBefore.getChineseWikipediaPageUrl() + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText() + "\"\n" +
-                    "韓國Namu Wiki連結: " + "更新前 - \"" + movieBefore.getNamuWikiPageUrl() + "\" / 更新後 - \"" + parsed.path("namuWikiPageUrl").asText() + "\"\n\n" +
+                    "台灣官方片名: " + "更新前 - \"" + (movieBefore.getChineseName() != null ? movieBefore.getChineseName() : "") + "\" / 更新後 - \"" + parsed.path("chineseName").asText() + "\"\n" +
+                    "英文官方片名: " + "更新前 - \"" + (movieBefore.getEnglishName() != null ? movieBefore.getEnglishName() : "") + "\" / 更新後 - \"" + parsed.path("englishName").asText() + "\"\n" +
+                    "韓文官方片名: " + "更新前 - \"" + (movieBefore.getKoreanName() != null ? movieBefore.getKoreanName() : "") + "\" / 更新後 - \"" + parsed.path("koreanName").asText() + "\"\n\n" +
+                    "預告片連結: " + "更新前 - \"" + (movieBefore.getTrailerUrl() != null ? movieBefore.getTrailerUrl() : "")  + "\" / 更新後 - \"" + parsed.path("trailerUrl").asText()  + "\"\n" +
+                    "中文維基百科連結: " + "更新前 - \"" + (movieBefore.getChineseWikipediaPageUrl() != null ? movieBefore.getChineseWikipediaPageUrl() : "")  + "\" / 更新後 - \"" + parsed.path("chineseWikipediaPageUrl").asText()  + "\"\n" +
+                    "韓國Namu Wiki連結: " + "更新前 - \""  + (movieBefore.getNamuWikiPageUrl() != null ? movieBefore.getNamuWikiPageUrl() : "")  +"\" / 更新後 - \""  + parsed.path("namuWikiPageUrl").asText()  +"\"\n\n" +
                     "請回傳出比較好的名稱。" +
                     "\n\n回覆格式：{\"chineseName\": \"片名\", \"englishName\": \"片名\", \"koreanName\": \"片名\", \"trailerUrl\": \"連結\", \"chineseWikipediaPageUrl\": \"連結\", \"namuWikiPageUrl\": \"連結\"}" +
                     "\n\n只回覆 JSON 物件，不需要其他文字。";

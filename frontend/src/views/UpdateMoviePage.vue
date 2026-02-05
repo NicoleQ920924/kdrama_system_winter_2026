@@ -88,9 +88,9 @@
             const res = await updateSelectedMovieViaApi(movieId)
             console.log(res.status)
             if (res.status === 200) {
+                loadMovie()
                 msg.value = `${loadedMovie.chineseName} 的API資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadMovie()
             }
         } catch (err) {
             console.error(err)
@@ -117,9 +117,9 @@
             const res = await updateSelectedMovieViaAiAndForm(movieId, loadedMovie)
             console.log(res.status)
             if (res.status === 200) {
+                loadMovie()
                 msg.value = `${loadedMovie.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadMovie()
             }
         } catch (err) {
             console.error(err)
@@ -152,9 +152,9 @@
             const res = await updateSelectedMovieViaForm(movieId, loadedMovie)
             console.log(res.status)
             if (res.status === 200) {
+                loadMovie()
                 msg.value = `${loadedMovie.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadMovie()
             }
         } catch (err) {
             console.error(err)
@@ -266,31 +266,31 @@
                         <input v-model="loadedMovie.tmdbId" id="tmdbId" class="form-control form-text-field" name="tmdbId" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="chineseName" class="form-label">中文譯名 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <label for="chineseName" class="form-label">中文譯名 (AI或人工更新)</label>
                         <input v-model="loadedMovie.chineseName" id="chineseName" class="form-control form-text-field" name="chineseName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="englishName" class="form-label">英文譯名 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <label for="englishName" class="form-label">英文譯名 (AI或人工更新)</label>
                         <input v-model="loadedMovie.englishName" id="englishName" class="form-control form-text-field" name="englishName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="koreanName" class="form-label">韓文名字 (可AI或人工更新，之後除非此欄位為空值，否則無法透過API更新)</label>
+                        <label for="koreanName" class="form-label">韓文名字 (AI或人工更新)</label>
                         <input v-model="loadedMovie.koreanName" id="koreanName" class="form-control form-text-field" name="koreanName" required aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="totalRuntime" class="form-label">片長 (分鐘)</label>
+                        <label for="totalRuntime" class="form-label">片長 (分鐘) (API更新)</label>
                         <input v-model="totalRuntimeDisplay" id="totalRuntime" class="form-control form-text-field" name="totalRuntime" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="krAgeRestriction" class="form-label">觀賞年齡限制 (0表示普遍級)</label>
+                        <label for="krAgeRestriction" class="form-label">觀賞年齡限制 (0表示普遍級) (API更新)</label>
                         <input v-model="krAgeRestrictionDisplay" id="krAgeRestriction" class="form-control form-text-field" name="krAgeRestriction" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="releaseDate" class="form-label">韓國上映日期</label>
+                        <label for="releaseDate" class="form-label">韓國上映日期 (API更新)</label>
                         <input v-model="releaseDateDisplay" id="releaseDate" class="form-control form-text-field" name="releaseDate" required readonly aria-required="true">
                     </p>
                     <div class="form-group form-text-p">
-                        <h6>類型：</h6>
+                        <h6>類型 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedMovie.genres.length > 0">
@@ -301,7 +301,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>台灣播出平台 (平台：連結)：</h6>
+                        <h6>台灣播出平台 (平台：連結) (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="Object.keys(loadedMovie.movieTwPlatformMap).length">
@@ -312,7 +312,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>主演演員：</h6>
+                        <h6>主演演員 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedMovie.leadActors.length > 0">
@@ -323,7 +323,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>導演：</h6>
+                        <h6>導演 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedMovie.directorNames.length > 0">
@@ -334,7 +334,7 @@
                                 <span v-else>無資料</span>
                             </tr>
                         </table>
-                        <h6>劇本作家：</h6>
+                        <h6>劇本作家 (API更新)：</h6>
                         <table class="table form-control info-table">
                             <tr>
                                 <ul v-if="loadedMovie.scriptwriterNames.length > 0">
@@ -347,23 +347,23 @@
                         </table>
                     </div>
                     <p class="form-group form-text-p">
-                        <label for="mainPosterUrl" class="form-label">海報連結</label>
+                        <label for="mainPosterUrl" class="form-label">海報連結 (API更新)</label>
                         <input v-model="loadedMovie.mainPosterUrl" id="mainPosterUrl" class="form-control form-text-field" name="mainPosterUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="trailerUrl" class="form-label">預告片連結 (需要AI或人工更新)</label>
+                        <label for="trailerUrl" class="form-label">預告片連結 (AI或人工更新)</label>
                         <input v-model="loadedMovie.trailerUrl" id="trailerUrl" class="form-control form-text-field" name="trailerUrl">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="introPageUrl" class="form-label">TMDB介紹頁連結</label>
+                        <label for="introPageUrl" class="form-label">TMDB介紹頁連結 (API更新)</label>
                         <input v-model="loadedMovie.introPageUrl" id="introPageUrl" class="form-control form-text-field" name="introPageUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (需要AI或人工更新)</label>
+                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (AI或人工更新)</label>
                         <input v-model="loadedMovie.chineseWikipediaPageUrl" id="chineseWikipediaPageUrl" class="form-control form-text-field" name="chineseWikipediaPageUrl">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (需要AI或人工更新)</label>
+                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (AI或人工更新)</label>
                         <input v-model="loadedMovie.namuWikiPageUrl" id="namuWikiPageUrl" class="form-control form-text-field" name="namuWikiPageUrl">
                     </p>
                     <p class="form-group form-text-p">

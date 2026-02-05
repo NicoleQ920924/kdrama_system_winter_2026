@@ -181,14 +181,13 @@ public class DramaService {
                 .map(drama -> {
                     drama.setTmdbId(dramaToUpdate.getTmdbId());
                     drama.setSeasonNumber(dramaToUpdate.getSeasonNumber());
-                    if ((drama.getChineseName().isEmpty() && apiMode) || !apiMode) {
+                    if (!apiMode) {
                         drama.setChineseName(dramaToUpdate.getChineseName());
-                    }
-                    if ((drama.getEnglishName().isEmpty() && apiMode) || !apiMode) {
                         drama.setEnglishName(dramaToUpdate.getEnglishName());
-                    }
-                    if ((drama.getKoreanName().isEmpty() && apiMode) || !apiMode) {
                         drama.setKoreanName(dramaToUpdate.getKoreanName());
+                        drama.setTrailerUrl(dramaToUpdate.getTrailerUrl());
+                        drama.setChineseWikipediaPageUrl(dramaToUpdate.getChineseWikipediaPageUrl());
+                        drama.setNamuWikiPageUrl(dramaToUpdate.getNamuWikiPageUrl());
                     }
                     drama.setTotalNumOfEps(dramaToUpdate.getTotalNumOfEps());
                     drama.setCurrentEpNo(dramaToUpdate.getCurrentEpNo());
@@ -204,16 +203,7 @@ public class DramaService {
                     drama.setDirectorNames(dramaToUpdate.getDirectorNames());
                     drama.setScriptwriterNames(dramaToUpdate.getScriptwriterNames());
                     drama.setMainPosterUrl(dramaToUpdate.getMainPosterUrl());
-                    if (!apiMode) {
-                        drama.setTrailerUrl(dramaToUpdate.getTrailerUrl());
-                    }
                     drama.setIntroPageUrl(dramaToUpdate.getIntroPageUrl());
-                    if (!apiMode) {
-                        drama.setChineseWikipediaPageUrl(dramaToUpdate.getChineseWikipediaPageUrl());
-                    }
-                    if (!apiMode) {
-                        drama.setNamuWikiPageUrl(dramaToUpdate.getNamuWikiPageUrl());
-                    }
                     if (drama.isAiOrManuallyEdited() == false) {
                         drama.setAiOrManuallyEdited(dramaToUpdate.isAiOrManuallyEdited());
                     }

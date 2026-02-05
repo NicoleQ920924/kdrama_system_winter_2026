@@ -164,6 +164,7 @@ public class DramaController {
         else {
             Drama drama = optionalDrama.get();
             Drama updatedDrama = dramaService.fillDramaMoreInfo(drama, null);
+            updatedDrama = dramaService.fillTWPlatformInformation(updatedDrama);
             if (updatedDrama == null) {
                 return ResponseEntity.notFound().build();
             }

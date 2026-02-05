@@ -53,7 +53,7 @@ public class Movie {
 
     private String mainPosterUrl; // Fetched via TMDB API
 
-    private String trailerUrl; // YouTube video link (manually edited)
+    private String trailerUrl; // YouTube video search link (AI or manually edited)
 
     private String introPageUrl; // The information page on TMDB
 
@@ -61,7 +61,7 @@ public class Movie {
 
     private String namuWikiPageUrl; // Manually added or added via AI
 
-    private boolean aiOrManuallyEdited = false; // e.g. Manual Addition of Information
+    private boolean aiOrManuallyEdited = false;
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdatedByApi; // Sync with TMDB API

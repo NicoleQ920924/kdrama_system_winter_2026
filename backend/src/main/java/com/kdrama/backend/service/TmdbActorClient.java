@@ -187,6 +187,9 @@ public class TmdbActorClient {
                                     continue;
                                 }
                             }
+                            else if (!includesExistingWork && !optionalMovie.isEmpty()) { // Skip existing work
+                                savedMovie = optionalMovie.get();
+                            }
                             else { // Only add movies not in the database
                                 savedMovie = optionalMovie.orElseGet(() -> {
                                     movie.setTmdbId(tmdbWorkId);
@@ -225,71 +228,75 @@ public class TmdbActorClient {
                             if (!dramaService.isDrama(tmdbWorkId)) {
                                 continue;
                             }
+                            else {
+                                Integer totalSeasons = dramaService.getDramaSeasonCount(tmdbWorkId);
+                                for (int season = 1; season <= totalSeasons; season++) {
+                                    Drama drama = new Drama();
+                                    Drama filledDrama = null;
 
-                            Integer totalSeasons = dramaService.getDramaSeasonCount(tmdbWorkId);
-    
-                            for (int season = 1; season <= totalSeasons; season++) {
-                                Drama drama = new Drama();
-                                Drama filledDrama = null;
+                                    drama.setTmdbId(tmdbWorkId);
+                                    drama.setSeasonNumber(season);
+                                    drama.setChineseName(workNode.path("name").asText() + " - 第" + season + "季");
 
-                                drama.setTmdbId(tmdbWorkId);
-                                drama.setSeasonNumber(season);
-                                drama.setChineseName(workNode.path("name").asText() + " - 第" + season + "季");
+                                    filledDrama = dramaService.fillDramaMoreInfo(drama, actor.getChineseName());
 
-                                filledDrama = dramaService.fillDramaMoreInfo(drama, actor.getChineseName());
-
-                                if (filledDrama != null) {
-                                    filledDrama = aiService.aiUpdateDramaInfo(filledDrama);
-                                    filledDrama = dramaService.fillTWPlatformInformation(filledDrama);
-                                    Optional<Drama> existingDramaOpt = dramaService.getDramaByTmdbIdAndSeasonNumber(tmdbWorkId, season);
-                                    if (existingDramaOpt.isPresent()) {
-                                        if (!includesExistingWork) {
-                                            continue; // Skip if not including updating existing works
+                                    if (filledDrama != null) {
+                                        Optional<Drama> existingDramaOpt = dramaService.getDramaByTmdbIdAndSeasonNumber(tmdbWorkId, season);
+                                        if (existingDramaOpt.isPresent()) {
+                                            if (!includesExistingWork) {
+                                                continue; // Skip if not including updating existing works
+                                            }
+                                            else {
+                                                Drama existingDrama = existingDramaOpt.get();
+                                                filledDrama = aiService.aiUpdateDramaInfo(filledDrama);
+                                                filledDrama = dramaService.fillTWPlatformInformation(filledDrama);
+                                                if (filledDrama != null) {
+                                                    drama = dramaService.updateDrama(existingDrama.getDramaId(), filledDrama, false);
+                                                } else {
+                                                    System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
+                                                    drama = null;
+                                                }
+                                            }   
                                         }
-                                        Drama existingDrama = existingDramaOpt.get();
-                                        if (filledDrama != null) {
-                                            drama = dramaService.updateDrama(existingDrama.getDramaId(), filledDrama, false);
-                                        } else {
-                                            System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
-                                            drama = null;
+                                        else {
+                                            filledDrama = aiService.aiUpdateDramaInfo(filledDrama);
+                                            filledDrama = dramaService.fillTWPlatformInformation(filledDrama);
+                                            if (filledDrama != null) {
+                                                drama = dramaService.saveDrama(filledDrama);
+                                            } else {
+                                                System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
+                                            }
                                         }
                                     }
                                     else {
-                                        if (filledDrama != null) {
-                                            drama = dramaService.saveDrama(filledDrama);
-                                        } else {
-                                            System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
-                                        }
+                                        System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
+                                        continue;
                                     }
-                                }
-                                else {
-                                    System.out.println("Drama fetch failed or skipped for tmdbId: " + tmdbWorkId + ", season: " + season);
-                                    continue;
-                                }
 
-                                if (drama != null) {
-                                    // Initialization of sizes to prevent LazyInitializationException
-                                    try {
-                                        if (!drama.equals(null)) {
-                                            drama.getGenres().size();
-                                            drama.getNetworks().size();
-                                            drama.getDramaTwPlatformMap().size();
-                                            drama.getLeadActors().size();
-                                            drama.getDirectorNames().size();
-                                            drama.getScriptwriterNames().size();
-                                            // Only establish new relationships if: 
-                                            // 1. The relationship between the drama and the actor has not been established yet
-                                            // 2. The list of lead actors of the drama does include this actor (previously handled by TmdbDramaClient.java for new dramas, now here we need to handle existing dramas)
-                                            if (!actor.getDramas().contains(drama) && drama.getLeadActors().contains(actor.getChineseName())) {
-                                                actor.getDramas().add(drama);
-                                            }   
+                                    if (drama != null) {
+                                        // Initialization of sizes to prevent LazyInitializationException
+                                        try {
+                                            if (!drama.equals(null)) {
+                                                drama.getGenres().size();
+                                                drama.getNetworks().size();
+                                                drama.getDramaTwPlatformMap().size();
+                                                drama.getLeadActors().size();
+                                                drama.getDirectorNames().size();
+                                                drama.getScriptwriterNames().size();
+                                                // Only establish new relationships if: 
+                                                // 1. The relationship between the drama and the actor has not been established yet
+                                                // 2. The list of lead actors of the drama does include this actor (previously handled by TmdbDramaClient.java for new dramas, now here we need to handle existing dramas)
+                                                if (!actor.getDramas().contains(drama) && drama.getLeadActors().contains(actor.getChineseName())) {
+                                                    actor.getDramas().add(drama);
+                                                }   
+                                            }
+                                        } catch (Exception e) {
+                                            System.out.println("Exception occurred at drama: " + drama.getChineseName());
+                                            e.printStackTrace();
                                         }
-                                    } catch (Exception e) {
-                                        System.out.println("Exception occurred at drama: " + drama.getChineseName());
-                                        e.printStackTrace();
                                     }
+                                    
                                 }
-                                
                             }
                         }
                     }

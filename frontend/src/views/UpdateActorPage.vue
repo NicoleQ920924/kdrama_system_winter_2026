@@ -80,9 +80,9 @@
             const res = await updateSelectedActorViaApi(actorId, includesExistingWork)
             console.log(res.status)
             if (res.status === 200) {
+                loadActor()
                 msg.value = `${loadedActor.chineseName} 的API資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadActor()
             }
         } catch (err) {
             console.error(err)
@@ -109,9 +109,9 @@
             const res = await updateSelectedActorViaAiAndForm(actorId, loadedActor)
             console.log(res.status)
             if (res.status === 200) {
+                loadActor()
                 msg.value = `${loadedActor.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadActor()
             }
         } catch (err) {
             console.error(err)
@@ -142,9 +142,9 @@
             const res = await updateSelectedActorViaForm(actorId, loadedActor)
             console.log(res.status)
             if (res.status === 200) {
+                loadActor()
                 msg.value = `${loadedActor.chineseName} 的資料已更新完畢！`
                 msgClass.value = 'success-msg text-center'
-                loadActor()
             }
         } catch (err) {
             console.error(err)
@@ -254,23 +254,23 @@
                         <input v-model="loadedActor.tmdbId" id="tmdbId" class="form-control form-text-field" name="tmdbId" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="chineseName" class="form-label">中文譯名</label>
+                        <label for="chineseName" class="form-label">中文譯名 (API更新)</label>
                         <input v-model="loadedActor.chineseName" id="chineseName" class="form-control form-text-field" name="chineseName" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="englishName" class="form-label">英文譯名</label>
+                        <label for="englishName" class="form-label">英文譯名 (API更新)</label>
                         <input v-model="loadedActor.englishName" id="englishName" class="form-control form-text-field" name="englishName" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="koreanName" class="form-label">韓文名字</label>
+                        <label for="koreanName" class="form-label">韓文名字 (API更新)</label>
                         <input v-model="loadedActor.koreanName" id="koreanName" class="form-control form-text-field" name="koreanName" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="profilePicUrl" class="form-label">大頭照連結</label>
+                        <label for="profilePicUrl" class="form-label">大頭照連結 (API更新)</label>
                         <input v-model="loadedActor.profilePicUrl" id="profilePicUrl" class="form-control form-text-field" name="profilePicUrl" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="actorGender" class="form-label">性別</label>
+                        <label for="actorGender" class="form-label">性別 (API更新)</label>
                         <select id="actorGender" class="form-select gender-select" v-model="loadedActor.actorGender" disabled>
                             <option v-for="opt in genderOptions" :key="opt.value" :value="opt.value">
                             {{ opt.label }}
@@ -280,15 +280,15 @@
                         <input type="hidden"  name="actorGender" :value="loadedActor.actorGender" />
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="birthday" class="form-label">出生年月日</label>
+                        <label for="birthday" class="form-label">出生年月日 (API更新)</label>
                         <input v-model="birthdayDisplay" id="birthday" class="form-control form-text-field" name="birthday" required readonly aria-required="true">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="biography" class="form-label">簡介 (最多200字，可AI或人工更新)</label>
+                        <label for="biography" class="form-label">簡介 (最多200字，AI或人工更新)</label>
                         <input v-model="biographyDisplay" id="biography" class="form-control form-text-field" name="biography" required aria-required="true">
                     </p>
                     <div class="form-group form-text-p">
-                        <h6>出演韓劇：</h6>
+                        <h6>出演韓劇 (API更新)：</h6>
                         <table class="table form-control work-table">
                             <tr>
                                 <ul>
@@ -298,7 +298,7 @@
                                 </ul>
                             </tr>
                         </table>
-                        <h6>出演韓影：</h6>
+                        <h6>出演韓影 (API更新)：</h6>
                         <table class="table form-control work-table">
                             <tr>
                                 <ul>
@@ -310,15 +310,15 @@
                         </table>
                     </div>
                     <p class="form-group form-text-p">
-                        <label for="instagramPageUrl" class="form-label">Instagram帳號連結 (需要AI或人工更新)</label>
+                        <label for="instagramPageUrl" class="form-label">Instagram帳號連結 (AI或人工更新)</label>
                         <input v-model="loadedActor.instagramPageUrl" id="instagramPageUrl" class="form-control form-text-field" name="instagramPageUrl">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (需要AI或人工更新)</label>
+                        <label for="chineseWikipediaPageUrl" class="form-label">中文維基百科連結 (AI或人工更新)</label>
                         <input v-model="loadedActor.chineseWikipediaPageUrl" id="chineseWikipediaPageUrl" class="form-control form-text-field" name="chineseWikipediaPageUrl">
                     </p>
                     <p class="form-group form-text-p">
-                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (需要AI或人工更新)</label>
+                        <label for="namuWikiPageUrl" class="form-label">Namu Wiki連結 (AI或人工更新)</label>
                         <input v-model="loadedActor.namuWikiPageUrl" id="namuWikiPageUrl" class="form-control form-text-field" name="namuWikiPageUrl">
                     </p>
                     <p class="form-group form-text-p">
