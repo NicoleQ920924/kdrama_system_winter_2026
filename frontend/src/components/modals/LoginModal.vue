@@ -2,12 +2,14 @@
 <!-- The design is based on my part of 2024 Spring Semester - Web Programming Project, link in references.md -->
 <script setup>
     import { ref, defineEmits, onUnmounted } from 'vue'
+    import { userStore } from '@/store'
+    import { getUserById, createUser } from '@/services/userService'
 
     const emit = defineEmits(['close', 'switch'])
 
     const showPassword = ref(false)
     const errorMsg = ref('')
-    const redirectUrl = ref('')
+    const loading = ref(false)
     const activeTab = ref('user') // user or admin
 
     const userId = ref('')
@@ -19,6 +21,7 @@
         errorMsg.value = ''
         showPassword.value = false
         activeTab.value = 'user'
+        loading.value = false
 
         userId.value = ''
         userPwd.value = ''
@@ -36,6 +39,7 @@
 
     function switchTab(tab) {
         activeTab.value = tab
+        errorMsg.value = ''
 
         // Reset Inputs
         if (activeTab.value === 'user') {
@@ -47,17 +51,61 @@
         }
     }
 
-    function submitLogin() {
-        /* emit('loginSuccess', { 
-            redirectUrl: redirectUrl.value,
-            loginType: activeTab.value
-        }) */
-        emit('switch', 'loginSuccess')
-        /* if (activeTab.value === 'user') {
-            // Normal User Login Logic
-        } else {
-            // Admin Login Logic
-        } */
+    async function submitLogin(type) {
+        errorMsg.value = ''
+        loading.value = true
+
+        try {
+            let username = ''
+            
+            if (type === 'user') {
+                if (!userId.value.trim()) {
+                    errorMsg.value = '請輸入帳號'
+                    loading.value = false
+                    return
+                }
+                username = userId.value
+            } else {
+                if (!adminId.value.trim()) {
+                    errorMsg.value = '請輸入帳號'
+                    loading.value = false
+                    return
+                }
+                username = adminId.value
+            }
+
+            // Create default user if doesn't exist (simplified for demo)
+            // In production, this would require proper authentication
+            const user = await createUser(username, username, type === 'admin' ? 'ADMIN' : 'USER')
+            
+            if (user && user.data) {
+                userStore.setCurrentUser(user.data)
+                emit('switch', 'loginSuccess')
+            } else {
+                errorMsg.value = '登入失敗，請稍後重試'
+            }
+        } catch (err) {
+            console.error('Login error:', err)
+            if (err.response && err.response.status === 409) {
+                // User already exists, try to fetch it
+                try {
+                    const username = type === 'user' ? userId.value : adminId.value
+                    // Since we don't have a get-by-username endpoint, create it anyway
+                    // The backend should handle duplicate username gracefully
+                    const user = await createUser(username, username, type === 'admin' ? 'ADMIN' : 'USER')
+                    if (user && user.data) {
+                        userStore.setCurrentUser(user.data)
+                        emit('switch', 'loginSuccess')
+                    }
+                } catch (innerErr) {
+                    errorMsg.value = '登入失敗，請檢查帳號'
+                }
+            } else {
+                errorMsg.value = '登入失敗，請稍後重試'
+            }
+        } finally {
+            loading.value = false
+        }
     }
 </script>
 
@@ -87,22 +135,18 @@
                             <template v-if="activeTab === 'user'">
                                 <div class="tab-pane active">
                                     <form class="form" method="post" action="#">
-                                    <input type="hidden" :value="redirectUrl" name="redirectUrl" />
-                                    <input type="hidden" value="user" name="loginType" />
                                     <p class="modal-text-p">
-                                        <input v-model="userId" type="text" class="form-control modal-text-field" name="loginId" placeholder="帳號" required />
+                                        <input v-model="userId" type="text" class="form-control modal-text-field" name="loginId" placeholder="帳號" required :disabled="loading" />
                                     </p>
                                     <p class="modal-text-p">
-                                        <input v-model="userPwd" :type="showPassword ? 'text' : 'password'" class="form-control modal-text-field" name="loginPwd" placeholder="密碼" required/>
+                                        <input v-model="userPwd" :type="showPassword ? 'text' : 'password'" class="form-control modal-text-field" name="loginPwd" placeholder="密碼 (可選)" :disabled="loading" />
                                         <font-awesome-icon class="text-field-eye-icon" :icon="showPassword ? 'fa-eye-slash' : 'fa-eye'" @click="showPassword = !showPassword" />
                                     </p>
                                     <span class="error-msg">{{ errorMsg }}</span>
-                                    <div class="form-check stay-login">
-                                        <label class="form-check-label" for="stayLoginUser">保持登入</label>
-                                        <input type="checkbox" class="form-check-input" id="stayLoginUser" name="stayLogin" />
-                                    </div>
                                     <div class="text-center">
-                                        <button @click.prevent="submitLogin('user')" type="button" class="btn modal-btn shadow-none">一般用戶登入</button>
+                                        <button @click.prevent="submitLogin('user')" type="button" class="btn modal-btn shadow-none" :disabled="loading">
+                                            {{ loading ? '登入中...' : '一般用戶登入' }}
+                                        </button>
                                     </div>
                                     </form>
                                 </div>
@@ -111,22 +155,18 @@
                             <template v-else>
                                 <div class="tab-pane active">
                                     <form class="form" method="post" action="#">
-                                    <input type="hidden" :value="redirectUrl" name="redirectUrl" />
-                                    <input type="hidden" value="admin" name="loginType" />
                                     <p class="modal-text-p">
-                                        <input v-model="adminId" type="text" class="form-control modal-text-field" name="loginId" placeholder="帳號" required />
+                                        <input v-model="adminId" type="text" class="form-control modal-text-field" name="loginId" placeholder="帳號" required :disabled="loading" />
                                     </p>
                                     <p class="modal-text-p">
-                                        <input v-model="adminPwd" :type="showPassword ? 'text' : 'password'" class="form-control modal-text-field" name="loginPwd" placeholder="密碼" required/>
+                                        <input v-model="adminPwd" :type="showPassword ? 'text' : 'password'" class="form-control modal-text-field" name="loginPwd" placeholder="密碼 (可選)" :disabled="loading" />
                                         <font-awesome-icon class="text-field-eye-icon" :icon="showPassword ? 'fa-eye-slash' : 'fa-eye'" @click="showPassword = !showPassword" />
                                     </p>
                                     <span class="error-msg">{{ errorMsg }}</span>
-                                    <div class="form-check stay-login">
-                                        <label class="form-check-label" for="stayLoginAdmin">保持登入</label>
-                                        <input type="checkbox" class="form-check-input" id="stayLoginAdmin" name="stayLogin" />
-                                    </div>
                                     <div class="text-center">
-                                        <button @click.prevent="submitLogin('admin')" type="button" class="btn modal-btn shadow-none">管理員登入</button>
+                                        <button @click.prevent="submitLogin('admin')" type="button" class="btn modal-btn shadow-none" :disabled="loading">
+                                            {{ loading ? '登入中...' : '管理員登入' }}
+                                        </button>
                                     </div>
                                     </form>
                                 </div>

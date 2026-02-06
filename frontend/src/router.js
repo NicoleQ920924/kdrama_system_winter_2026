@@ -17,6 +17,8 @@ import AiImportMoviePage from '@/views/AiImportMoviePage.vue';
 import PlatformInfoPage from '@/views/PlatformInfoPage.vue';
 import ContactUsPage from '@/views/ContactUsPage.vue';
 import ExternalLinksPage from '@/views/ExternalLinksPage.vue';
+import UserProfilePage from '@/views/UserProfilePage.vue';
+import WatchlistPage from '@/views/WatchlistPage.vue';
 
 const routes = [
   {
@@ -112,7 +114,18 @@ const routes = [
     name: 'ExternalLinksPage',
     component: ExternalLinksPage
   },
-  
+  {
+    // 追蹤清單
+    path: '/watchlist',
+    name: 'WatchlistPage',
+    component: WatchlistPage
+  },
+  {
+    // 用戶檔案
+    path: '/user-profile',
+    name: 'UserProfilePage',
+    component: UserProfilePage
+  },
 ];
 
 const router = createRouter({

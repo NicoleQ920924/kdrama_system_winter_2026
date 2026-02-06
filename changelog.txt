@@ -203,4 +203,10 @@ Below is for kdrama_system_winter_2026
 2026/2/5
 - Fix all AI updates (esp. issues related to empty fields)
 
+2026/2/6
+- Write code to satisfy the following (from my document "2025暑假 (大三暑假) 韓國影視管理系統_文件"):
+"針對一般用戶和管理員實施不同的會員管理制度，例如只有管理員才能更新演員和作品的資料，而只有一般用戶能操作追蹤清單"
+* Most work done by GitHub Copilot
+* Not tested yet
+
 ============================================================================================================

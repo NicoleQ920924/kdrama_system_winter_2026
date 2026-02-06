@@ -33,6 +33,7 @@ public class DramaController {
     }
 
     @PostMapping("/import")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> importDrama(@RequestParam String name) {
         
         // Check if the drama already exists in database
@@ -155,6 +156,7 @@ public class DramaController {
     }
 
     @PutMapping("/apiupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> updateSelectedDramaViaApi(@PathVariable Integer id) {
         
         Optional<Drama> optionalDrama = dramaService.getDramaById(id);
@@ -176,6 +178,7 @@ public class DramaController {
     }
 
     @PutMapping("/aiupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> updateSelectedDramaViaAiAndForm(@PathVariable Integer id, @RequestBody Drama dramaToUpdate) {
        Drama aiUpdated = aiService.aiUpdateDramaInfo(dramaToUpdate);
        Drama drama = dramaService.updateDrama(id, aiUpdated, false);
@@ -183,12 +186,14 @@ public class DramaController {
     }
 
     @PutMapping("/formupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<Drama> updateSelectedDramaViaForm(@PathVariable Integer id, @RequestBody Drama dramaToUpdate) {
         Drama drama = dramaService.updateDrama(id, dramaToUpdate, false);
         return ResponseEntity.ok(drama);
     }
 
     @DeleteMapping("/delete/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<String> deleteSelectedDrama(@PathVariable Integer id) {     
         if (dramaService.dramaExists(id)) {
             dramaService.deleteDrama(id);

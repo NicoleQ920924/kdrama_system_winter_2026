@@ -3,6 +3,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { findSelectedMovieById } from '@/services/movieService'
 import { importActor } from '@/services/actorService'
+import { addMovieToWatchlist, removeMovieFromWatchlist } from '@/services/watchlistService'
+import { userStore } from '@/store'
 import Spinner from './Spinner.vue'
 
 const props = defineProps({
@@ -13,7 +15,8 @@ const emit = defineEmits(['reset-movie'])
 
 const movie = ref({})
 const loading = ref(true)
-
+const inWatchlist = ref(false)
+const watchlistLoading = ref(false)
 const loadingActors = ref([]) // for handleActorClick()
 
 function loadMovie() {
@@ -21,10 +24,48 @@ function loadMovie() {
   findSelectedMovieById(props.selectedMovieId)
     .then(res => {
       movie.value = res.data;
+      checkIfInWatchlist();
     })
     .catch(err => console.error(err))
     .finally(() => loading.value = false
     )
+}
+
+function checkIfInWatchlist() {
+  const user = userStore.getCurrentUser();
+  if (!user) {
+    inWatchlist.value = false;
+    return;
+  }
+  // This would require getting the user with their watchlist from backend
+  // For now, we'll assume it's not in the watchlist until we fetch it
+  inWatchlist.value = false;
+}
+
+async function toggleWatchlist() {
+  const user = userStore.getCurrentUser();
+  if (!user) {
+    alert('請先登入');
+    return;
+  }
+
+  watchlistLoading.value = true;
+  try {
+    if (inWatchlist.value) {
+      await removeMovieFromWatchlist(user.userId, movie.value.movieId);
+      inWatchlist.value = false;
+      alert('已從追蹤清單移除');
+    } else {
+      await addMovieToWatchlist(user.userId, movie.value.movieId);
+      inWatchlist.value = true;
+      alert('已加入追蹤清單');
+    }
+  } catch (err) {
+    console.error('Error toggling watchlist:', err);
+    alert('操作失敗，請稍後重試');
+  } finally {
+    watchlistLoading.value = false;
+  }
 }
 
 const groupedActors = computed(() => {
@@ -194,7 +235,12 @@ onMounted(() => loadMovie())
                             <p class="movie-detailed-info">韓國上映日期：{{ displayData(formatDate(movie.releaseDate)) }} <span :class="getAgeRestrictClass(movie.krAgeRestriction)">{{ movie.krAgeRestriction === 0 ? '普遍級' : (movie.krAgeRestriction || '無年齡資料') }}</span></p>
                             <p class="movie-detailed-info">片長 {{ displayData((movie.totalRuntime)) }} 分鐘</p>
                             <p class="movie-detailed-info">
-                                <button class="btn wish-btn">加入追蹤清單</button>
+                                <button 
+                                    @click="toggleWatchlist" 
+                                    :disabled="watchlistLoading"
+                                    :class="['btn', inWatchlist ? 'btn-danger' : 'wish-btn']">
+                                    {{ inWatchlist ? '從追蹤清單移除' : '加入追蹤清單' }}
+                                </button>
                             </p>
                             <div class="platforms">
                                 <h5 class="platform-section-title">台灣播出平台</h5>

@@ -31,6 +31,7 @@ public class MovieController {
     }
 
     @PostMapping("/import")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> importMovie(@RequestParam String name) {
         // Check if the movie already exists in database
         Optional<Movie> optionalExistingMovie = movieService.getMovieByChineseName(name);
@@ -135,6 +136,7 @@ public class MovieController {
     }
 
     @PutMapping("/apiupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> updateSelectedMovieViaApi(@PathVariable Integer id) {
         
         Optional<Movie> optionalMovie = movieService.getMovieById(id);
@@ -156,6 +158,7 @@ public class MovieController {
     }
 
     @PutMapping("/aiupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> updateSelectedMovieViaAiAndForm(@PathVariable Integer id, @RequestBody Movie movieToUpdate) {
        Movie aiUpdated = aiService.aiUpdateMovieInfo(movieToUpdate);
        Movie movie = movieService.updateMovie(id, aiUpdated, false);
@@ -163,12 +166,14 @@ public class MovieController {
     }
 
     @PutMapping("/formupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<Movie> updateSelectedMovieViaForm(@PathVariable Integer id, @RequestBody Movie movieToUpdate) {
         Movie movie = movieService.updateMovie(id, movieToUpdate, false);
         return ResponseEntity.ok(movie);
     }
 
     @DeleteMapping("/delete/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<String> deleteSelectedMovie(@PathVariable Integer id) {     
         if (movieService.movieExists(id)) {
             movieService.deleteMovie(id);

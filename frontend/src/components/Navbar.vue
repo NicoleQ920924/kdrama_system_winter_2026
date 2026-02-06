@@ -10,6 +10,13 @@
             <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'PlatformInfoPage', query: {} }" replace>影音平台整理</router-link></li>
             <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'ContactUsPage', query: {} }" replace>聯絡我們</router-link></li>
             <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'ExternalLinksPage', query: {} }" replace>外部連結</router-link></li>
+            
+            <!-- Show watchlist and profile links when logged in -->
+            <template v-if="isLoggedIn && currentUser">
+                <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'WatchlistPage' }" replace>追蹤清單</router-link></li>
+                <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'UserProfilePage' }" replace>{{ currentUser.displayName }}</router-link></li>
+            </template>
+            
             <li><button class="btn nav-btn-light" @click="handleBtn1Click">{{ navBtnText1 }}</button></li>
             <li><button class="btn nav-btn-dark" @click="handleBtn2Click">{{ navBtnText2 }}</button></li>
         </ul>
@@ -17,7 +24,8 @@
 </template>
 
 <script setup>
-    import { computed, defineProps, defineEmits } from 'vue'
+    import { computed, defineProps, defineEmits, onMounted } from 'vue'
+    import { userStore } from '@/store'
 
     const emit = defineEmits(['open-modal', 'logout'])
 
@@ -25,11 +33,13 @@
         isLoggedIn: Boolean
     })
 
+    const currentUser = computed(() => userStore.getCurrentUser())
+
     const btnTexts = {
         login: "登入",
         register: "註冊",
         logout: "登出",
-        member: "重設密碼" // 用戶管理 is the final version
+        member: "密碼重設"
     }
 
     const navBtnText1 = computed(() => isLoggedIn ? btnTexts.logout : btnTexts.login)
@@ -41,6 +51,7 @@
             emit('open-modal', 'login') // Tell the parent component to open modal
         } else {
             // To logout
+            userStore.clearUser()
             emit('logout')
         }
     }
@@ -50,10 +61,14 @@
             // To register
             emit('open-modal', 'register') // Tell the parent component to open modal
         } else {
-            // To member (now it is beforeReset)
+            // To password reset
             emit('open-modal', 'beforeReset')
         }
     }
+
+    onMounted(() => {
+        userStore.initializeStore()
+    })
 </script>
 
 <style lang="scss" scoped>

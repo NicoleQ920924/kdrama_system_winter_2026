@@ -3,6 +3,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { findSelectedDramaById } from '@/services/dramaService'
 import { importActor } from '@/services/actorService'
+import { addDramaToWatchlist, removeDramaFromWatchlist } from '@/services/watchlistService'
+import { userStore } from '@/store'
 import Spinner from './Spinner.vue'
 
 const props = defineProps({
@@ -13,7 +15,8 @@ const emit = defineEmits(['reset-drama'])
 
 const drama = ref({})
 const loading = ref(true)
-
+const inWatchlist = ref(false)
+const watchlistLoading = ref(false)
 const loadingActors = ref([]) // for handleActorClick()
 
 function loadDrama() {
@@ -21,11 +24,49 @@ function loadDrama() {
   findSelectedDramaById(props.selectedDramaId)
     .then(res => {
       drama.value = res.data;
+      checkIfInWatchlist();
     })
     .catch(err => console.error(err))
     .finally(() => 
         loading.value = false
     )
+}
+
+function checkIfInWatchlist() {
+  const user = userStore.getCurrentUser();
+  if (!user) {
+    inWatchlist.value = false;
+    return;
+  }
+  // This would require getting the user with their watchlist from backend
+  // For now, we'll assume it's not in the watchlist until we fetch it
+  inWatchlist.value = false;
+}
+
+async function toggleWatchlist() {
+  const user = userStore.getCurrentUser();
+  if (!user) {
+    alert('請先登入');
+    return;
+  }
+
+  watchlistLoading.value = true;
+  try {
+    if (inWatchlist.value) {
+      await removeDramaFromWatchlist(user.userId, drama.value.dramaId);
+      inWatchlist.value = false;
+      alert('已從追蹤清單移除');
+    } else {
+      await addDramaToWatchlist(user.userId, drama.value.dramaId);
+      inWatchlist.value = true;
+      alert('已加入追蹤清單');
+    }
+  } catch (err) {
+    console.error('Error toggling watchlist:', err);
+    alert('操作失敗，請稍後重試');
+  } finally {
+    watchlistLoading.value = false;
+  }
 }
 
 const groupedActors = computed(() => {
@@ -204,7 +245,12 @@ onMounted(() => loadDrama())
                             <br><br>
                             <p class="drama-detailed-info">每集 {{ drama.estRuntimePerEp != '0' ? drama.estRuntimePerEp : '[待補]' }} 分鐘，共 {{ drama.totalNumOfEps }} 集<span class="current-ep" v-if="drama.status == '跟播中'"> (目前播到第{{ drama.currentEpNo }}集)</span></p>
                             <p class="drama-detailed-info">
-                                <button class="btn wish-btn">加入追蹤清單</button>
+                                <button 
+                                    @click="toggleWatchlist" 
+                                    :disabled="watchlistLoading"
+                                    :class="['btn', inWatchlist ? 'btn-danger' : 'wish-btn']">
+                                    {{ inWatchlist ? '從追蹤清單移除' : '加入追蹤清單' }}
+                                </button>
                             </p>
                             <div class="platforms">
                                 <h5 class="platform-section-title">台灣播出平台 <span class="warning">(台灣本土平台可能會比韓國晚一天上架)</span></h5>

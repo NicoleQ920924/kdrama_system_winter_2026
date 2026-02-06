@@ -40,6 +40,7 @@ public class ActorController {
     }
 
     @PostMapping("/import")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> importActor(@RequestParam String name) {
         // Check if the actor already exists in database
         Optional<Actor> optionalExistingActor = actorService.getActorByChineseName(name);
@@ -158,8 +159,9 @@ public class ActorController {
     }
 
     @PutMapping("/apiupdate/{id}")
-     public ResponseEntity<Actor> updateSelectedActorViaApi(@PathVariable Integer id,
-            @RequestParam boolean includesExistingWork) {
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
+    public ResponseEntity<Actor> updateSelectedActorViaApi(@PathVariable Integer id,
+        @RequestParam boolean includesExistingWork) {
         
         Optional<Actor> optionalActor = actorService.getActorById(id);
         if (optionalActor.isEmpty()) {
@@ -179,6 +181,7 @@ public class ActorController {
     }
 
     @PutMapping("/aiupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<?> updateSelectedActorViaAiAndForm(@PathVariable Integer id, @RequestBody Actor actorToUpdate) {
        Actor aiUpdated = aiService.aiUpdateActorInfo(actorToUpdate);
        Actor actor = actorService.updateActor(id, aiUpdated, false);
@@ -186,12 +189,14 @@ public class ActorController {
     }
 
     @PutMapping("/formupdate/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<Actor> updateSelectedActorViaForm(@PathVariable Integer id, @RequestBody Actor actorToUpdate) {
         Actor actor = actorService.updateActor(id, actorToUpdate, false);
         return ResponseEntity.ok(actor);
     }
 
     @DeleteMapping("/delete/{id}")
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.ADMIN})
     public ResponseEntity<String> deleteSelectedActor(@PathVariable Integer id) {     
         if (actorService.actorExists(id)) {
             actorService.deleteActor(id);
