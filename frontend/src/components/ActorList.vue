@@ -40,7 +40,12 @@
           }
         })
       .catch(err => {
-        console.error('刪除演員失敗:', err);
+        if (err.response && err.response.status === 403 || err.response && err.response.status === 401) {
+            alert(`您沒有權限刪除此演員，請以管理員登入後重試!`)
+        } else {
+            console.error('刪除演員失敗:', err);
+            alert(`刪除演員時發生錯誤，請稍後重試!`)
+        }
       })
       .finally(() => {
         loading.value = false;

@@ -51,6 +51,8 @@
             if (error.response && error.response.status === 409) {
                 // Actor already exists - treat it as added
                 alert(`${actorTitle} 已存在資料庫中，請至演員列表頁面查看`)
+            } else if (err.response && err.response.status === 403 || err.response && err.response.status === 401) {
+                alert(`您沒有權限加入 ${actorTitle}，請以管理員登入後重試!`)
             } else {
                 alert(`加入 ${actorTitle} 時發生錯誤，請稍後重試`)
             }

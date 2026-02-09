@@ -86,7 +86,11 @@
             }
         } catch (err) {
             console.error(err)
-            msg.value = `更新 ${loadedActor.chineseName} 的API資料時發生錯誤`
+            if (err.response && err.response.status === 403 || err.response && err.response.status === 401) {
+                msg.value = `您沒有權限更新 ${loadedActor.chineseName} 的資料`
+            } else {
+                msg.value = `更新 ${loadedActor.chineseName} 的API資料時發生錯誤`
+            }
             msgClass.value = 'error-msg text-center'
         } finally {
             // Remove loading status
@@ -115,7 +119,11 @@
             }
         } catch (err) {
             console.error(err)
-            msg.value = `更新 ${loadedActor.chineseName} 的資料時發生錯誤`
+            if (err.response && err.response.status === 403 || err.response && err.response.status === 401) {
+                msg.value = `您沒有權限更新 ${loadedActor.chineseName} 的資料`
+            } else {
+                msg.value = `更新 ${loadedActor.chineseName} 的資料時發生錯誤`
+            }
             msgClass.value = 'error-msg text-center'
         } finally {
             // Remove loading status
@@ -148,7 +156,11 @@
             }
         } catch (err) {
             console.error(err)
-            msg.value = `更新 ${loadedActor.chineseName} 的資料時發生錯誤`
+            if (err.response && err.response.status === 403 || err.response && err.response.status === 401) {
+                msg.value = `您沒有權限更新 ${loadedActor.chineseName} 的資料`
+            } else {
+                msg.value = `更新 ${loadedActor.chineseName} 的資料時發生錯誤`
+            }
             msgClass.value = 'error-msg text-center'
         } finally {
             // Remove loading status

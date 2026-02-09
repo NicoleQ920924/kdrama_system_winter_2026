@@ -3,12 +3,16 @@
 <script setup>
     import { defineEmits, ref, onUnmounted } from 'vue'
     import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+    import { createUser } from '@/services/userService'
+    import { userStore } from '@/store'
+
     const emit = defineEmits(['switch', 'close'])
 
     const showPassword1 = ref(false)
     const showPassword2 = ref(false)
 
     const errorMsg = ref('')
+    const loading = ref(false)
     const redirectUrl = ref('')
     const inputId = ref('')
     const newPwd = ref('')
@@ -19,23 +23,47 @@
         inputId.value = ''
         newPwd.value = ''
         confirmPwd.value = ''
+        loading.value = false
     })
 
-    function validateRegisterForm() {
+    async function validateRegisterForm() {
         const idPattern = /^[a-zA-Z0-9]{1,}$/;
         const pwdPattern = /^[a-zA-Z0-9]{6,12}$/;
 
         if (!idPattern.test(inputId.value)) {
             errorMsg.value = "帳號不可為空值!";
+            return
         }
-        else if (!pwdPattern.test(newPwd.value)) {
+        if (!pwdPattern.test(newPwd.value)) {
             errorMsg.value = "密碼須為6~12字元!";
-        } 
-        else if (newPwd.value !== confirmPwd.value) {
+            return
+        }
+        if (newPwd.value !== confirmPwd.value) {
             errorMsg.value = "您兩次輸入的密碼不一致!";
-        } 
-        else {
-            emit('switch', 'emailVerification');
+            return
+        }
+
+        // Create user
+        loading.value = true
+        errorMsg.value = ''
+        try {
+            const res = await createUser(inputId.value, inputId.value, newPwd.value, 'USER')
+            if (res && res.data) {
+                // set user in store and close modal
+                userStore.setCurrentUser(res.data)
+                emit('switch', 'loginSuccess')
+            } else {
+                errorMsg.value = '註冊失敗，請稍後重試'
+            }
+        } catch (err) {
+            if (err.response && err.response.status === 409) {
+                errorMsg.value = '此帳號已被使用'
+            } else {
+                console.error(err)
+                errorMsg.value = '註冊失敗，請稍後重試'
+            }
+        } finally {
+            loading.value = false
         }
     }
 </script>

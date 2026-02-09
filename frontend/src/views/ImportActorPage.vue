@@ -41,6 +41,9 @@
             } else if (err.response && err.response.status === 404) {
                 msg.value = `${actorNameAdded.value} 查無此演員！有可能是TMDB ID找不到，您可以改透過韓劇或韓影專頁新增演員。`
                 msgClass.value = 'error-msg text-center'
+            } else if (err.response && err.response.status === 403 || err.response && err.response.status === 401) {
+                msg.value = `您沒有權限新增 ${actorNameAdded.value}！`
+                msgClass.value = 'error-msg text-center'
             } else {
                 msg.value = `加入 ${actorNameAdded.value} 時發生錯誤`
                 msgClass.value = 'error-msg text-center'

@@ -25,16 +25,27 @@ public class User {
     private Role role;
 
     @JsonIgnore
+    private String passwordHash;
+
     @ManyToMany
     @JoinTable(name = "user_watched_movies",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "movie_id"))
     private Set<Movie> watchedMovies = new HashSet<>();
 
-    @JsonIgnore
+    // Break relationship with the movie before deleting the movie
+    public void removeMovieFromUser(Movie movie) {
+        this.getWatchedMovies().remove(movie);
+    }
+
     @ManyToMany
     @JoinTable(name = "user_watched_dramas",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "drama_id"))
     private Set<Drama> watchedDramas = new HashSet<>();
+
+    // Break relationship with the drama before deleting the drama
+    public void removeDramaFromUser(Drama drama) {
+        this.getWatchedDramas().remove(drama);
+    }
 }

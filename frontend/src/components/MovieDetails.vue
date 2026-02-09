@@ -190,6 +190,8 @@ async function handleActorClick(actorName) { // By ChatGPT
         console.error(err)
         if (err.response && err.response.status === 409) {
             alert(`${actorName} 已存在資料庫中`)
+        } else if (err.response && err.response.status === 403 || err.response && err.response.status === 401) {
+            alert(`您沒有權限加入 ${actorName}，請以管理員登入後重試!`)
         } else {
             alert(`加入 ${actorName} 時發生錯誤`)
         }

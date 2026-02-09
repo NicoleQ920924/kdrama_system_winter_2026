@@ -100,20 +100,18 @@
                                 <tr>
                                     <th>劇名</th>
                                     <th>狀態</th>
-                                    <th>製作國家</th>
-                                    <th>播出日期</th>
+                                    <th>主演演員</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="drama in watchedDramas" :key="drama.dramaId">
                                     <td>
-                                        <router-link :to="{ name: 'DramaDetails', params: { id: drama.dramaId } }">
+                                        <router-link :to="{ name: 'DramaPage', query: { id: drama.dramaId } }">
                                             {{ getDisplayName(drama) }}
                                         </router-link>
                                     </td>
                                     <td>{{ drama.status }}</td>
-                                    <td>{{ drama.country }}</td>
-                                    <td>{{ drama.airDate }}</td>
+                                    <td>{{ drama.leadActors[0] }}, {{ drama.leadActors[1] }}, {{ drama.leadActors[2] }}, {{ drama.leadActors[3] }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -131,19 +129,17 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>影名</th>
-                                    <th>製作國家</th>
-                                    <th>上映日期</th>
+                                    <th>主演演員</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-for="movie in watchedMovies" :key="movie.movieId">
                                     <td>
-                                        <router-link :to="{ name: 'MovieDetails', params: { id: movie.movieId } }">
+                                        <router-link :to="{ name: 'MoviePage', query: { id: movie.movieId } }">
                                             {{ getDisplayName(movie) }}
                                         </router-link>
                                     </td>
-                                    <td>{{ movie.country }}</td>
-                                    <td>{{ movie.releaseDate }}</td>
+                                    <td>{{ movie.leadActors[0] }}, {{ movie.leadActors[1] }}, {{ movie.leadActors[2] }}, {{ movie.leadActors[3] }}</td>
                                 </tr>
                             </tbody>
                         </table>

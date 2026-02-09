@@ -20,12 +20,13 @@ spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 spring.jpa.properties.hibernate.format_sql=true
 
-# === TMDB API Key 設定 ===
+# === TMDB API Key 和管理員密碼 設定 ===
 # 請至 https://www.themoviedb.org/settings/api 取得你的 API Key
 # 有兩種設定方式：
 # 1. 直接編輯下方 REPLACE_ME_WITH_YOUR_KEY
 # 2. 或設定系統環境變數 TMDB_API_KEY
 tmdb.api.key=${TMDB_API_KEY:REPLACE_ME_WITH_YOUR_KEY}
+admin.default.password=${ADMIN_DEFAULT_PASSWORD}
 
 # === Google Gemini API Key 設定 ===
 # 請至 https://aistudio.google.com/api-keys 取得你的 API Key 和 Project ID

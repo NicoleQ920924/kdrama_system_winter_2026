@@ -3,6 +3,7 @@
     import { ref, onMounted } from 'vue'
     import { userStore } from '@/store'
     import { removeMovieFromWatchlist, removeDramaFromWatchlist } from '@/services/watchlistService'
+    import { getUserById } from '@/services/userService'
     import Spinner from '@/components/Spinner.vue'
 
     const user = ref(null)
@@ -37,8 +38,7 @@
     }
 
     const getUserWithWatchlist = async (userId) => {
-        const axios = (await import('axios')).default
-        return axios.get(`http://localhost:8080/api/users/${userId}`)
+        return getUserById(userId) // This will call the backend to get user with watchlist
     }
 
     const getDisplayName = (item) => {
@@ -152,15 +152,14 @@
                             <tr>
                                 <th>劇名</th>
                                 <th>狀態</th>
-                                <th>製作國家</th>
-                                <th>播出日期</th>
+                                <th>主演演員</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="drama in watchedDramas" :key="drama.dramaId">
                                 <td>
-                                    <router-link :to="{ name: 'DramaDetails', params: { id: drama.dramaId } }">
+                                    <router-link :to="{ name: 'DramaPage', query: { id: drama.dramaId } }">
                                         {{ getDisplayName(drama) }}
                                     </router-link>
                                 </td>
@@ -169,8 +168,7 @@
                                         {{ drama.status }}
                                     </span>
                                 </td>
-                                <td>{{ drama.country }}</td>
-                                <td>{{ drama.airDate }}</td>
+                                <td>{{ drama.leadActors[0] }}, {{ drama.leadActors[1] }}, {{ drama.leadActors[2] }}, {{ drama.leadActors[3] }}</td>
                                 <td>
                                     <button 
                                         @click="removeDrama(drama.dramaId)" 
@@ -196,20 +194,18 @@
                         <thead class="table-light">
                             <tr>
                                 <th>影名</th>
-                                <th>製作國家</th>
-                                <th>上映日期</th>
+                                <th>主演演員</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="movie in watchedMovies" :key="movie.movieId">
                                 <td>
-                                    <router-link :to="{ name: 'MovieDetails', params: { id: movie.movieId } }">
+                                    <router-link :to="{ name: 'DramaPage', query: { id: movie.movieId } }">
                                         {{ getDisplayName(movie) }}
                                     </router-link>
                                 </td>
-                                <td>{{ movie.country }}</td>
-                                <td>{{ movie.releaseDate }}</td>
+                                <td>{{ movie.leadActors[0] }}, {{ movie.leadActors[1] }}, {{ movie.leadActors[2] }}, {{ movie.leadActors[3] }}</td>
                                 <td>
                                     <button 
                                         @click="removeMovie(movie.movieId)" 

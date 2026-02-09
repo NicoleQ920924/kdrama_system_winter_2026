@@ -3,7 +3,7 @@
 <script setup>
     import { ref, defineEmits, onUnmounted } from 'vue'
     import { userStore } from '@/store'
-    import { getUserById, createUser } from '@/services/userService'
+    import { loginUser } from '@/services/userService'
 
     const emit = defineEmits(['close', 'switch'])
 
@@ -57,6 +57,7 @@
 
         try {
             let username = ''
+            let password = ''
             
             if (type === 'user') {
                 if (!userId.value.trim()) {
@@ -65,44 +66,43 @@
                     return
                 }
                 username = userId.value
+                password = userPwd.value || userId.value // Use username as default password if empty for regular users
             } else {
                 if (!adminId.value.trim()) {
                     errorMsg.value = '請輸入帳號'
                     loading.value = false
                     return
                 }
+                if (!adminPwd.value.trim()) {
+                    errorMsg.value = '請輸入密碼'
+                    loading.value = false
+                    return
+                }
                 username = adminId.value
+                password = adminPwd.value
             }
 
-            // Create default user if doesn't exist (simplified for demo)
-            // In production, this would require proper authentication
-            const user = await createUser(username, username, type === 'admin' ? 'ADMIN' : 'USER')
-            
-            if (user && user.data) {
-                userStore.setCurrentUser(user.data)
-                emit('switch', 'loginSuccess')
-            } else {
-                errorMsg.value = '登入失敗，請稍後重試'
+            // Login only (no auto-registration)
+            try {
+                const response = await loginUser(username, password)
+                if (response && response.data) {
+                    userStore.setCurrentUser(response.data)
+                    emit('switch', 'loginSuccess')
+                    return
+                }
+                errorMsg.value = '登入失敗，請重試'
+            } catch (err) {
+                if (err.response && err.response.status === 401) {
+                    errorMsg.value = '帳號或密碼錯誤'
+                } else if (err.response && err.response.status === 404) {
+                    errorMsg.value = '帳號不存在'
+                } else {
+                    errorMsg.value = '登入失敗，請稍後重試'
+                }
             }
         } catch (err) {
             console.error('Login error:', err)
-            if (err.response && err.response.status === 409) {
-                // User already exists, try to fetch it
-                try {
-                    const username = type === 'user' ? userId.value : adminId.value
-                    // Since we don't have a get-by-username endpoint, create it anyway
-                    // The backend should handle duplicate username gracefully
-                    const user = await createUser(username, username, type === 'admin' ? 'ADMIN' : 'USER')
-                    if (user && user.data) {
-                        userStore.setCurrentUser(user.data)
-                        emit('switch', 'loginSuccess')
-                    }
-                } catch (innerErr) {
-                    errorMsg.value = '登入失敗，請檢查帳號'
-                }
-            } else {
-                errorMsg.value = '登入失敗，請稍後重試'
-            }
+            errorMsg.value = '登入失敗，請稍後重試'
         } finally {
             loading.value = false
         }
@@ -159,7 +159,7 @@
                                         <input v-model="adminId" type="text" class="form-control modal-text-field" name="loginId" placeholder="帳號" required :disabled="loading" />
                                     </p>
                                     <p class="modal-text-p">
-                                        <input v-model="adminPwd" :type="showPassword ? 'text' : 'password'" class="form-control modal-text-field" name="loginPwd" placeholder="密碼 (可選)" :disabled="loading" />
+                                        <input v-model="adminPwd" :type="showPassword ? 'text' : 'password'" class="form-control modal-text-field" name="loginPwd" placeholder="密碼 (必填)" required :disabled="loading" />
                                         <font-awesome-icon class="text-field-eye-icon" :icon="showPassword ? 'fa-eye-slash' : 'fa-eye'" @click="showPassword = !showPassword" />
                                     </p>
                                     <span class="error-msg">{{ errorMsg }}</span>

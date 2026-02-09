@@ -11,10 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kdrama.backend.model.Actor;
-import com.kdrama.backend.model.Drama;
-import com.kdrama.backend.repository.DramaRepository;
-import com.kdrama.backend.repository.ActorRepository;
+import com.kdrama.backend.model.*;
+import com.kdrama.backend.repository.*;
 
 import jakarta.transaction.Transactional;
 
@@ -23,6 +21,9 @@ public class DramaService {
 
     @Autowired
     private TmdbDramaClient tmdbDramaClient;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private DramaRepository dramaRepository;
@@ -220,11 +221,17 @@ public class DramaService {
     @Transactional
     public void deleteDrama(@PathVariable Integer id) {
         // First, remove relationships with existing actors who act in the drama to delete
+        // Also, remove relationships with users who have the drama in their watchlist
         Drama dramaToDelete = getDramaById(id).get();
         List<Actor> actorsInDrama = actorRepository.findByDramasContaining(dramaToDelete);
+        List<User> usersWhoWatched = userRepository.findByWatchedDramasContaining(dramaToDelete);
 
         for (Actor actor : actorsInDrama) {
             actor.removeDramaFromActor(dramaToDelete);
+        }
+
+        for (User user : usersWhoWatched) {
+            user.removeDramaFromUser(dramaToDelete);
         }
 
         // Then, safely delete the drama

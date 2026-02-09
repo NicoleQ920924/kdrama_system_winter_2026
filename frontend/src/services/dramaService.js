@@ -1,10 +1,15 @@
 // Refer to backend's DramaController.java for respective methods
 import axios from 'axios';
+import { userStore } from '@/store'
 
 const API_BASE = 'http://localhost:8080/api/dramas';
 
 export const importDrama = (name) => {
-  return axios.post(`${API_BASE}/import`, null, { params: { name } });
+  const headers = {}
+  if (userStore && userStore.userRole && userStore.userRole.value) {
+    headers['X-User-Role'] = userStore.userRole.value
+  }
+  return axios.post(`${API_BASE}/import`, null, { params: { name }, headers });
 };
 
 export const findDramas = (displayNameMode) => {
@@ -26,17 +31,33 @@ export const findSelectedDramaByChineseName = (chineseName, displayNameMode) => 
 };
 
 export const updateSelectedDramaViaApi = (id) => {
-  return axios.put(`${API_BASE}/apiupdate/${id}`, {});
+  const headers = {}
+  if (userStore && userStore.userRole && userStore.userRole.value) {
+    headers['X-User-Role'] = userStore.userRole.value
+  }
+  return axios.put(`${API_BASE}/apiupdate/${id}`, {}, { headers });
 };
 
 export const updateSelectedDramaViaAiAndForm = (id, dramaToUpdate) => {
-  return axios.put(`${API_BASE}/aiupdate/${id}`, dramaToUpdate);
+  const headers = {}
+  if (userStore && userStore.userRole && userStore.userRole.value) {
+    headers['X-User-Role'] = userStore.userRole.value
+  }
+  return axios.put(`${API_BASE}/aiupdate/${id}`, dramaToUpdate, { headers });
 };
 
 export const updateSelectedDramaViaForm = (id, dramaToUpdate) => {
-  return axios.put(`${API_BASE}/formupdate/${id}`, dramaToUpdate);
+  const headers = {}
+  if (userStore && userStore.userRole && userStore.userRole.value) {
+    headers['X-User-Role'] = userStore.userRole.value
+  }
+  return axios.put(`${API_BASE}/formupdate/${id}`, dramaToUpdate, { headers });
 };
 
 export const deleteSelectedDrama = (id) => {
-  return axios.delete(`${API_BASE}/delete/${id}`);
+  const headers = {}
+  if (userStore && userStore.userRole && userStore.userRole.value) {
+    headers['X-User-Role'] = userStore.userRole.value
+  }
+  return axios.delete(`${API_BASE}/delete/${id}`, { headers });
 };

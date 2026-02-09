@@ -60,7 +60,7 @@ public class Actor {
         inverseJoinColumns = @JoinColumn(name = "movie_id"))
     private List<Movie> movies = new ArrayList<>();;
 
-    // Break relationship with the drama before deleting the drama
+    // Break relationship with the movie before deleting the movie
     public void removeMovieFromActor(Movie movie) {
         this.getMovies().remove(movie);
     }

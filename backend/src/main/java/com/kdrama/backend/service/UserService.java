@@ -7,6 +7,7 @@ import com.kdrama.backend.model.User;
 import com.kdrama.backend.model.Movie;
 import com.kdrama.backend.model.Drama;
 import com.kdrama.backend.repository.UserRepository;
+import com.kdrama.backend.util.PasswordHashingUtil;
 
 import java.util.Optional;
 
@@ -24,6 +25,37 @@ public class UserService {
 
     public Optional<User> getUserById(Integer id) {
         return userRepository.findById(id);
+    }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public User createUser(String username, String displayName, String password, String role) {
+        User u = new User();
+        u.setUsername(username);
+        u.setDisplayName(displayName == null ? username : displayName);
+        u.setRole(com.kdrama.backend.enums.Role.valueOf(role));
+        
+        // Hash password if provided
+        if (password != null && !password.trim().isEmpty()) {
+            u.setPasswordHash(PasswordHashingUtil.hashPassword(password));
+        } else {
+            // If no password provided, generate a temporary hash (in production, this should be handled differently)
+            u.setPasswordHash(PasswordHashingUtil.hashPassword(username + "default"));
+        }
+        
+        return userRepository.save(u);
+    }
+
+    public boolean authenticateUser(String username, String password) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (!user.isPresent()) {
+            return false;
+        }
+        
+        String storedHash = user.get().getPasswordHash();
+        return PasswordHashingUtil.verifyPassword(password, storedHash);
     }
 
     public User saveUser(User u) {

@@ -11,15 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kdrama.backend.model.Actor;
-import com.kdrama.backend.model.Movie;
-import com.kdrama.backend.repository.ActorRepository;
-import com.kdrama.backend.repository.MovieRepository;
+import com.kdrama.backend.model.*;
+import com.kdrama.backend.repository.*;
 
 @Service
 public class MovieService {
     @Autowired
     private TmdbMovieClient tmdbMovieClient;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private MovieRepository movieRepository;
@@ -173,11 +174,17 @@ public class MovieService {
     // D: Delete a movie
     public void deleteMovie(@PathVariable Integer id) {
         // First, remove relationships with existing actors who act in the movie to delete
+        // Also, remove relationships with users who have the movie in their watchlist
         Movie movieToDelete = getMovieById(id).get();
         List<Actor> actorsInMovie = actorRepository.findByMoviesContaining(movieToDelete);
+        List<User> usersWhoWatched = userRepository.findByWatchedMoviesContaining(movieToDelete);
 
         for (Actor actor : actorsInMovie) {
             actor.removeMovieFromActor(movieToDelete);
+        }
+
+        for (User user : usersWhoWatched) {
+            user.removeMovieFromUser(movieToDelete);
         }
 
         // Then, safely delete the movie
