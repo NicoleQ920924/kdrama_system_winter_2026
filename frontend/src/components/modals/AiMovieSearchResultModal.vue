@@ -104,8 +104,8 @@
                             </ol>
 
                             <div class="result-footer">
-                                <p v-if="addedMovies === null || Object.keys(addedMovies).length === 0">可以點擊連結將此電影加入資料庫</p>
-                                <p v-else>新增成功或者是資料庫已經有此電影時，可以點擊連結前往該電影頁面</p>
+                                <p v-if="addedMovies === null || Object.keys(addedMovies).length === 0">管理員可以點擊連結將此電影加入資料庫</p>
+                                <p v-else>新增成功後，可以點擊連結前往該電影頁面</p>
                                 <p>AI有時會出錯，導致片名無法透過TMDB搜尋，若遇到此狀況，煩請利用其他方法新增至資料庫</p>
                                 <p>若想重新搜尋，請關閉此視窗，並再填入一次搜尋表單</p>
                             </div>
