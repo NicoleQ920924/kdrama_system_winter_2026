@@ -3,14 +3,15 @@
 
 # 專案介紹 / System Introduction
 1. 這個專案是韓國影視管理系統，專為台灣人打造，並實現多影音平台整合。
-2. 本專案的前端使用Vue.js，後端使用Spring Boot + MySQL資料庫。
+2. 本專案的前端使用Vue.js，後端使用Spring + MySQL資料庫 + Spring AI + Gemini API (PgVector向量資料庫有安裝依賴和設定，但是可能沒用到)。
 3. 此專案解決台灣韓劇和韓影迷需要反覆在網路上搜尋「韓劇、韓影、韓國演員，以及在台灣有播放的平台」之困擾。
 4. 本專案中，管理員可以透過新增演員，直接一鍵透過TMDB API爬取該演員的作品之資料，包含有播出該作品的台灣平台等實用資訊。
 5. 管理員也可以前往韓劇或韓影直接新增出演演員的資訊。
 6. 管理員也可以新增單獨的韓劇和韓影，或更新及刪除資料。
-7. 系統執行中的情況下，台灣本土平台資訊在每天的3:00、6:00、9:00、...、21:00、24:00更新，以確保為最新資訊。
-8. 設計者建議在使用此系統中同時聆聽韓劇OST，視覺和聽覺雙重享受。
-9. 本專案是學習專案，為設計者的備審資料之一，僅利用一個暑假完成，若有設計不足之處，如未如期完成的登入、註冊、追蹤清單等功能，敬請見諒。
+7. 一般用戶則可以將想看的韓劇和韓影加入追蹤清單，也可以將追蹤清單裡的韓劇和韓影移除
+8. 系統執行中的情況下，台灣本土平台資訊在每天的3:00、6:00、9:00、...、21:00、24:00更新，以確保為最新資訊。
+9. 設計者建議在使用此系統中同時聆聽韓劇OST，視覺和聽覺雙重享受。
+10. 本專案是學習專案，為設計者的備審資料之一，僅利用一個暑假和一個寒假完成，若有設計不足之處，如未如期完成寄驗證信和忘記密碼等功能，敬請見諒。
 
 # 專案結構 / System Structure
 kdrama_system_winter_2026/   <-- 專案根目錄
@@ -31,11 +32,11 @@ kdrama_system_winter_2026/   <-- 專案根目錄
 └── LICENSE (optional)       <-- 如果你想附加開源授權
 
 # 軟體要求 / Software Requirements
-後端：Java JDK (17+)、MySQL Server、Maven
+後端：Java JDK (17+，此專業是用Java 25開發)、MySQL Server、Maven
 前端：Node.js、支援JavaScript的瀏覽器
-爬取資料：TMDB API Key
+爬取資料：TMDB API Key和Gemini API Key
 
-# 後端、MySQL 資料庫、TMDB API Key 等資料的設定方式 / Backend, MySQL, API Key, etc. Configuration
+# 後端、MySQL 資料庫、API Key 等資料的設定方式 / Backend, MySQL, API Key, etc. Configuration
 1. 在Terminal執行 cp application.properties.example application.properties 以複製.example範例檔並建立 application.properties
 2. 開啟 application.properties 並根據註解的提示編輯各欄位，設定自己的MySQL資料庫和帳密等私密資訊
 3. 在Terminal執行cd backend，再執行./mvnw spring-boot:run 或者透過IDE執行BackendApplication.java檔案，以執行專案和確定有設定成功

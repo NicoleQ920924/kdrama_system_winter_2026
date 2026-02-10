@@ -213,4 +213,7 @@ Below is for kdrama_system_winter_2026
 - Modify code to almost fully complete 2026/2/6 progress
 * GitHub Copilot free chats are used up today!
 
+2026/2/10
+- Modify code to start separating admin vs. normal user access
+
 ============================================================================================================

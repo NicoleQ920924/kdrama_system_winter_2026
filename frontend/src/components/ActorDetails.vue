@@ -3,10 +3,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { findSelectedActorById } from '@/services/actorService'
 import Spinner from './Spinner.vue'
+import { userStore } from '@/store'
 
 const props = defineProps({
   selectedActorId: String
 })
+
+const isAdmin = computed(() => userStore.isAdmin)
 
 const emit = defineEmits(['reset-actor'])
 
@@ -121,7 +124,7 @@ onMounted(() => loadActor())
                         </td>
                     </tr>
                 </table>
-                <h5 class="text-center"><router-link :to="{ name: 'UpdateActorPage', query: { id: actor.actorId } }" class="actor-router-link text-center">點我編輯此專頁</router-link></h5>
+                <h5 class="text-center"><router-link v-if="isAdmin === true" :to="{ name: 'UpdateActorPage', query: { id: actor.actorId } }" class="actor-router-link text-center">點我編輯此專頁</router-link></h5>
                 <div class="text-center">
                     <button class="btn back-btn text-center" @click="backToActorList">返回演員列表</button>
                 </div>

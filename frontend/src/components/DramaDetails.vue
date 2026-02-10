@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import { findSelectedDramaById } from '@/services/dramaService'
 import { importActor } from '@/services/actorService'
 import { addDramaToWatchlist, removeDramaFromWatchlist } from '@/services/watchlistService'
+import { getUserById } from '@/services/userService'
 import { userStore } from '@/store'
 import Spinner from './Spinner.vue'
 
@@ -14,10 +15,37 @@ const props = defineProps({
 const emit = defineEmits(['reset-drama'])
 
 const drama = ref({})
+const user = ref(null)
+const isAdmin = ref(false)
 const loading = ref(true)
 const inWatchlist = ref(false)
 const watchlistLoading = ref(false)
+const watchedDramas = ref([])
 const loadingActors = ref([]) // for handleActorClick()
+
+onMounted(() => {
+    user.value = userStore.getCurrentUser()
+    isAdmin.value = userStore.isAdmin
+    checkIfInWatchlist() // Load watchlist first to get the most up-to-date data
+})
+
+const loadWatchlist = async () => {
+    loading.value = true
+    try {
+        if (user.value) {
+            const response = await getUserWithWatchlist(user.value.userId)
+            watchedDramas.value = response.data.watchedDramas || []
+        }
+    } catch (error) {
+        console.error('Error loading watchlist:', error)
+    } finally {
+        loading.value = false
+    }
+}
+
+const getUserWithWatchlist = async (userId) => {
+    return getUserById(userId) // This will call the backend to get user with watchlist
+}
 
 function loadDrama() {
   loading.value = true;
@@ -33,31 +61,34 @@ function loadDrama() {
 }
 
 function checkIfInWatchlist() {
-  const user = userStore.getCurrentUser();
-  if (!user) {
+  if (!user.value) {
     inWatchlist.value = false;
     return;
   }
-  // This would require getting the user with their watchlist from backend
-  // For now, we'll assume it's not in the watchlist until we fetch it
-  inWatchlist.value = false;
+  else {
+    loadWatchlist(); // Load watchlist to get the most up-to-date data
+    inWatchlist.value = watchedDramas.value.some(item => item.dramaId === drama.value.dramaId);
+  }
 }
 
 async function toggleWatchlist() {
-  const user = userStore.getCurrentUser();
-  if (!user) {
+  if (!user.value) {
     alert('請先登入');
+    return;
+  }
+  else if (isAdmin.value === true) {
+    alert('管理員無法使用追蹤清單功能');
     return;
   }
 
   watchlistLoading.value = true;
   try {
-    if (inWatchlist.value) {
-      await removeDramaFromWatchlist(user.userId, drama.value.dramaId);
+    if (inWatchlist.value === true) {
+      await removeDramaFromWatchlist(user.value.userId, drama.value.dramaId);
       inWatchlist.value = false;
       alert('已從追蹤清單移除');
     } else {
-      await addDramaToWatchlist(user.userId, drama.value.dramaId);
+      await addDramaToWatchlist(user.value.userId, drama.value.dramaId);
       inWatchlist.value = true;
       alert('已加入追蹤清單');
     }

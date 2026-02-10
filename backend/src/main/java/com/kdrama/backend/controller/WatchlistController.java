@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.kdrama.backend.service.UserService;
 import com.kdrama.backend.model.User;
-import com.kdrama.backend.security.RequireRole;
-import com.kdrama.backend.enums.Role;
 
 @RestController
 @RequestMapping("/api/watchlist")
@@ -17,7 +15,7 @@ public class WatchlistController {
     private UserService userService;
 
     // Only general users may operate watchlist
-    @RequireRole({Role.USER})
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.USER})
     @PostMapping("/movie/add")
     public ResponseEntity<?> addMovie(@RequestParam Integer userId, @RequestParam Integer movieId) {
         User u = userService.addMovieToWatchlist(userId, movieId);
@@ -25,7 +23,7 @@ public class WatchlistController {
         return ResponseEntity.ok(u);
     }
 
-    @RequireRole({Role.USER})
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.USER})
     @PostMapping("/movie/remove")
     public ResponseEntity<?> removeMovie(@RequestParam Integer userId, @RequestParam Integer movieId) {
         User u = userService.removeMovieFromWatchlist(userId, movieId);
@@ -33,7 +31,7 @@ public class WatchlistController {
         return ResponseEntity.ok(u);
     }
 
-    @RequireRole({Role.USER})
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.USER})
     @PostMapping("/drama/add")
     public ResponseEntity<?> addDrama(@RequestParam Integer userId, @RequestParam Integer dramaId) {
         User u = userService.addDramaToWatchlist(userId, dramaId);
@@ -41,7 +39,7 @@ public class WatchlistController {
         return ResponseEntity.ok(u);
     }
 
-    @RequireRole({Role.USER})
+    @com.kdrama.backend.security.RequireRole({com.kdrama.backend.enums.Role.USER})
     @PostMapping("/drama/remove")
     public ResponseEntity<?> removeDrama(@RequestParam Integer userId, @RequestParam Integer dramaId) {
         User u = userService.removeDramaFromWatchlist(userId, dramaId);
