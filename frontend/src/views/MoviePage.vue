@@ -1,4 +1,4 @@
-<!-- The Page to Display via 精選韓影 on the Navigation Bar -->
+<!-- The Page to Display via 韓影 on the Navigation Bar -->
 <script setup>
     import MovieDetails from '@/components/MovieDetails.vue';
     import MovieList from '@/components/MovieList.vue';

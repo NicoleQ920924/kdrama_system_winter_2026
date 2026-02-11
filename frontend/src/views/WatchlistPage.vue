@@ -1,12 +1,12 @@
 <!-- Watchlist Page - Dedicated page for viewing watchlist -->
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, computed } from 'vue'
     import { userStore } from '@/store'
     import { removeMovieFromWatchlist, removeDramaFromWatchlist } from '@/services/watchlistService'
     import { getUserById } from '@/services/userService'
     import Spinner from '@/components/Spinner.vue'
 
-    const user = ref(null)
+    const user = computed(() => userStore.getCurrentUser())
     const isLoading = ref(false)
     const watchedDramas = ref([])
     const watchedMovies = ref([])
@@ -15,7 +15,6 @@
     const sortBy = ref('name')
 
     onMounted(() => {
-        user.value = userStore.getCurrentUser()
         if (user.value) {
             loadWatchlist()
         }
@@ -48,6 +47,12 @@
             return item.koreanName || item.name
         }
         return item.englishName || item.name
+    }
+
+    const displayData = (data) => {
+        if (data === null || data === undefined || data === '') return '無資料';
+        if (Array.isArray(data) && data.length === 0) return '無資料';
+        return data;
     }
 
     const sortItems = () => {
@@ -98,6 +103,42 @@
         }
         return classes[status] || 'bg-secondary'
     }
+
+    function getPlatformClass(platform) {
+    if (platform == "Netflix") {
+        return "netflix"
+    }
+    else if (platform == "Disney Plus") {
+        return "disney-plus"
+    }
+    else if (platform == "Amazon Prime Video") {
+        return "prime-video"
+    }
+    else if (platform == "Hami Video") {
+        return "hami-video"
+    }
+    else if (platform == "friDay影音") {
+        return "friday-video"
+    }
+    else if (platform == "MyVideo") {
+        return "myvideo"
+    }
+    else if (platform == "LINE TV") {
+        return "line-tv"
+    }
+    else if (platform == "Apple TV") {
+        return "apple-tv"
+    }
+    else if (platform == "HBO Max") {
+        return "hbo-max"
+    }
+    else if (platform == "Catchplay") {
+        return "catch-play"
+    }
+    else {
+        return "other-platforms"
+    }
+}
 </script>
 
 <template>
@@ -107,7 +148,7 @@
         </div>
 
         <template v-else>
-            <h2 class="page-title mb-4">我的追蹤清單</h2>
+            <h2 class="page-title mb-4">{{ user.displayName }} 的追蹤清單</h2>
 
             <!-- Controls -->
             <div class="controls-section mb-4">
@@ -164,6 +205,8 @@
                                 <th>劇名</th>
                                 <th>狀態</th>
                                 <th>主演演員</th>
+                                <th>類型</th>
+                                <th>平台</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -179,7 +222,24 @@
                                         {{ drama.status }}
                                     </span>
                                 </td>
-                                <td>{{ drama.leadActors[0] }}, {{ drama.leadActors[1] }}, {{ drama.leadActors[2] }}, {{ drama.leadActors[3] }}</td>
+                                <td>
+                                    <ul>
+                                        <li v-for="actor in drama.leadActors.slice(0, 5)" :key="actor">{{ actor }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li v-for="genre in drama.genres" :key="genre">{{ displayData(genre) }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul v-if="Object.keys(drama.dramaTwPlatformMap).length > 0">
+                                        <li v-for="(value, key) in drama.dramaTwPlatformMap" :key="key">
+                                        <!-- key = platform_name, value = url -->
+                                            <a :class="getPlatformClass(key)" :href="value">{{ key }}</a>
+                                        </li>
+                                    </ul>
+                                </td>
                                 <td>
                                     <button 
                                         @click="removeDrama(drama.dramaId)" 
@@ -204,8 +264,10 @@
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>影名</th>
+                                <th>片名</th>
                                 <th>主演演員</th>
+                                <th>類型</th>
+                                <th>平台</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -216,7 +278,24 @@
                                         {{ getDisplayName(movie) }}
                                     </router-link>
                                 </td>
-                                <td>{{ movie.leadActors[0] }}, {{ movie.leadActors[1] }}, {{ movie.leadActors[2] }}, {{ movie.leadActors[3] }}</td>
+                                <td>
+                                    <ul>
+                                        <li v-for="actor in movie.leadActors.slice(0, 5)" :key="actor">{{ actor }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <li v-for="genre in movie.genres" :key="genre">{{ displayData(genre) }}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul v-if="Object.keys(movie.movieTwPlatformMap).length > 0">
+                                        <li v-for="(value, key) in movie.movieTwPlatformMap" :key="key">
+                                        <!-- key = platform_name, value = url -->
+                                            <a :class="getPlatformClass(key)" :href="value">{{ key }}</a>
+                                        </li>
+                                    </ul>
+                                </td>
                                 <td>
                                     <button 
                                         @click="removeMovie(movie.movieId)" 
@@ -239,67 +318,180 @@
 </template>
 
 <style lang="scss" scoped>
-    .watchlist-page {
-        min-height: 70vh;
-        padding: 20px 0;
+.watchlist-page {
+    min-height: 70vh;
+    padding: 20px 0;
 
-        .page-title {
-            color: #4a3728;
-            border-bottom: 3px solid #c5a882;
-            padding-bottom: 15px;
-        }
+    .page-title {
+        color: #4a3728;
+        border-bottom: 3px solid #c5a882;
+        padding-bottom: 15px;
+    }
 
-        .controls-section {
-            background: #f9f7f4;
-            padding: 15px;
-            border-radius: 8px;
-        }
+    .controls-section {
+        background: #f9f7f4;
+        padding: 15px;
+        border-radius: 8px;
+    }
 
-        table {
-            a {
-                color: #8b5a3c;
-                text-decoration: none;
+    table {
+        a {
+            color: #8b5a3c;
+            text-decoration: none;
 
-                &:hover {
-                    color: #5c3d27;
-                    text-decoration: underline;
-                }
-            }
-
-            .btn-danger {
-                background-color: #a34847;
-                border-color: #a34847;
-
-                &:hover {
-                    background-color: #8b3a3e;
-                }
+            &:hover {
+                color: #5c3d27;
+                text-decoration: underline;
             }
         }
 
-        .nav-tabs {
-            border-bottom: 2px solid #c5a882;
+        .btn-danger {
+            background-color: #a34847;
+            border-color: #a34847;
 
-            .nav-link {
-                color: #8b5a3c;
-                border: none;
-
-                &.active {
-                    background-color: transparent;
-                    border-bottom: 3px solid #8b5a3c;
-                    color: #4a3728;
-                    font-weight: bold;
-                }
-
-                &:hover {
-                    color: #5c3d27;
-                }
-            }
-        }
-
-        .alert {
-            a {
-                color: #8b5a3c;
+            &:hover {
+                background-color: #8b3a3e;
             }
         }
     }
+
+    .nav-tabs {
+        border-bottom: 2px solid #c5a882;
+
+        .nav-link {
+            color: #8b5a3c;
+            border: none;
+
+            &.active {
+                background-color: transparent;
+                border-bottom: 3px solid #8b5a3c;
+                color: #4a3728;
+                font-weight: bold;
+            }
+
+            &:hover {
+                color: #5c3d27;
+            }
+        }
+    }
+
+    .alert {
+        a {
+            color: #8b5a3c;
+        }
+    }
+
+    td ul {
+        float:left;
+        list-style:none;
+        padding:0;
+        margin:0;
+    }
+    td ul li {
+        opacity:0.9;
+        padding:0;
+        margin:0;
+    }
+
+    /* Platform Classes */
+    .netflix {
+        color:#E50914;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:#E50914;
+        }
+    }
+    .disney-plus {
+        color:teal;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:teal;
+        }
+    }
+    .prime-video {
+        color:#1399FF;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:#1399FF;
+        }
+    }
+    .apple-tv {
+        color:darkgray;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:darkgray;
+        }
+    }
+    .hbo-max {
+        color:gray;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:gray;
+        }
+    }
+    .hami-video {
+        color:greenyellow;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:greenyellow;
+        }
+    }
+    .friday-video {
+        color:aqua;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:aqua;
+        }
+    }
+    .myvideo {
+        color:orange;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:orange;
+        }
+    }
+    .line-tv {
+        color:#06C755;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:#06C755;
+        }
+    }
+    .catch-play {
+        color:$autumn-dark-orange;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:$autumn-dark-orange;
+        }
+    }
+    .other-platforms {
+        color:$autumn-text-dark;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color:$autumn-text-dark;
+        }
+    }
+}
 </style>

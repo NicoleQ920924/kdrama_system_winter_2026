@@ -1,4 +1,4 @@
-<!-- The Page to Display via 熱門韓劇 on the Navigation Bar -->
+<!-- The Page to Display via 韓劇 on the Navigation Bar -->
 <script setup>
     import DramaDetails from '@/components/DramaDetails.vue';
     import DramaList from '@/components/DramaList.vue';

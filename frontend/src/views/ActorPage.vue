@@ -1,4 +1,4 @@
-<!-- The Page to Display via 韓國演員一覽 on the Navigation Bar -->
+<!-- The Page to Display via 韓國演員 on the Navigation Bar -->
 <script setup>
     import ActorDetails from '@/components/ActorDetails.vue';
     import ActorList from '@/components/ActorList.vue';

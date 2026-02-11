@@ -4,19 +4,12 @@
         <ul>
             <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'Home'}" replace>首頁</router-link></li>
             <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'NewReleasesPage' }" replace>新上架</router-link></li>
-            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'DramaPage', query: {} }" replace>熱門韓劇</router-link></li>
-            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'MoviePage', query: {} }" replace>精選韓影</router-link></li>
-            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'ActorPage', query: {} }" replace>韓國演員一覽</router-link></li>
+            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'DramaPage', query: {} }" replace>韓劇</router-link></li>
+            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'MoviePage', query: {} }" replace>韓影</router-link></li>
+            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'ActorPage', query: {} }" replace>韓國演員</router-link></li>
             <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'PlatformInfoPage', query: {} }" replace>影音平台整理</router-link></li>
             <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'ContactUsPage', query: {} }" replace>聯絡我們</router-link></li>
-            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'ExternalLinksPage', query: {} }" replace>外部連結</router-link></li>
-            
-            <!-- Show watchlist and profile links when logged in -->
-            <template v-if="isLoggedIn && currentUser">
-                <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'WatchlistPage' }" replace>追蹤清單</router-link></li>
-                <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'UserProfilePage' }" replace>{{ currentUser.displayName }}</router-link></li>
-            </template>
-            
+            <li><router-link class="normal-dark-text nav-router-link" :to="{ name: 'ExternalLinksPage', query: {} }" replace>外部連結</router-link></li>         
             <li><button class="btn nav-btn-light" @click="handleBtn1Click">{{ navBtnText1 }}</button></li>
             <li><button class="btn nav-btn-dark" @click="handleBtn2Click">{{ navBtnText2 }}</button></li>
         </ul>
@@ -26,8 +19,10 @@
 <script setup>
     import { computed, defineProps, defineEmits, onMounted } from 'vue'
     import { userStore } from '@/store'
+    import { useRouter } from 'vue-router'
 
     const emit = defineEmits(['open-modal', 'logout'])
+    const router = useRouter()
 
     const { isLoggedIn } = defineProps({
         isLoggedIn: Boolean
@@ -39,7 +34,7 @@
         login: "登入",
         register: "註冊",
         logout: "登出",
-        member: "密碼重設"
+        member: computed(() => currentUser.value != null ? currentUser.value.displayName + "的會員專區" : '')
     }
 
     const navBtnText1 = computed(() => isLoggedIn ? btnTexts.logout : btnTexts.login)
@@ -61,8 +56,8 @@
             // To register
             emit('open-modal', 'register') // Tell the parent component to open modal
         } else {
-            // To password reset
-            emit('open-modal', 'beforeReset')
+            // To profile page
+            router.push({ name: 'UserProfilePage', query: {} })
         }
     }
 

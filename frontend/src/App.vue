@@ -68,9 +68,9 @@
   }
   .header-logo {
     position: absolute;
-    top: 10px;
-    left: 20px;
-    width: 100px;
+    top: 30px;
+    left: 10px;
+    width: 60px;
     height: auto;
   }
   .footer-table {

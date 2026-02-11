@@ -248,8 +248,8 @@ async function handleActorClick(actorName) { // By ChatGPT
                             <a v-if="movie.trailerUrl != null && movie.trailerUrl != undefined && movie.trailerUrl != ''" :href="movie.trailerUrl" class="trailer-url">點我觀賞預告片</a>
                         </td>
                         <td>
-                            <h3 class="movie-info"><a :href="movie.chineseWikipediaPageUrl" class="wiki-link">{{ movie.chineseName }}</a></h3> 
-                            <h4 class="movie-info"><a :href="movie.namuWikiPageUrl" class="wiki-link">{{ movie.koreanName }}</a></h4>
+                            <h3 class="movie-info"><a :href="movie.chineseWikipediaPageUrl" class="wiki-link">{{ movie.chineseName }}</a> (中文維基百科頁面)</h3> 
+                            <h4 class="movie-info"><a :href="movie.namuWikiPageUrl" class="wiki-link">{{ movie.koreanName }}</a> (韓文Namu Wiki頁面)</h4>
                             <h4 class="movie-info">{{ movie.englishName }}</h4>
                             <div>
                                 <ul>

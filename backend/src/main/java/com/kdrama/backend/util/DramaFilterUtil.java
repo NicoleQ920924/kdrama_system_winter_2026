@@ -16,7 +16,7 @@ public class DramaFilterUtil {
 
     // 正規韓國OTT平台 (90%以上都是正規劇)
     private static final Set<String> SEMI_OFFICIAL_STREAMING = new HashSet<>(Arrays.asList(
-        "TVING", "Wavve", "Disney+", "U+ Mobile TV", "Netflix", "Coupang Play"
+        "TVING", "Wavve", "Disney+", "U+ Mobile TV", "Netflix", "Coupang Play", "HBO Max", "Apple TV"
     ));
 
 

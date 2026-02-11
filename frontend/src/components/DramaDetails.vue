@@ -250,8 +250,8 @@ async function handleActorClick(actorName) { // By ChatGPT
                         </td>
                         <td>
                             <h4 :class="getStatusClass(drama.status)">{{ drama.status }}</h4>
-                            <h3 class="drama-info"><a :href="drama.chineseWikipediaPageUrl" class="wiki-link">{{ drama.chineseName }}</a></h3> 
-                            <h4 class="drama-info"><a :href="drama.namuWikiPageUrl" class="wiki-link">{{ drama.koreanName }}</a></h4>
+                            <h3 class="drama-info"><a :href="drama.chineseWikipediaPageUrl" class="wiki-link">{{ drama.chineseName }}</a> (中文維基百科頁面)</h3> 
+                            <h4 class="drama-info"><a :href="drama.namuWikiPageUrl" class="wiki-link">{{ drama.koreanName }}</a> (韓文Namu Wiki頁面)</h4>
                             <h4 class="drama-info">{{ drama.englishName }}</h4>
                             <div>
                                 <ul>
