@@ -77,7 +77,7 @@
 
                 <!-- Display Mode Toggle -->
                 <div class="mb-3">
-                    <label for="displayMode" class="form-label">顯示名稱:</label>
+                    <label for="displayMode" class="form-label">顯示名稱：</label>
                     <select v-model="displayNameMode" id="displayMode" class="form-select w-25">
                         <option value="chineseName">繁體中文名</option>
                         <option value="koreanName">韓文名</option>

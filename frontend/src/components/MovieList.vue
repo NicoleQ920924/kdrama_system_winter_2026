@@ -1,18 +1,78 @@
 <!-- Imported in MoviePage.vue -->
 <script setup>
   import Spinner from './Spinner.vue'
-  import { defineEmits, onMounted, ref } from 'vue'
+  import { defineEmits, onMounted, ref, computed } from 'vue'
 
   import { findMovies, deleteSelectedMovie } from '@/services/movieService';
+  import { userStore } from '@/store'
 
   const emit = defineEmits(['select-movie', 'reset-movie'])
 
   const movies = ref([])
   const loading = ref(true)
+  const sortBy = ref('name')
+  const selectedGenre = ref('全選 All')
+
+  const user = computed(() => userStore.getCurrentUser())
 
   onMounted(() =>
     loadMovies()
   )
+
+  const genres = [
+    { key: "all", name: "全選 All"},
+    { key: "action", name: "動作 Action"},
+    { key: "adventure", name: "冒險 Adventure"},
+    { key: "animation", name: "動畫 Animation"},
+    { key: "comedy", name: "喜劇 Comedy"},
+    { key: "crime", name: "犯罪 Crime"},
+    { key: "documentary", name: "紀錄片 Documentary"},
+    { key: "drama", name: "劇情 Drama"},
+    { key: "family", name: "家庭 Family"},
+    { key: "fantasy", name: "奇幻 Fantasy"},
+    { key: "history", name: "歷史 History"},
+    { key: "horror", name: "恐怖 Horror"},
+    { key: "music", name: "音樂 Music"},
+    { key: "mystery", name: "懸疑 Mystery"},
+    { key: "romance", name: "愛情 Romance"},
+    { key: "scifi", name: "科幻 Science Fiction"},
+    { key: "thriller", name: "驚悚 Thriller"},
+    { key: "tvmovie", name: "電視電影 TV Movie"},
+    { key: "war", name: "戰爭 War"}
+  ]
+
+  const adminNotLoggedIn = computed(() => {
+    return !user.value || user.value.role === 'USER';
+  });
+
+  const sortItems = () => {
+      if (sortBy.value === 'name') {
+        movies.value.sort((a, b) => a.chineseName.localeCompare(b.chineseName, 'zh-Hant-TW-u-co-zhuyin'))
+      } else if (sortBy.value === 'release-date') {
+        movies.value.sort((b, a) => new Date(b.releaseDate) - new Date(a.releaseDate))
+      }
+      else if (sortBy.value === 'runtime') {
+        movies.value.sort((a, b) => b.totalRuntime - a.totalRuntime)
+      }
+  }
+
+  const groupedMovies = computed(() => {
+    const groups = []; 
+    const data = filteredMovies.value
+
+    for (let i = 0; i < data.length; i += 4) {
+      groups.push(data.slice(i, i + 4));
+    }
+    return groups;
+  })
+
+  const filteredMovies = computed(() => {
+    const selectedGenreChineseName = selectedGenre.value.split(" ")[0];
+    if (selectedGenreChineseName === '全選') {
+      return movies.value;
+    }
+    return movies.value.filter(movie => movie.genres.includes(selectedGenreChineseName));
+  })
 
   function loadMovies() {
     loading.value = true;
@@ -71,7 +131,27 @@
 <template>
   <div>
     <h2>韓影列表</h2>
-    <h4>請自行用Ctrl+F搜尋</h4>
+    <h4>可以用Ctrl+F搜尋</h4>
+    <div class="controls-section mb-4">
+      <div class="row">
+          <div class="col-md-6">
+              <label for="selectedGenre" class="form-label">篩選韓影：</label>
+              <select v-model="selectedGenre" id="selectedGenre" class="form-select">
+                  <ul v-for="genre in genres" :key="genre.key">
+                    <option :value="genre.name">{{ genre.name }}</option>
+                  </ul>
+              </select>
+          </div>
+          <div class="col-md-6">
+              <label for="sortBy" class="form-label">排序方式：</label>
+              <select v-model="sortBy" @change="sortItems" id="sortBy" class="form-select">
+                  <option value="name">片名 (按注音排序)</option>
+                  <option value="release-date">上映日期 (由舊至新)</option>
+                  <option value="runtime">片長 (由長至短)</option>
+              </select>
+          </div>
+      </div>
+    </div>
 
     <transition name="fade" mode="out-in">
       <div>
@@ -81,7 +161,7 @@
         </div>
 
         <!-- Finish Loading -->
-        <table v-else-if="movies.length > 0" key="table" class="table table-striped table-bordered">
+        <table v-else-if="filteredMovies.length > 0 && user != null && user.role === 'ADMIN'" key="movie-admin-table" class="table table-striped table-bordered movie-admin-table">
           <thead>
             <tr>
               <td width="20%">海報照片</td>
@@ -92,7 +172,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="movie in movies" :key="movie.movieId">
+            <tr v-for="movie in filteredMovies" :key="movie.movieId">
               <td><img height="80px" :src="movie.mainPosterUrl" alt="無圖"></td>
               <td>
                 <h5>{{ movie.chineseName }}</h5>
@@ -110,11 +190,20 @@
           </tbody>
         </table>
 
+        <table v-else-if="filteredMovies.length > 0 && adminNotLoggedIn == true" key="movie-user-table" class="table table-borderless text-center movie-user-table">
+            <tr v-for="(row, rowIndex) in groupedMovies" :key="rowIndex" class="text-center">
+                <td v-for="movie in row" :key="movie.movieId">
+                    <img height="160px" :src="movie.mainPosterUrl" alt="No Image">
+                    <h5 class="movie-name"><router-link :to="{ name: 'MoviePage', query: { id: movie.movieId } }" replace class="movie-user-router-link">{{ movie.chineseName }}</router-link></h5>
+                </td>
+            </tr>
+        </table>
+
         <!-- No Data Found -->
         <p v-else key="nodata">⚠目前無法載入韓影列表</p>
 
         <div v-if="!loading" class="text-center bottom-text">
-              <router-link class="input-router-link" :to="{ name: 'ImportMoviePage', query: {} }" replace>點我新增韓影資料</router-link>
+              <router-link class="input-router-link" v-if="user != null && user.role === 'ADMIN'" :to="{ name: 'ImportMoviePage', query: {} }" replace>點我新增韓影資料</router-link>
         </div>
         <div v-if="!loading" class="text-center bottom-text">
               <router-link class="input-router-link" :to="{ name: 'AiImportMoviePage', query: {} }" replace>點我用 AI 依條件搜尋韓影</router-link>
@@ -130,24 +219,29 @@ h2, h4 {
   color:$autumn-dark-yellow;
   text-align:center;
 }
-table {
+.controls-section {
+    background: #f9f7f4;
+    padding: 15px;
+    border-radius: 8px;
+}
+.movie-admin-table {
   text-align:center;
   border:1px solid $autumn-dark-brown;
-  margin:0px 5%;
+  margin:3% 5%;
   width:90%;
   height:90%;
 }
-thead td {
+.movie-admin-table thead td {
   text-align:center;
   background-color:$autumn-light-orange;
   opacity:0.6;
   font-weight:bold;
   vertical-align:middle;
 }
-tbody tr {
+.movie-admin-table tbody tr {
   height:80px;
 }
-tbody td {
+.movie-admin-table tbody td {
   text-align:center;
   vertical-align:middle;
   color:$autumn-text-dark;
@@ -182,6 +276,29 @@ a, .movie-router-link {
   color:$autumn-dark-brown;
   text-decoration:underline;
   margin:10px 5px;
+}
+.movie-user-table {
+    padding:10px;
+    width:98%;
+    margin-top:2%;
+}
+.movie-user-table td {
+    height:200px;
+    width:25%;
+}
+.movie-name {
+    margin-top:5px;
+    color:$autumn-dark-orange;
+}
+.movie-user-router-link:link, .movie-user-router-link:visited {
+    font-weight:bold;
+    text-decoration:none;
+    color:$autumn-dark-orange;
+}
+.movie-user-router-link:hover {
+    font-weight:bold;
+    text-decoration:underline;
+    color:$autumn-dark-orange;
 }
 
 /* Transitions */

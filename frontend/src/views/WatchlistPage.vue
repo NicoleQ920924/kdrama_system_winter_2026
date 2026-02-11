@@ -87,6 +87,17 @@
     const switchTab = (tab) => {
         activeTab.value = tab
     }
+
+    const getStatusBadgeClass = (status) => {
+        const classes = {
+            'AIRING': 'bg-success',
+            'FINISHED': 'bg-secondary',
+            'ON_HIATUS': 'bg-warning',
+            'CANCELLED': 'bg-danger',
+            'NOT_AIRED': 'bg-light text-dark'
+        }
+        return classes[status] || 'bg-secondary'
+    }
 </script>
 
 <template>
@@ -102,7 +113,7 @@
             <div class="controls-section mb-4">
                 <div class="row">
                     <div class="col-md-6">
-                        <label for="displayMode" class="form-label">顯示名稱:</label>
+                        <label for="displayMode" class="form-label">顯示名稱：</label>
                         <select v-model="displayNameMode" id="displayMode" class="form-select">
                             <option value="chineseName">繁體中文名</option>
                             <option value="koreanName">韓文名</option>
@@ -110,7 +121,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label for="sortBy" class="form-label">排序方式:</label>
+                        <label for="sortBy" class="form-label">排序方式：</label>
                         <select v-model="sortBy" @change="sortItems" id="sortBy" class="form-select">
                             <option value="name">名稱</option>
                             <option value="date">日期</option>
@@ -226,19 +237,6 @@
         </template>
     </div>
 </template>
-
-<script>
-const getStatusBadgeClass = (status) => {
-    const classes = {
-        'AIRING': 'bg-success',
-        'FINISHED': 'bg-secondary',
-        'ON_HIATUS': 'bg-warning',
-        'CANCELLED': 'bg-danger',
-        'NOT_AIRED': 'bg-light text-dark'
-    }
-    return classes[status] || 'bg-secondary'
-}
-</script>
 
 <style lang="scss" scoped>
     .watchlist-page {

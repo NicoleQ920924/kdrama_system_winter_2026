@@ -9,7 +9,7 @@ const props = defineProps({
   selectedActorId: String
 })
 
-const user = ref(null)
+const user = computed(() => userStore.getCurrentUser())
 
 const emit = defineEmits(['reset-actor'])
 
@@ -68,7 +68,6 @@ function backToActorList() {
 
 onMounted(() => {
     loadActor()
-    user.value = userStore.getCurrentUser()
 })
 </script>
 
