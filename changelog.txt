@@ -216,4 +216,7 @@ Below is for kdrama_system_winter_2026
 2026/2/10
 - Modify code to start separating admin vs. normal user access
 
+2026/2/11
+- Modify code: Watchlist and Update function availability for different types of users
+
 ============================================================================================================

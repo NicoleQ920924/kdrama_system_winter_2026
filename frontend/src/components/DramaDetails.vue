@@ -15,32 +15,38 @@ const props = defineProps({
 const emit = defineEmits(['reset-drama'])
 
 const drama = ref({})
-const user = ref(null)
-const isAdmin = ref(false)
-const loading = ref(true)
+const user = computed(() => userStore.getCurrentUser())
 const inWatchlist = ref(false)
+const loading = ref(true)
 const watchlistLoading = ref(false)
 const watchedDramas = ref([])
 const loadingActors = ref([]) // for handleActorClick()
 
 onMounted(() => {
-    user.value = userStore.getCurrentUser()
-    isAdmin.value = userStore.isAdmin
-    checkIfInWatchlist() // Load watchlist first to get the most up-to-date data
+    loadDrama()
+    loadWatchlist() // Load watchlist first to get the most up-to-date data
 })
 
 const loadWatchlist = async () => {
-    loading.value = true
+    loading.value = true;
     try {
-        if (user.value) {
+        if (user.value != null) {
             const response = await getUserWithWatchlist(user.value.userId)
             watchedDramas.value = response.data.watchedDramas || []
+
+            if (!user.value) {
+                inWatchlist.value = false;
+                loading.value = false;
+                return;
+            }
+            else {
+                inWatchlist.value = watchedDramas.value.some(item => item.dramaId === drama.value.dramaId);
+            }
         }
     } catch (error) {
         console.error('Error loading watchlist:', error)
-    } finally {
-        loading.value = false
     }
+    loading.value = false
 }
 
 const getUserWithWatchlist = async (userId) => {
@@ -52,7 +58,6 @@ function loadDrama() {
   findSelectedDramaById(props.selectedDramaId)
     .then(res => {
       drama.value = res.data;
-      checkIfInWatchlist();
     })
     .catch(err => console.error(err))
     .finally(() => 
@@ -60,23 +65,12 @@ function loadDrama() {
     )
 }
 
-function checkIfInWatchlist() {
-  if (!user.value) {
-    inWatchlist.value = false;
-    return;
-  }
-  else {
-    loadWatchlist(); // Load watchlist to get the most up-to-date data
-    inWatchlist.value = watchedDramas.value.some(item => item.dramaId === drama.value.dramaId);
-  }
-}
-
 async function toggleWatchlist() {
   if (!user.value) {
     alert('請先登入');
     return;
   }
-  else if (isAdmin.value === true) {
+  else if (user.value.role === 'ADMIN') {
     alert('管理員無法使用追蹤清單功能');
     return;
   }
@@ -233,8 +227,6 @@ async function handleActorClick(actorName) { // By ChatGPT
         if (index !== -1) loadingActors.value.splice(index, 1)
     }
 }
-
-onMounted(() => loadDrama())
 </script>
 
 
@@ -281,8 +273,8 @@ onMounted(() => loadDrama())
                                 <button 
                                     @click="toggleWatchlist" 
                                     :disabled="watchlistLoading"
-                                    :class="['btn', inWatchlist ? 'btn-danger' : 'wish-btn']">
-                                    {{ inWatchlist ? '從追蹤清單移除' : '加入追蹤清單' }}
+                                    :class="['btn', inWatchlist === true ? 'btn-danger' : 'wish-btn']">
+                                    {{ inWatchlist === true ? '從追蹤清單移除' : '加入追蹤清單' }}
                                 </button>
                             </p>
                             <div class="platforms">
@@ -337,7 +329,7 @@ onMounted(() => loadDrama())
                         </td>
                     </tr>
                 </table>
-                <h5 class="text-center"><router-link :to="{ name: 'UpdateDramaPage', query: { id: drama.dramaId } }" class="drama-router-link text-center">點我編輯此專頁</router-link></h5>
+                <h5 class="text-center"><router-link v-if="user != null && user.role === 'ADMIN'" :to="{ name: 'UpdateDramaPage', query: { id: drama.dramaId } }" class="drama-router-link text-center">點我編輯此專頁</router-link></h5>
                 <div class="text-center">
                     <button class="btn back-btn text-center" @click="backToDramaList">返回韓劇列表</button>
                 </div>

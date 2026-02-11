@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from 'vue'
 import { findSelectedMovieById } from '@/services/movieService'
 import { importActor } from '@/services/actorService'
 import { addMovieToWatchlist, removeMovieFromWatchlist } from '@/services/watchlistService'
+import { getUserById } from '@/services/userService'
 import { userStore } from '@/store'
 import Spinner from './Spinner.vue'
 
@@ -14,49 +15,73 @@ const props = defineProps({
 const emit = defineEmits(['reset-movie'])
 
 const movie = ref({})
+const user = computed(() => userStore.getCurrentUser())
 const loading = ref(true)
 const inWatchlist = ref(false)
 const watchlistLoading = ref(false)
+const watchedMovies = ref([])
 const loadingActors = ref([]) // for handleActorClick()
+
+onMounted(() => {
+    loadMovie()
+    loadWatchlist() // Load watchlist first to get the most up-to-date data
+})
+
+const loadWatchlist = async () => {
+    loading.value = true;
+    try {
+        if (user.value != null) {
+            const response = await getUserWithWatchlist(user.value.userId)
+            watchedMovies.value = response.data.watchedMovies || []
+
+            if (!user.value) {
+                inWatchlist.value = false;
+                loading.value = false;
+                return;
+            }
+            else {
+                inWatchlist.value = watchedMovies.value.some(item => item.movieId === movie.value.movieId);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading watchlist:', error)
+    }
+    loading.value = false
+}
+
+const getUserWithWatchlist = async (userId) => {
+    return getUserById(userId) // This will call the backend to get user with watchlist
+}
 
 function loadMovie() {
   loading.value = true;
   findSelectedMovieById(props.selectedMovieId)
     .then(res => {
       movie.value = res.data;
-      checkIfInWatchlist();
     })
     .catch(err => console.error(err))
     .finally(() => loading.value = false
     )
 }
 
-function checkIfInWatchlist() {
-  const user = userStore.getCurrentUser();
-  if (!user) {
-    inWatchlist.value = false;
+async function toggleWatchlist() {
+  if (!user.value) {
+    alert('請先登入');
     return;
   }
-  // This would require getting the user with their watchlist from backend
-  // For now, we'll assume it's not in the watchlist until we fetch it
-  inWatchlist.value = false;
-}
-
-async function toggleWatchlist() {
-  const user = userStore.getCurrentUser();
-  if (!user) {
-    alert('請先登入');
+  else if (user.value.role === 'ADMIN') {
+    alert('管理員無法使用追蹤清單功能');
     return;
   }
 
   watchlistLoading.value = true;
   try {
     if (inWatchlist.value) {
-      await removeMovieFromWatchlist(user.userId, movie.value.movieId);
+      await removeMovieFromWatchlist(user.value.userId, movie.value.movieId);
       inWatchlist.value = false;
       alert('已從追蹤清單移除');
     } else {
-      await addMovieToWatchlist(user.userId, movie.value.movieId);
+      await addMovieToWatchlist(user.value.userId, movie.value.movieId);
       inWatchlist.value = true;
       alert('已加入追蹤清單');
     }
@@ -201,8 +226,6 @@ async function handleActorClick(actorName) { // By ChatGPT
         if (index !== -1) loadingActors.value.splice(index, 1)
     }
 }
-
-onMounted(() => loadMovie())
 </script>
 
 
@@ -296,7 +319,7 @@ onMounted(() => loadMovie())
                         </td>
                     </tr>
                 </table>
-                <h5 class="text-center"><router-link :to="{ name: 'UpdateMoviePage', query: { id: movie.movieId } }" class="movie-router-link text-center">點我編輯此專頁</router-link></h5>
+                <h5 class="text-center"><router-link v-if="user != null && user.role === 'ADMIN'" :to="{ name: 'UpdateMoviePage', query: { id: movie.movieId } }" class="movie-router-link text-center">點我編輯此專頁</router-link></h5>
                 <div class="text-center">
                     <button class="btn back-btn text-center" @click="backToMovieList">返回韓影列表</button>
                 </div>

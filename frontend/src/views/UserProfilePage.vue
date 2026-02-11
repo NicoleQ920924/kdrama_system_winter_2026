@@ -1,17 +1,16 @@
 <!-- User Profile Page -->
 <script setup>
-    import { ref, onMounted } from 'vue'
+    import { ref, onMounted, computed } from 'vue'
     import { userStore } from '@/store'
     import Spinner from '@/components/Spinner.vue'
 
-    const user = ref(null)
+    const user = computed(() => userStore.getCurrentUser())
     const isLoading = ref(false)
     const watchedDramas = ref([])
     const watchedMovies = ref([])
     const displayNameMode = ref('chineseName')
 
     onMounted(() => {
-        user.value = userStore.getCurrentUser()
         if (user.value) {
             loadUserData()
         }

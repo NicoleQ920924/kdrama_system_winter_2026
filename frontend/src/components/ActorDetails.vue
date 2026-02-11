@@ -9,7 +9,7 @@ const props = defineProps({
   selectedActorId: String
 })
 
-const isAdmin = computed(() => userStore.isAdmin)
+const user = ref(null)
 
 const emit = defineEmits(['reset-actor'])
 
@@ -66,7 +66,10 @@ function backToActorList() {
     emit('reset-actor')
 }
 
-onMounted(() => loadActor())
+onMounted(() => {
+    loadActor()
+    user.value = userStore.getCurrentUser()
+})
 </script>
 
 
@@ -124,7 +127,7 @@ onMounted(() => loadActor())
                         </td>
                     </tr>
                 </table>
-                <h5 class="text-center"><router-link v-if="isAdmin === true" :to="{ name: 'UpdateActorPage', query: { id: actor.actorId } }" class="actor-router-link text-center">點我編輯此專頁</router-link></h5>
+                <h5 class="text-center"><router-link v-if="user != null && user.role === 'ADMIN'" :to="{ name: 'UpdateActorPage', query: { id: actor.actorId } }" class="actor-router-link text-center">點我編輯此專頁</router-link></h5>
                 <div class="text-center">
                     <button class="btn back-btn text-center" @click="backToActorList">返回演員列表</button>
                 </div>
