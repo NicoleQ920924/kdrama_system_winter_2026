@@ -71,6 +71,6 @@ For a detailed list of resources used or referenced in this project, please see 
 
 © 2025-2026 Nicole Q. All rights reserved.
 
-本專案程式碼與設計為作者 Nicole Q. 原創，僅供學習與展示用途，未經允許不得用於商業用途。
+本專案程式碼與設計為作者 Nicole Q 原創，僅供學習與展示用途，未經允許不得用於商業用途。
 作者的GitHub專頁為 https://github.com/NicoleQ920924
 有問題歡迎分享。
