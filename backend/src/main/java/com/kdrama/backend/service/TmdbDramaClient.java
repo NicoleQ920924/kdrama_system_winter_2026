@@ -79,6 +79,9 @@ public class TmdbDramaClient {
                 if (genreNodes.isArray()) {
                     for (JsonNode node : genreNodes) {
                         String genre = node.path("name").asText();
+                        if (genre.equals("Sci-Fi & Fantasy")) {
+                            genre = "奇幻&科幻";
+                        }
                         genres.add(genre);
                     }
                     drama.setGenres(genres);

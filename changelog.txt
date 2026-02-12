@@ -224,4 +224,7 @@ Below is for kdrama_system_winter_2026
 - Fix some frontend display
 - Complete Watchlist display
 
+2026/2/12
+- Fix TMDB Genre display: Sci-Fi & Fantasy -> 奇幻&科幻
+
 ============================================================================================================

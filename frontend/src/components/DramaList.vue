@@ -33,7 +33,7 @@
     { key: "music", name: "音樂 Music"},
     { key: "mystery", name: "懸疑 Mystery"},
     { key: "romance", name: "愛情 Romance"},
-    { key: "scifi-and-fantasy", name: "奇幻科幻 Sci-Fi & Fantasy"},
+    { key: "scifi-and-fantasy", name: "奇幻&科幻 Sci-Fi & Fantasy"},
     { key: "soap", name: "肥皂劇 Soap"},
     { key: "thriller", name: "驚悚 Thriller"},
     { key: "war-and-politics", name: "戰爭政治 War & Politics"}
@@ -68,9 +68,6 @@
     const selectedGenreChineseName = selectedGenre.value.split(" ")[0];
     if (selectedGenreChineseName === '全選') {
       return dramas.value;
-    }
-    else if (selectedGenre.value == "奇幻科幻 Sci-Fi & Fantasy") {
-      return dramas.value.filter(drama => drama.genres.includes("Sci-Fi & Fantasy"));
     }
     return dramas.value.filter(drama => drama.genres.includes(selectedGenreChineseName));
   })
