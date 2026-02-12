@@ -2,11 +2,13 @@
 <!-- Used in AiImportMoviePage.vue -->
 <!-- Similar to FinishRegistrationModal.vue design -->
 <script setup>
-    import { defineProps, defineEmits, ref } from 'vue'
+    import { defineProps, defineEmits, ref, computed } from 'vue'
     import { useRouter } from 'vue-router'
-    import { importMovie } from '@/services/movieService'
+    import { importMovie, findSelectedMovieByChineseName } from '@/services/movieService'
+    import { userStore } from '@/store'
 
     const router = useRouter()
+    const user = computed(() => userStore.getCurrentUser())
 
     const props = defineProps({
         searchResults: {
@@ -36,30 +38,51 @@
         // Add loading status
         loadingMovies.value.push(movieTitle)
 
-        try {
-            // Call the import endpoint with the movie title
-            const response = await importMovie(movieTitle)
-            if (response.status === 200) {
-                // Store the movie ID so the link becomes clickable
-                alert(`成功將 ${movieTitle} 加入資料庫！`)
-                loadedMovieId.value = response.data.movieId
-                addedMovies.value[movieTitle] = loadedMovieId.value
-                // Don't emit 'close' - let user click the transformed link or close with X button
+        if (user.value && user.value.role === 'ADMIN') {
+            try {
+                // Call the import endpoint with the movie title
+                const response = await importMovie(movieTitle)
+                if (response.status === 200) {
+                    // Store the movie ID so the link becomes clickable
+                    alert(`成功將 ${movieTitle} 加入資料庫！`)
+                    loadedMovieId.value = response.data.movieId
+                    addedMovies.value[movieTitle] = loadedMovieId.value
+                    // Don't emit 'close' - let user click the transformed link or close with X button
+                }
+            } catch (error) {
+                console.error('Error importing movie:', error)
+                if (error.response && error.response.status === 409) {
+                    // Movie already exists - treat it as added
+                    alert(`${movieTitle} 已存在資料庫中，請至韓影列表頁面查看`)
+                } else if (error.response && error.response.status === 403 || error.response && error.response.status === 401) {
+                    alert(`您沒有權限加入 ${movieTitle}，請以管理員登入後重試!`)
+                } else {
+                    alert(`加入 ${movieTitle} 時發生錯誤，請稍後重試`)
+                }
+            } finally {
+                // Remove loading status
+                const index = loadingMovies.value.indexOf(movieTitle)
+                if (index !== -1) loadingMovies.value.splice(index, 1)
             }
-        } catch (error) {
-            console.error('Error importing movie:', error)
-            if (error.response && error.response.status === 409) {
-                // Movie already exists - treat it as added
-                alert(`${movieTitle} 已存在資料庫中，請至韓影列表頁面查看`)
-            } else if (error.response && error.response.status === 403 || error.response && error.response.status === 401) {
-                alert(`您沒有權限加入 ${movieTitle}，請以管理員登入後重試!`)
-            } else {
-                alert(`加入 ${movieTitle} 時發生錯誤，請稍後重試`)
+        }
+        else {
+            try {
+                // Call the find endpoint with the movie title
+                const response = await findSelectedMovieByChineseName(movieTitle)
+                if (response.status === 200) {
+                    // Store the movie ID so the link becomes clickable
+                    loadedMovieId.value = response.data.movieId
+                    addedMovies.value[movieTitle] = loadedMovieId.value
+                    router.push({ name: 'MoviePage', query: { id: addedMovies.value[movieTitle] } })
+                }
+            } catch (error) {
+                console.error('Error finding movie:', error)
+                alert(`目前 ${movieTitle} 不在此系統的資料庫中，請稍後重試`)
+            } finally {
+                // Remove loading status
+                const index = loadingMovies.value.indexOf(movieTitle)
+                if (index !== -1) loadingMovies.value.splice(index, 1)
             }
-        } finally {
-            // Remove loading status
-            const index = loadingMovies.value.indexOf(movieTitle)
-            if (index !== -1) loadingMovies.value.splice(index, 1)
         }
     }
 </script>
@@ -104,9 +127,9 @@
                             </ol>
 
                             <div class="result-footer">
-                                <p v-if="addedMovies === null || Object.keys(addedMovies).length === 0">管理員可以點擊連結將此電影加入資料庫</p>
-                                <p v-else>新增成功後，可以點擊連結前往該電影頁面</p>
-                                <p>AI有時會出錯，導致片名無法透過TMDB搜尋，若遇到此狀況，煩請利用其他方法新增至資料庫</p>
+                                <p v-if="(addedMovies === null || Object.keys(addedMovies).length === 0) && user != null && user.role === 'ADMIN'">管理員可以點擊連結將此韓影加入資料庫</p>
+                                <p v-else>可以點擊連結前往該韓影頁面</p>
+                                <p>AI有時會出錯，導致片名無法透過TMDB搜尋，若遇到此狀況，煩請利用其他方法</p>
                                 <p>若想重新搜尋，請關閉此視窗，並再填入一次搜尋表單</p>
                             </div>
                         </div>

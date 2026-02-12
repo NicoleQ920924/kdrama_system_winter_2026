@@ -1,5 +1,6 @@
 package com.kdrama.backend.controller;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -135,12 +136,39 @@ public class ActorController {
         @RequestParam String chineseName,
         @RequestParam(required = false, defaultValue = "true") boolean displayNameMode) {
         
+        Actor actor = new Actor();
         Optional<Actor> optionalActor = actorService.getActorByChineseName(chineseName);
         if (optionalActor.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204
+            List <Actor> allActors = actorService.getAllActors();
+            
+            // Save the information of the actor to a .json file
+            String backupFilePath = "backup/actor_backup.json";
+            File backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            
+            try {
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, allActors);
+                Integer selectedActorId = aiService.aiGetItemIdInDbByChineseName(chineseName, backupFile);
+                if (selectedActorId == null) {
+                    return ResponseEntity.notFound().build(); // 404
+                }
+                else {
+                    optionalActor = actorService.getActorById(selectedActorId);
+                    if (optionalActor.isEmpty()) {
+                        return ResponseEntity.notFound().build(); // 404
+                    }
+                    else {
+                        actor = optionalActor.get();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                actor = null;
+            }
         }
-        
-        Actor actor = optionalActor.get();
+        else {
+            actor = optionalActor.get();
+        }
 
         SimpleModule module = new SimpleModule();
         module.addSerializer(Enum.class, new DisplayNameEnumSerializer(displayNameMode));

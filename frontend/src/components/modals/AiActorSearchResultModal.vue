@@ -2,11 +2,13 @@
 <!-- Used in AiImportActorPage.vue -->
 <!-- Similar to FinishRegistrationModal.vue design -->
 <script setup>
-    import { defineProps, defineEmits, ref } from 'vue'
+    import { defineProps, defineEmits, ref, computed } from 'vue'
     import { useRouter } from 'vue-router'
-    import { importActor } from '@/services/actorService'
+    import { importActor, findSelectedActorByChineseName } from '@/services/actorService'
+    import { userStore } from '@/store'
 
     const router = useRouter()
+    const user = computed(() => userStore.getCurrentUser())
 
     const props = defineProps({
         searchResults: {
@@ -36,30 +38,51 @@
         // Add loading status
         loadingActors.value.push(actorTitle)
 
-        try {
-            // Call the import endpoint with the actor title
-            const response = await importActor(actorTitle)
-            if (response.status === 200) {
-                // Store the actor ID so the link becomes clickable
-                alert(`成功將 ${actorTitle} 加入資料庫！`)
-                loadedActorId.value = response.data.actorId
-                addedActors.value[actorTitle] = loadedActorId.value
-                // Don't emit 'close' - let user click the transformed link or close with X button
+        if (user.value && user.value.role === 'ADMIN') {
+            try {
+                // Call the import endpoint with the actor title
+                const response = await importActor(actorTitle)
+                if (response.status === 200) {
+                    // Store the actor ID so the link becomes clickable
+                    alert(`成功將 ${actorTitle} 加入資料庫！`)
+                    loadedActorId.value = response.data.actorId
+                    addedActors.value[actorTitle] = loadedActorId.value
+                    // Don't emit 'close' - let user click the transformed link or close with X button
+                }
+            } catch (error) {
+                console.error('Error importing actor:', error)
+                if (error.response && error.response.status === 409) {
+                    // Actor already exists - treat it as added
+                    alert(`${actorTitle} 已存在資料庫中，請至演員列表頁面查看`)
+                } else if (error.response && error.response.status === 403 || error.response && error.response.status === 401) {
+                    alert(`您沒有權限加入 ${actorTitle}，請以管理員登入後重試!`)
+                } else {
+                    alert(`加入 ${actorTitle} 時發生錯誤，請稍後重試`)
+                }
+            } finally {
+                // Remove loading status
+                const index = loadingActors.value.indexOf(actorTitle)
+                if (index !== -1) loadingActors.value.splice(index, 1)
             }
-        } catch (error) {
-            console.error('Error importing actor:', error)
-            if (error.response && error.response.status === 409) {
-                // Actor already exists - treat it as added
-                alert(`${actorTitle} 已存在資料庫中，請至演員列表頁面查看`)
-            } else if (error.response && error.response.status === 403 || error.response && error.response.status === 401) {
-                alert(`您沒有權限加入 ${actorTitle}，請以管理員登入後重試!`)
-            } else {
-                alert(`加入 ${actorTitle} 時發生錯誤，請稍後重試`)
+        }
+        else {
+            try {
+                // Call the find endpoint with the actor title
+                const response = await findSelectedActorByChineseName(actorTitle)
+                if (response.status === 200) {
+                    // Store the actor ID so the link becomes clickable
+                    loadedActorId.value = response.data.actorId
+                    addedActors.value[actorTitle] = loadedActorId.value
+                    router.push({ name: 'ActorPage', query: { id: addedActors.value[actorTitle] } })
+                }
+            } catch (error) {
+                console.error('Error finding actor:', error)
+                alert(`目前 ${actorTitle} 不在此系統的資料庫中，請稍後重試`)
+            } finally {
+                // Remove loading status
+                const index = loadingActors.value.indexOf(actorTitle)
+                if (index !== -1) loadingActors.value.splice(index, 1)
             }
-        } finally {
-            // Remove loading status
-            const index = loadingActors.value.indexOf(actorTitle)
-            if (index !== -1) loadingActors.value.splice(index, 1)
         }
     }
 </script>
@@ -104,9 +127,9 @@
                             </ol>
 
                             <div class="result-footer">
-                                <p v-if="addedActors === null || Object.keys(addedActors).length === 0">管理員可以點擊連結將此演員加入資料庫</p>
-                                <p v-else>新增成功後，可以點擊連結前往該演員頁面</p>
-                                <p>AI有時會出錯，導致演員姓名無法透過TMDB搜尋，若遇到此狀況，煩請利用其他方法新增至資料庫</p>
+                                <p v-if="(addedActors === null || Object.keys(addedActors).length === 0) && user != null && user.role === 'ADMIN'">管理員可以點擊連結將此演員加入資料庫</p>
+                                <p v-else>可以點擊連結前往該演員頁面</p>
+                                <p>AI有時會出錯，導致演員姓名無法透過TMDB搜尋，若遇到此狀況，煩請利用其他方法</p>
                                 <p>若想重新搜尋，請關閉此視窗，並再填入一次搜尋表單</p>
                             </div>
                         </div>

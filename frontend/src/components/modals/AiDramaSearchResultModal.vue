@@ -2,11 +2,13 @@
 <!-- Used in AiImportDramaPage.vue -->
 <!-- Similar to FinishRegistrationModal.vue design -->
 <script setup>
-    import { defineProps, defineEmits, ref } from 'vue'
+    import { defineProps, defineEmits, ref, computed } from 'vue'
     import { useRouter } from 'vue-router'
-    import { importDrama } from '@/services/dramaService'
+    import { importDrama, findSelectedDramaByChineseName } from '@/services/dramaService'
+    import { userStore } from '@/store'
 
     const router = useRouter()
+    const user = computed(() => userStore.getCurrentUser())
 
     const props = defineProps({
         searchResults: {
@@ -36,30 +38,51 @@
         // Add loading status
         loadingDramas.value.push(dramaTitle)
 
-        try {
-            // Call the import endpoint with the drama title
-            const response = await importDrama(dramaTitle)
-            if (response.status === 200) {
-                // Store the drama ID so the link becomes clickable
-                alert(`成功將 ${dramaTitle} 加入資料庫！`)
-                loadedDramaId.value = response.data.dramaId
-                addedDramas.value[dramaTitle] = loadedDramaId.value
-                // Don't emit 'close' - let user click the transformed link or close with X button
+        if (user.value && user.value.role === 'ADMIN') {
+            try {
+                // Call the import endpoint with the drama title
+                const response = await importDrama(dramaTitle)
+                if (response.status === 200) {
+                    // Store the drama ID so the link becomes clickable
+                    alert(`成功將 ${dramaTitle} 加入資料庫！`)
+                    loadedDramaId.value = response.data.dramaId
+                    addedDramas.value[dramaTitle] = loadedDramaId.value
+                    // Don't emit 'close' - let user click the transformed link or close with X button
+                }
+            } catch (error) {
+                console.error('Error finding drama:', error)
+                if (error.response && error.response.status === 409) {
+                    // Drama already exists - treat it as added
+                    alert(`${dramaTitle} 已存在資料庫中，請至韓劇列表頁面查看`)
+                } else if (error.response && error.response.status === 403 || error.response && error.response.status === 401) {
+                    alert(`您沒有權限加入 ${dramaTitle}，請以管理員登入後重試!`)
+                } else {
+                    alert(`加入 ${dramaTitle} 時發生錯誤，請稍後重試`)
+                }
+            } finally {
+                // Remove loading status
+                const index = loadingDramas.value.indexOf(dramaTitle)
+                if (index !== -1) loadingDramas.value.splice(index, 1)
             }
-        } catch (error) {
-            console.error('Error importing drama:', error)
-            if (error.response && error.response.status === 409) {
-                // Drama already exists - treat it as added
-                alert(`${dramaTitle} 已存在資料庫中，請至韓劇列表頁面查看`)
-            } else if (error.response && error.response.status === 403 || error.response && error.response.status === 401) {
-                alert(`您沒有權限加入 ${dramaTitle}，請以管理員登入後重試!`)
-            } else {
-                alert(`加入 ${dramaTitle} 時發生錯誤，請稍後重試`)
+        }
+        else {
+            try {
+                // Call the find endpoint with the drama title
+                const response = await findSelectedDramaByChineseName(dramaTitle)
+                if (response.status === 200) {
+                    // Store the drama ID so the link becomes clickable
+                    loadedDramaId.value = response.data.dramaId
+                    addedDramas.value[dramaTitle] = loadedDramaId.value
+                    router.push({ name: 'DramaPage', query: { id: addedDramas.value[dramaTitle] } })
+                }
+            } catch (error) {
+                console.error('Error importing drama:', error)
+                alert(`目前 ${dramaTitle} 不在此系統的資料庫中，請稍後重試`)
+            } finally {
+                // Remove loading status
+                const index = loadingDramas.value.indexOf(dramaTitle)
+                if (index !== -1) loadingDramas.value.splice(index, 1)
             }
-        } finally {
-            // Remove loading status
-            const index = loadingDramas.value.indexOf(dramaTitle)
-            if (index !== -1) loadingDramas.value.splice(index, 1)
         }
     }
 </script>
@@ -104,9 +127,9 @@
                             </ol>
 
                             <div class="result-footer">
-                                <p v-if="addedDramas === null || Object.keys(addedDramas).length === 0">管理員可以點擊連結將此韓劇加入資料庫</p>
-                                <p v-else>新增成功後，可以點擊連結前往該韓劇頁面</p>
-                                <p>AI有時會出錯，導致劇名無法透過TMDB搜尋，若遇到此狀況，煩請利用其他方法新增至資料庫</p>
+                                <p v-if="(addedDramas === null || Object.keys(addedDramas).length === 0) && user != null && user.role === 'ADMIN'">管理員可以點擊連結將此韓劇加入資料庫</p>
+                                <p v-else>可以點擊連結前往該韓劇頁面</p>
+                                <p>AI有時會出錯，導致劇名無法透過TMDB搜尋，若遇到此狀況，煩請利用其他方法</p>
                                 <p>若想重新搜尋，請關閉此視窗，並再填入一次搜尋表單</p>
                             </div>
                         </div>

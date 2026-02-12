@@ -1,5 +1,6 @@
 package com.kdrama.backend.controller;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,9 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kdrama.backend.model.Movie;
 import com.kdrama.backend.service.AiService;
 import com.kdrama.backend.service.MovieService;
+import com.kdrama.backend.util.DisplayNameEnumSerializer;
 
 @RestController
 @RequestMapping("/api/movies")
@@ -114,16 +117,48 @@ public class MovieController {
 
     @GetMapping("/chineseName")
     public ResponseEntity<JsonNode> findSelectedMovieByChineseName(
-        @RequestParam String chineseName) {
+        @RequestParam String chineseName,
+        @RequestParam(required = false, defaultValue = "true") boolean displayNameMode) {
         
+        Movie movie = new Movie();
         Optional<Movie> optionalMovie = movieService.getMovieByChineseName(chineseName);
         if (optionalMovie.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204
+            List <Movie> allMovies = movieService.getAllMovies();
+            
+            // Save the information of the movie to a .json file
+            String backupFilePath = "backup/movie_backup.json";
+            File backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            
+            try {
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, allMovies);
+                Integer selectedMovieId = aiService.aiGetItemIdInDbByChineseName(chineseName, backupFile);
+                if (selectedMovieId == null) {
+                    return ResponseEntity.notFound().build(); // 404
+                }
+                else {
+                    optionalMovie = movieService.getMovieById(selectedMovieId);
+                    if (optionalMovie.isEmpty()) {
+                        return ResponseEntity.notFound().build(); // 404
+                    }
+                    else {
+                        movie = optionalMovie.get();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                movie = null;
+            }
         }
-        
-        Movie movie = optionalMovie.get();
+        else {
+            movie = optionalMovie.get();
+        }
+
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Enum.class, new DisplayNameEnumSerializer(displayNameMode));
 
         ObjectMapper mapper = objectMapper.copy();
+        mapper.registerModule(module);
 
         try {
             // Return JsonNode to frontend

@@ -495,5 +495,42 @@ public class AiService {
         }
         return movieToUpdate;
     }
+
+    public Integer aiGetItemIdInDbByChineseName(String chineseName, File backupFile) {
+        try {
+            JsonNode allItemsFromFile = objectMapper.readTree(backupFile);
+            String allItemString = "";
+            String filename = backupFile.getName();
+
+            for (JsonNode node : allItemsFromFile) {
+                if (filename.contains("actor")) {
+                    allItemString += "{ actorId: " + node.path("actorId").asText() + " - chinseName: " + node.path("chineseName") + " } \n";
+                }
+                else if (filename.contains("drama")) {
+                    allItemString += "{ dramaId: " + node.path("dramaId").asText() + " - chineseName: " + node.path("chineseName") + " } \n";
+                }
+                else if (filename.contains("movie")) {
+                    allItemString += "{ movieId: " + node.path("movieId").asText() + " - chineseName: " + node.path("chineseName") + " } \n";
+                }
+            }
+
+            // Build a prompt to ask LLM for ID
+            String prompt = "請閱讀以下字串: \n\n" + allItemString + "\n\n 請找出 \" chineseName: " + chineseName + "\" 的 actorId (或dramaId, 或movieId) 是多少？ \n\n 請找出最相近的結果。" +
+                    "\n\n只回覆數字，不需要其他文字。";
+
+            String response = generateResponse(prompt);
+
+            // Try to extract number from response
+            Pattern pattern = Pattern.compile("(\\d+)");
+            Matcher matcher = pattern.matcher(response);
+            if (matcher.find()) {
+                return Integer.parseInt(matcher.group(1));
+            }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
 

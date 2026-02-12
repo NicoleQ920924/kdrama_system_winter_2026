@@ -226,5 +226,6 @@ Below is for kdrama_system_winter_2026
 
 2026/2/12
 - Fix TMDB Genre display: Sci-Fi & Fantasy -> 奇幻&科幻
+- Add AI Search function for normal users & Set importing function only for admin
 
 ============================================================================================================

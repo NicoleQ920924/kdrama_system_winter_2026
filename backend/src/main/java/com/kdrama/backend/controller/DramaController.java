@@ -8,6 +8,7 @@ import com.kdrama.backend.service.AiService;
 import com.kdrama.backend.service.DramaService;
 import com.kdrama.backend.util.DisplayNameEnumSerializer;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -132,12 +133,39 @@ public class DramaController {
         @RequestParam String chineseName,
         @RequestParam(required = false, defaultValue = "true") boolean displayNameMode) {
         
+        Drama drama = new Drama();
         Optional<Drama> optionalDrama = dramaService.getDramaByChineseName(chineseName);
         if (optionalDrama.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204
+            List <Drama> allDramas = dramaService.getAllDramas();
+            
+            // Save the information of the drama to a .json file
+            String backupFilePath = "backup/drama_backup.json";
+            File backupFile = new File(backupFilePath);
+            backupFile.getParentFile().mkdirs();
+            
+            try {
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(backupFile, allDramas);
+                Integer selectedDramaId = aiService.aiGetItemIdInDbByChineseName(chineseName, backupFile);
+                if (selectedDramaId == null) {
+                    return ResponseEntity.notFound().build(); // 404
+                }
+                else {
+                    optionalDrama = dramaService.getDramaById(selectedDramaId);
+                    if (optionalDrama.isEmpty()) {
+                        return ResponseEntity.notFound().build(); // 404
+                    }
+                    else {
+                        drama = optionalDrama.get();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                drama = null;
+            }
         }
-        
-        Drama drama = optionalDrama.get();
+        else {
+            drama = optionalDrama.get();
+        }
 
         SimpleModule module = new SimpleModule();
         module.addSerializer(Enum.class, new DisplayNameEnumSerializer(displayNameMode));
