@@ -219,7 +219,7 @@ Below is for kdrama_system_winter_2026
 2026/2/11
 - Modify code: Watchlist and Update function availability for different types of users
 - Add filter controls to ActorList, DramaList and MovieList & Update function availability for different types of users
-- Fix TW OTT Plarform Scraping
+- Fix TW OTT Platform Scraping
 - Fix Navbar Display
 - Fix some frontend display
 - Complete Watchlist display
