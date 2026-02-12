@@ -49,7 +49,7 @@
       if (sortBy.value === 'name') {
         movies.value.sort((a, b) => a.chineseName.localeCompare(b.chineseName, 'zh-Hant-TW-u-co-zhuyin'))
       } else if (sortBy.value === 'release-date') {
-        movies.value.sort((b, a) => new Date(b.releaseDate) - new Date(a.releaseDate))
+        movies.value.sort((a, b) => new Date(b.releaseDate) - new Date(a.releaseDate))
       }
       else if (sortBy.value === 'runtime') {
         movies.value.sort((a, b) => b.totalRuntime - a.totalRuntime)
@@ -146,7 +146,7 @@
               <label for="sortBy" class="form-label">排序方式：</label>
               <select v-model="sortBy" @change="sortItems" id="sortBy" class="form-select">
                   <option value="name">片名 (按注音排序)</option>
-                  <option value="release-date">上映日期 (由舊至新)</option>
+                  <option value="release-date">上映日期 (由新至舊)</option>
                   <option value="runtime">片長 (由長至短)</option>
               </select>
           </div>

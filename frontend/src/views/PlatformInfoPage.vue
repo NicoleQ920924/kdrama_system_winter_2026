@@ -122,7 +122,7 @@
                   <ul v-if="item.dramas.length" class="works-list">
                     <li v-for="d in item.dramas" :key="`${d.dramaId}-${d.seasonNumber ?? ''}`" class="works-item">
                       <router-link class="works-router-link" :to="{ name: 'DramaPage', query: { id: d.dramaId } }">
-                        {{ d.chineseName }}{{ d.seasonNumber && d.seasonNumber > 1 ? ` (第${d.seasonNumber}季)` : '' }}
+                        {{ d.chineseName }}
                       </router-link>
                       <span v-if="getPlatformUrlFromMap(d.dramaTwPlatformMap, item.platform.key)" class="works-sep">・</span>
                       <a

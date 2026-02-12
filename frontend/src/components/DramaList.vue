@@ -47,7 +47,7 @@
       if (sortBy.value === 'name') {
         dramas.value.sort((a, b) => a.chineseName.localeCompare(b.chineseName, 'zh-Hant-TW-u-co-zhuyin'))
       } else if (sortBy.value === 'release-year') {
-        dramas.value.sort((a, b) => a.releaseYear.localeCompare(b.releaseYear))
+        dramas.value.sort((b, a) => a.releaseYear.localeCompare(b.releaseYear))
       }
       else if (sortBy.value === 'status') {
         dramas.value.sort((a, b) => a.status.localeCompare(b.status, 'zh-Hant-TW-u-co-zhuyin'))
@@ -132,7 +132,7 @@
             <label for="sortBy" class="form-label">排序方式：</label>
             <select v-model="sortBy" @change="sortItems" id="sortBy" class="form-select">
               <option value="name">劇名 (按注音排序)</option>
-              <option value="release-year">年度 (由舊至新)</option>
+              <option value="release-year">年度 (由新至舊)</option>
               <option value="status">狀態</option>
             </select>
           </div>
