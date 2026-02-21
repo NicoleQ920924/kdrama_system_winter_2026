@@ -229,4 +229,7 @@ Below is for kdrama_system_winter_2026
 - Add AI Search function for normal users & Set importing function only for admin
 - Final code edits to optimize display
 
+2026/2/21 - 2026/2/22 midnight (urgent fix)
+- Fix a serious issue where Netflix Original dramas and movies cannot be fetched via TMDB due to TMDB issue (I have to rewrite the code for the JsonNodes to look for accordingly)
+
 ============================================================================================================

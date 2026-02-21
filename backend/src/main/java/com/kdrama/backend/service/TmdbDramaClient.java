@@ -71,7 +71,7 @@ public class TmdbDramaClient {
             String requestUrl = BASE_URL + "/" + drama.getTmdbId() +"?api_key=" + tmdbApiKey + "&language=zh-TW";
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
 
-            if (results != null && !results.path("status_message").asText().equals("The resource you requested could not be found.")) {
+            if ((results != null && !results.path("status_message").asText().equals("The resource you requested could not be found.")) || !(results.path("original_language").asText().equals("ko"))) {
 
                 // Genres
                 List<String> genres = new ArrayList<String>();
@@ -92,7 +92,7 @@ public class TmdbDramaClient {
                 JsonNode networkNodes = results.path("networks");
                 if (networkNodes.isArray()) {
                     for (JsonNode node : networkNodes) {
-                        if (node.path("origin_country").asText().equals("KR")) {
+                        if (node.path("origin_country").asText().equals("KR") || node.path("origin_country").asText().equals("")) {
                             networkNames.add(node.path("name").asText());
                         }
                     }
@@ -145,8 +145,7 @@ public class TmdbDramaClient {
 
             if (!results.path("status_message").asText().equals("The resource you requested could not be found.")) {
                 // Fill in information from the fetched object
-                // A condition "original_country = 'KR'" added on 2025/8/16
-                if (!results.path("air_date").isNull() && (results.path("networks").path(0).path("origin_country").asText().equals("KR"))) {
+                if (!results.path("air_date").isNull()) {
                     drama.setIntroPageUrl("https://www.themoviedb.org/tv/" + drama.getTmdbId());
 
                     // Total number of episodes of a season

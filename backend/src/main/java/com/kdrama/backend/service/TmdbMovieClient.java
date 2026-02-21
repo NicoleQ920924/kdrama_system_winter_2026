@@ -39,8 +39,7 @@ public class TmdbMovieClient {
             if (results != null && results.isArray() && results.size() > 0) {
                 for (JsonNode node : results) {
                     String fetchedOriginalLanguage = node.path("original_language").asText();
-                    String fetchTitle = node.path("title").asText();
-                    if (fetchedOriginalLanguage.equals("ko") && fetchTitle.equals(chineseName)) {
+                    if (fetchedOriginalLanguage.equals("ko")) {
                         return node.path("id").asInt();
                     }
                 }
@@ -66,9 +65,7 @@ public class TmdbMovieClient {
             
             if (results != null && !results.path("status_message").asText().equals("The resource you requested could not be found.")) {
                 // Fill in additional information from the fetched object
-
-                // A condition "original_country = 'KR'" added on 2025/8/16
-                if (results.path("origin_country").path(0).asText().equals("KR")) {
+                if (results.path("original_language").asText().equals("ko")) {
                     // Genres
                     List<String> genres = new ArrayList<String>();
                     JsonNode genreNodes = results.path("genres");

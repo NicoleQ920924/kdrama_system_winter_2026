@@ -2,6 +2,7 @@ package com.kdrama.backend.service;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
@@ -28,95 +29,135 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
     private static final String CATCH_PLAY_URL = "https://www.catchplay.com";
     private static final String HBO_MAX_URL = "https://www.hbomax.com/tw";
 
+    private static final List<String> platformNames = List.of("Netflix", "Disney Plus", "Amazon Prime Video", "Apple TV", "Catchplay", "HBO Max");
+
     public Map<String, String> getIntlPlatformInfoByWorkTmdbId(Integer tmdbId, Integer seasonNumber, String workType) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
         String requestUrl = "";
 
         Map<String, String> platformMap = new HashMap<String, String>();
 
-        if (workType.equals("drama") && seasonNumber >= 2) {
-            requestUrl = DRAMA_BASE_URL + "/" + tmdbId + "/season/" + seasonNumber + "/watch/providers?api_key=" + tmdbApiKey + "&language=zh-TW";
-        }
-        else if (workType.equals("drama") && seasonNumber == 1) {
-            requestUrl = DRAMA_BASE_URL + "/" + tmdbId + "/watch/providers?api_key=" + tmdbApiKey + "&language=zh-TW";
-        }
-        else if (workType.equals("movie")) {
-            requestUrl = MOVIE_BASE_URL + "/" + tmdbId + "/watch/providers?api_key=" + tmdbApiKey + "&language=zh-TW";
-        }
-
         try {
+            requestUrl = DRAMA_BASE_URL + "/" + tmdbId + "/season/" + seasonNumber + "?api_key=" + tmdbApiKey + "&language=zh-TW";
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
-            if (results.size() > 0) {
-                if (workType == "drama") {
-                    JsonNode twPlatformNodes = results.path("TW").path("flatrate");
-                    if (twPlatformNodes.isArray()) {
-                        for (JsonNode node : twPlatformNodes) {
-                            String platformName = node.path("provider_name").asText();
-                            String platformUrl = "";
-                            switch (platformName) {
-                                case "Netflix":
-                                    platformUrl = NETFLIX_URL;
-                                    break;
-                                case "Disney Plus":
-                                    platformUrl = DISNEY_PLUS_URL;
-                                    break;
-                                case "Amazon Prime Video":
-                                    platformUrl = AMAZON_PRIME_VIDEO_URL;
-                                    break;
-                                case "Apple TV":
-                                    platformUrl = APPLE_TV_URL;
-                                    break;
-                                case "Catchplay":
-                                    platformUrl = CATCH_PLAY_URL;
-                                    break;
-                                case "HBO Max":
-                                    platformUrl = HBO_MAX_URL;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            if (platformUrl != "") {
-                                platformMap.put(platformName, platformUrl);
+            if (results != null && !results.isNull() && platformNames.contains(results.path("networks").path(0).path("name").asText())) {
+                String platformName = results.path("networks").path(0).path("name").asText();
+                String platformUrl = "";
+                switch (platformName) {
+                    case "Netflix":
+                        platformUrl = NETFLIX_URL;
+                        break;
+                    case "Disney Plus":
+                        platformUrl = DISNEY_PLUS_URL;
+                        break;
+                    case "Amazon Prime Video":
+                        platformUrl = AMAZON_PRIME_VIDEO_URL;
+                        break;
+                    case "Apple TV":
+                        platformUrl = APPLE_TV_URL;
+                        break;
+                    case "Catchplay":
+                        platformUrl = CATCH_PLAY_URL;
+                        break;
+                    case "HBO Max":
+                        platformUrl = HBO_MAX_URL;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (platformUrl != "") {
+                    platformMap.put(platformName, platformUrl);
+                }
+            }
+            else {
+                if (workType.equals("drama") && seasonNumber >= 2) {
+                    requestUrl = DRAMA_BASE_URL + "/" + tmdbId + "/season/" + seasonNumber + "/watch/providers?api_key=" + tmdbApiKey + "&language=zh-TW";
+                }
+                else if (workType.equals("drama") && seasonNumber == 1) {
+                    requestUrl = DRAMA_BASE_URL + "/" + tmdbId + "/watch/providers?api_key=" + tmdbApiKey + "&language=zh-TW";
+                }
+                else if (workType.equals("movie")) {
+                    requestUrl = MOVIE_BASE_URL + "/" + tmdbId + "/watch/providers?api_key=" + tmdbApiKey + "&language=zh-TW";
+                }
+                results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
+
+                if (results.size() > 0) {
+                    if (workType == "drama") {
+                        JsonNode twPlatformNodes = results.path("TW").path("flatrate");
+                        if (twPlatformNodes.isArray()) {
+                            for (JsonNode node : twPlatformNodes) {
+                                String platformName = node.path("provider_name").asText();
+                                String platformUrl = "";
+                                switch (platformName) {
+                                    case "Netflix":
+                                        platformUrl = NETFLIX_URL;
+                                        break;
+                                    case "Disney Plus":
+                                        platformUrl = DISNEY_PLUS_URL;
+                                        break;
+                                    case "Amazon Prime Video":
+                                        platformUrl = AMAZON_PRIME_VIDEO_URL;
+                                        break;
+                                    case "Apple TV":
+                                        platformUrl = APPLE_TV_URL;
+                                        break;
+                                    case "Catchplay":
+                                        platformUrl = CATCH_PLAY_URL;
+                                        break;
+                                    case "HBO Max":
+                                        platformUrl = HBO_MAX_URL;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                if (platformUrl != "") {
+                                    platformMap.put(platformName, platformUrl);
+                                }
                             }
                         }
                     }
-                }
-                else if (workType == "movie") {
-                    JsonNode twPlatformNodes = results.path("TW").path("rent");
-                    if (twPlatformNodes.isArray()) {
-                        for (JsonNode node : twPlatformNodes) {
-                            String platformName = node.path("provider_name").asText();
-                            String platformUrl = "";
-                            switch (platformName) {
-                                case "Netflix":
-                                    platformUrl = NETFLIX_URL;
-                                    break;
-                                case "Disney Plus":
-                                    platformUrl = DISNEY_PLUS_URL;
-                                    break;
-                                case "Amazon Prime Video":
-                                    platformUrl = AMAZON_PRIME_VIDEO_URL;
-                                    break;
-                                case "Apple TV":
-                                    platformUrl = APPLE_TV_URL;
-                                    break;
-                                case "Catchplay":
-                                    platformUrl = CATCH_PLAY_URL;
-                                    break;
-                                case "HBO Max":
-                                    platformUrl = HBO_MAX_URL;
-                                    break;
-                                default:
-                                    break;
-                            }
+                    else if (workType == "movie") {
+                        JsonNode twPlatformNodes = results.path("TW").path("rent");
+                        if (twPlatformNodes == null || twPlatformNodes.size() <= 0) {
+                            twPlatformNodes = results.path("TW").path("flatrate");
+                        }
+                        if (twPlatformNodes.isArray()) {
+                            for (JsonNode node : twPlatformNodes) {
+                                String platformName = node.path("provider_name").asText();
+                                String platformUrl = "";
+                                switch (platformName) {
+                                    case "Netflix":
+                                        platformUrl = NETFLIX_URL;
+                                        break;
+                                    case "Disney Plus":
+                                        platformUrl = DISNEY_PLUS_URL;
+                                        break;
+                                    case "Amazon Prime Video":
+                                        platformUrl = AMAZON_PRIME_VIDEO_URL;
+                                        break;
+                                    case "Apple TV":
+                                        platformUrl = APPLE_TV_URL;
+                                        break;
+                                    case "Catchplay":
+                                        platformUrl = CATCH_PLAY_URL;
+                                        break;
+                                    case "HBO Max":
+                                        platformUrl = HBO_MAX_URL;
+                                        break;
+                                    default:
+                                        break;
+                                }
 
-                            if (platformUrl != "") {
-                                platformMap.put(platformName, platformUrl);
+                                if (platformUrl != "") {
+                                    platformMap.put(platformName, platformUrl);
+                                }
                             }
                         }
                     }
                 }
             }
+            
             return platformMap;
 
         } catch (Exception e) {

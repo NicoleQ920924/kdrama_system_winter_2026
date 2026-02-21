@@ -89,7 +89,7 @@
     <h2>演員列表</h2>
     <h4>可以用Ctrl+F搜尋</h4>
     <div class="text-center controls-section">
-        <label for="sortBy" class="form-label">排序方式:</label>
+        <label for="sortBy" class="form-label">排序方式：</label>
         <select v-model="sortBy" @change="sortItems" id="sortBy" class="form-select">
             <option value="name">中文譯名 (按注音排序)</option>
             <option value="birthday">生日 (由年輕至年長)</option>
