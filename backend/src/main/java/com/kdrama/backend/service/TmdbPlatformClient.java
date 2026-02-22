@@ -42,15 +42,15 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
             JsonNode results = JsonNodeRequest.getJsonNodebyRequestQuery(requestUrl);
             if (results != null && !results.isNull() && platformNames.contains(results.path("networks").path(0).path("name").asText())) {
                 String platformName = results.path("networks").path(0).path("name").asText();
+                if (platformName.equals("Disney+")) {
+                    platformName = "Disney Plus";
+                }
                 String platformUrl = "";
                 switch (platformName) {
                     case "Netflix":
                         platformUrl = NETFLIX_URL;
                         break;
                     case "Disney Plus":
-                        platformUrl = DISNEY_PLUS_URL;
-                        break;
-                    case "Disney+":
                         platformUrl = DISNEY_PLUS_URL;
                         break;
                     case "Amazon Prime Video":
@@ -91,15 +91,15 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
                         if (twPlatformNodes.isArray()) {
                             for (JsonNode node : twPlatformNodes) {
                                 String platformName = node.path("provider_name").asText();
+                                if (platformName.equals("Disney+")) {
+                                    platformName = "Disney Plus";
+                                }
                                 String platformUrl = "";
                                 switch (platformName) {
                                     case "Netflix":
                                         platformUrl = NETFLIX_URL;
                                         break;
                                     case "Disney Plus":
-                                        platformUrl = DISNEY_PLUS_URL;
-                                        break;
-                                    case "Disney+":
                                         platformUrl = DISNEY_PLUS_URL;
                                         break;
                                     case "Amazon Prime Video":
@@ -131,15 +131,15 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
                         if (twPlatformNodes.isArray()) {
                             for (JsonNode node : twPlatformNodes) {
                                 String platformName = node.path("provider_name").asText();
+                                if (platformName.equals("Disney+")) {
+                                    platformName = "Disney Plus";
+                                }
                                 String platformUrl = "";
                                 switch (platformName) {
                                     case "Netflix":
                                         platformUrl = NETFLIX_URL;
                                         break;
                                     case "Disney Plus":
-                                        platformUrl = DISNEY_PLUS_URL;
-                                        break;
-                                    case "Disney+":
                                         platformUrl = DISNEY_PLUS_URL;
                                         break;
                                     case "Amazon Prime Video":
