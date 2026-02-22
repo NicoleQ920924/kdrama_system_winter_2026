@@ -29,7 +29,7 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
     private static final String CATCH_PLAY_URL = "https://www.catchplay.com";
     private static final String HBO_MAX_URL = "https://www.hbomax.com/tw";
 
-    private static final List<String> platformNames = List.of("Netflix", "Disney Plus", "Amazon Prime Video", "Apple TV", "Catchplay", "HBO Max");
+    private static final List<String> platformNames = List.of("Netflix", "Disney Plus", "Disney+", "Amazon Prime Video", "Apple TV", "Catchplay", "HBO Max");
 
     public Map<String, String> getIntlPlatformInfoByWorkTmdbId(Integer tmdbId, Integer seasonNumber, String workType) throws IOException {
         String tmdbApiKey = tmdbProperties.getKey();
@@ -48,6 +48,9 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
                         platformUrl = NETFLIX_URL;
                         break;
                     case "Disney Plus":
+                        platformUrl = DISNEY_PLUS_URL;
+                        break;
+                    case "Disney+":
                         platformUrl = DISNEY_PLUS_URL;
                         break;
                     case "Amazon Prime Video":
@@ -96,6 +99,9 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
                                     case "Disney Plus":
                                         platformUrl = DISNEY_PLUS_URL;
                                         break;
+                                    case "Disney+":
+                                        platformUrl = DISNEY_PLUS_URL;
+                                        break;
                                     case "Amazon Prime Video":
                                         platformUrl = AMAZON_PRIME_VIDEO_URL;
                                         break;
@@ -131,6 +137,9 @@ public class TmdbPlatformClient { // Netflix, Disney+, Prime Video, Apple TV, Ca
                                         platformUrl = NETFLIX_URL;
                                         break;
                                     case "Disney Plus":
+                                        platformUrl = DISNEY_PLUS_URL;
+                                        break;
+                                    case "Disney+":
                                         platformUrl = DISNEY_PLUS_URL;
                                         break;
                                     case "Amazon Prime Video":
